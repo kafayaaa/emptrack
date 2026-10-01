@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Placeholder — logic auth guard akan ditambahkan di sini nanti
   // Contoh nanti: cek token dari cookies, redirect ke /login kalau tidak ada
 
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
 // Matcher menentukan route mana saja yang akan melewati middleware ini.
@@ -22,4 +22,4 @@ export const config = {
      */
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
-};
+}
