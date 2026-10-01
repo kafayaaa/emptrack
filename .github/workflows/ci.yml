@@ -1,0 +1,59 @@
+name: CI
+# Nama workflow yang muncul di tab "Actions" GitHub dan di badge.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+# Kapan berjalan: setiap push ke branch main, dan setiap Pull Request (ke branch mana pun).
+
+permissions:
+  contents: read
+# Keamanan (least privilege): token bawaan workflow hanya boleh MEMBACA repo.
+# Kalau ada dependency jahat yang menjalankan kode di CI, ia tidak bisa mengubah repo Anda.
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+# Kalau Anda push dua kali berturut-turut ke branch yang sama, run lama dibatalkan.
+# Menghemat menit CI dan tidak menumpuk antrean.
+
+jobs:
+  frontend: # nama job (bebas)
+    runs-on: ubuntu-latest # jenis mesin: Linux bersih milik GitHub (gratis untuk repo publik)
+    timeout-minutes: 10 # kalau macet lebih dari 10 menit, hentikan otomatis
+    defaults:
+      run:
+        working-directory: frontend
+        # Semua perintah `run:` dijalankan di dalam folder frontend/,
+        # karena package.json ada di sana, bukan di root.
+    steps:
+      - uses: actions/checkout@v4
+        # Mengunduh isi repo ke mesin CI. Tanpa ini mesinnya kosong.
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+          # Versi Node dibaca dari .nvmrc, jadi lokal dan CI selalu sama.
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+          # Menyimpan cache ~/.npm supaya run berikutnya tidak mengunduh ulang semua paket.
+
+      - run: npm ci
+        # Install persis sesuai package-lock.json. Lebih ketat dan lebih cepat dari `npm install`,
+        # dan gagal kalau lockfile tidak sinkron dengan package.json.
+
+      - run: npm run lint
+        # Cek kualitas kode dan bug umum (ESLint).
+
+      - run: npm run typecheck
+        # Cek tipe TypeScript (`tsc --noEmit`).
+
+      - run: npm run format:check
+        # Cek format Prettier tanpa mengubah file. Gagal kalau ada file yang belum diformat.
+
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+        # Build production. Env dummy diberikan karena lib/env.ts (zod) mewajibkannya.
+        # Nilainya tidak rahasia, jadi aman ditulis di file.
