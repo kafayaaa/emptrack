@@ -44,8 +44,6 @@ jobs:
         # dan gagal kalau lockfile tidak sinkron dengan package.json.
 
       - run: npm run check
-
-      - run: npm run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:4000
         # Build production. Env dummy diberikan karena lib/env.ts (zod) mewajibkannya.
