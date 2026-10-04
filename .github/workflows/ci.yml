@@ -43,14 +43,7 @@ jobs:
         # Install persis sesuai package-lock.json. Lebih ketat dan lebih cepat dari `npm install`,
         # dan gagal kalau lockfile tidak sinkron dengan package.json.
 
-      - run: npm run lint
-        # Cek kualitas kode dan bug umum (ESLint).
-
-      - run: npm run typecheck
-        # Cek tipe TypeScript (`tsc --noEmit`).
-
-      - run: npm run format:check
-        # Cek format Prettier tanpa mengubah file. Gagal kalau ada file yang belum diformat.
+      - run: npm run check
 
       - run: npm run build
         env:

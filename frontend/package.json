@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "prepare": "cd .. && husky frontend/.husky || true",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
