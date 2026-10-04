@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-export function proxy(request: NextRequest) {
+export function proxy(_request: NextRequest) {
   // Placeholder — logic auth guard akan ditambahkan di sini nanti
   // Contoh nanti: cek token dari cookies, redirect ke /login kalau tidak ada
 
