@@ -42,7 +42,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     // lang harus sama dengan bahasa UI Anda ("id" atau "en"). Dipakai screen reader & crawler.
     // suppressHydrationWarning di <html> karena next-themes menambah class "dark" sebelum hydration.
     <html lang="id" suppressHydrationWarning>
-      <body className={cn("min-h-dvh font-sans antialiased", dmSans.variable, geistMono.variable)}>
+      <body
+        className={cn("min-h-dvh font-sans antialiased", dmSans.variable, geistMono.variable)}
+        suppressHydrationWarning
+      >
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:ring-2 focus:ring-ring"
