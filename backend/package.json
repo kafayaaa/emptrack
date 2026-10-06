@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "seed": "tsx scripts/seed.ts",
+    "seed:small": "tsx scripts/seed.ts --employees=200 --projects=40 --out=fixtures/db.small.json",
+    "dev:api": "json-server db.json --port 4000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@types/node": "^26.6.4",
+    "json-server": "1.0.0-beta.15",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.5"
+  }
+}
