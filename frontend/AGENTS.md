@@ -128,7 +128,9 @@ src/
 
 ## When Making Changes
 
-1. Check if a similar pattern already exists in another feature folder before introducing a new one — consistency across `features/employees`, `features/inventory`, and (later) `features/approvals` matters more than local optimization.
-2. Explain non-obvious code with comments, especially around caching strategy, virtualization setup, and proxy logic.
-3. Do not restructure folders or introduce new top-level dependencies without flagging it first.
-4. Add or update tests for any logic you change, then run lint and tests before finishing.
+1. **Discuss & Explain Before Execution**: Whenever the user provides a prompt or new task, do not immediately execute or write code. First explain clearly and in detail what you plan to do so that the implementation approach is understood and aligned before writing code. Specifically when introducing new features, include relatable real-world analogies to make the concepts, domain flows, and architectural choices intuitive.
+2. **Prioritize Reusability & Modular Design**: Ensure any written code is highly reusable and modular (e.g. extracting generic utilities like `formatDate` to `src/lib/date.ts`, or separating small presentation components like status badges). Even if this deviates slightly from an initial monolithic outline, improvements that make the codebase cleaner, more maintainable, and reusable are strongly encouraged.
+3. Check if a similar pattern already exists in another feature folder before introducing a new one — consistency across `features/employees`, `features/inventory`, and (later) `features/approvals` matters more than local optimization.
+4. Explain non-obvious code with comments, especially around caching strategy, virtualization setup, and proxy logic.
+5. Do not restructure folders or introduce new top-level dependencies without flagging it first.
+6. Add or update tests for any logic you change, then run lint and tests before finishing.
