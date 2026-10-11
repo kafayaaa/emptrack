@@ -122,6 +122,7 @@ src/
 ### Git & Commits
 
 - Follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `style:`, `chore:`, `docs:`, `test:`). Scope with the domain when relevant, e.g. `feat(employees): add virtualized data table`.
+- **Enforce Atomic Commits**: Always use and advocate for _atomic commits_ (breaking down commits based on the smallest, most focused unit of logical change). Do not combine multiple distinct changes (e.g., UI primitives, shared logic, and feature integration) into a single large commit.
 - Keep commits small and focused. Prefer one logical change per commit.
 - `.gitattributes` enforces consistent line endings. Do not change it without being asked.
 - CI (GitHub Actions) must stay green before merging/pushing a milestone.
