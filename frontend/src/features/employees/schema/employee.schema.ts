@@ -53,6 +53,7 @@ export const jsonServerEmployeeListSchema = z.object({
 
 export type Employee = z.infer<typeof employeeSchema>
 export type EmployeeListQuery = z.infer<typeof employeeListQuerySchema>
+export type EmployeeListInputQuery = z.input<typeof employeeListQuerySchema>
 
 // Kontrak response yang diterima frontend.
 export type EmployeeListResponse = {
