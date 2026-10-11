@@ -1,0 +1,94 @@
+import { describe, it, expect, vi, afterEach } from "vitest"
+import { apiClient } from "@/lib/api-client"
+import { employeeKeys, getEmployees } from "./employees.api"
+import type { EmployeeListResponse } from "../schema/employee.schema"
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+const mockEmployeeResponse: EmployeeListResponse = {
+  data: [
+    {
+      id: "1",
+      employeeNumber: "EMP001",
+      fullName: "Jane Doe",
+      email: "jane.doe@example.com",
+      phone: "+628123456789",
+      department: "Engineering",
+      position: "Frontend Engineer",
+      status: "active",
+      hireDate: "2023-01-15",
+      isManager: false,
+      managerId: null,
+      projectId: "101",
+    },
+  ],
+  meta: {
+    page: 1,
+    pageSize: 20,
+    total: 1,
+    totalPages: 1,
+  },
+}
+
+describe("employeeKeys", () => {
+  it("menghasilkan struktur query key yang konsisten", () => {
+    expect(employeeKeys.all).toEqual(["employees"])
+    expect(employeeKeys.lists()).toEqual(["employees", "list"])
+    expect(employeeKeys.list({ page: 2, pageSize: 10 })).toEqual([
+      "employees",
+      "list",
+      { page: 2, pageSize: 10 },
+    ])
+    expect(employeeKeys.details()).toEqual(["employees", "detail"])
+    expect(employeeKeys.detail("123")).toEqual(["employees", "detail", "123"])
+  })
+})
+
+describe("getEmployees", () => {
+  it("memanggil apiClient.get dengan path /employees dan params yang sesuai", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue(mockEmployeeResponse)
+
+    const params = { page: 1, pageSize: 20, search: "Jane", sortOrder: "asc" as const }
+    const result = await getEmployees(params)
+
+    expect(getSpy).toHaveBeenCalledWith(
+      "/employees",
+      expect.objectContaining({
+        params,
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toEqual(mockEmployeeResponse)
+  })
+
+  it("berhasil memvalidasi response dengan employeeListResponseSchema", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(mockEmployeeResponse), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    )
+
+    const result = await getEmployees()
+    expect(result).toEqual(mockEmployeeResponse)
+  })
+
+  it("melempar ZodError jika struktur response backend tidak sesuai skema", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [{ id: "1" }], // field wajib lainnya tidak ada
+          meta: { page: 1 },
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
+    )
+
+    await expect(getEmployees()).rejects.toThrow()
+  })
+})
