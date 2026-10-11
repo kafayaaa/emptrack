@@ -47,14 +47,14 @@ describe("employeeKeys", () => {
 })
 
 describe("getEmployees", () => {
-  it("memanggil apiClient.get dengan path /employees dan params yang sesuai", async () => {
+  it("memanggil apiClient.get dengan path /api/employees dan params yang sesuai", async () => {
     const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue(mockEmployeeResponse)
 
     const params = { page: 1, pageSize: 20, search: "Jane", sortOrder: "asc" as const }
     const result = await getEmployees(params)
 
     expect(getSpy).toHaveBeenCalledWith(
-      "/employees",
+      "/api/employees",
       expect.objectContaining({
         params,
         schema: expect.any(Object),
