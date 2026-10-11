@@ -28,8 +28,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
+import { LucideIcon } from "lucide-react"
 import { DataTablePagination } from "./data-table-pagination"
+import { DataTableSkeleton } from "./data-table-skeleton"
+import { DataTableEmptyState } from "./data-table-empty-state"
 
 // Modern, tree-shakeable features configuration for generic data table in v9
 export const dataTableFeatures = tableFeatures({
@@ -59,7 +61,12 @@ export interface DataTableProps<TData extends RowData> {
   sorting?: SortingState
   onSortingChange?: OnChangeFn<SortingState>
   isLoading?: boolean
+  skeletonRowCount?: number
   emptyMessage?: string
+  emptyTitle?: string
+  emptyDescription?: string
+  emptyIcon?: LucideIcon
+  emptyAction?: React.ReactNode
   pageSizeOptions?: number[]
 }
 
@@ -73,7 +80,12 @@ export function DataTable<TData extends RowData>({
   sorting: controlledSorting,
   onSortingChange,
   isLoading = false,
-  emptyMessage = "No data found.",
+  skeletonRowCount,
+  emptyMessage,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon,
+  emptyAction,
   pageSizeOptions,
 }: DataTableProps<TData>) {
   // State lokal jika tabel beroperasi un-controlled / client-side
@@ -133,15 +145,10 @@ export function DataTable<TData extends RowData>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: pagination.pageSize || 5 }).map((_, index) => (
-                <TableRow key={`loading-row-${index}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={`loading-cell-${colIndex}`}>
-                      <Skeleton className="h-5 w-full max-w-30" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <DataTableSkeleton
+                columnCount={columns.length}
+                rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
+              />
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
@@ -153,14 +160,13 @@ export function DataTable<TData extends RowData>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
+              <DataTableEmptyState
+                colSpan={columns.length}
+                icon={emptyIcon}
+                title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
+                description={emptyDescription}
+                action={emptyAction}
+              />
             )}
           </TableBody>
         </Table>
