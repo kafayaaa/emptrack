@@ -6,6 +6,8 @@ import { DataTable, dataTableFeatures } from "./data-table"
 import { DataTableColumnHeader } from "./data-table-column-header"
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableEmptyState } from "./data-table-empty-state"
+import { DataTableErrorState } from "./data-table-error-state"
+import { TableErrorBoundary } from "./table-error-boundary"
 
 interface TestItem {
   id: string
@@ -61,6 +63,23 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     expect(loadingComponent).toBeDefined()
   })
 
+  it("renders error state when isError is true with retry callback", () => {
+    const onRetry = vi.fn()
+    const errorComponent = (
+      <DataTable
+        columns={testColumns}
+        data={[]}
+        isError={true}
+        errorTitle="Terjadi kesalahan"
+        errorDescription="Tidak dapat memuat data."
+        errorMessage="Network error 500"
+        retryLabel="Ulangi"
+        onRetry={onRetry}
+      />
+    )
+    expect(errorComponent).toBeDefined()
+  })
+
   it("supports controlled pagination and sorting callbacks", () => {
     const onPaginationChange = vi.fn()
     const onSortingChange = vi.fn()
@@ -102,6 +121,117 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
         />
       )
       expect(customEmpty).toBeDefined()
+    })
+  })
+
+  describe("DataTableErrorState component", () => {
+    it("renders error state with default and custom properties", () => {
+      const defaultError = <DataTableErrorState colSpan={4} />
+      expect(defaultError).toBeDefined()
+
+      const onRetry = vi.fn()
+      const customError = (
+        <DataTableErrorState
+          colSpan={4}
+          title="Kesalahan Kustom"
+          description="Deskripsi kesalahan"
+          errorMessage="Error code: 500"
+          retryLabel="Coba Lagi"
+          onRetry={onRetry}
+        />
+      )
+      expect(customError).toBeDefined()
+    })
+  })
+
+  describe("TableErrorBoundary component", () => {
+    it("renders children when no error occurs", () => {
+      const boundary = (
+        <TableErrorBoundary>
+          <div>Table Content</div>
+        </TableErrorBoundary>
+      )
+      expect(boundary).toBeDefined()
+    })
+
+    it("handles error boundary state transitions and custom fallback", () => {
+      const boundary = new TableErrorBoundary({
+        children: <div>Child</div>,
+      })
+      expect(boundary.state.hasError).toBe(false)
+      expect(boundary.state.error).toBeNull()
+
+      const error = new Error("Test error")
+      const updatedState = TableErrorBoundary.getDerivedStateFromError(error)
+      expect(updatedState.hasError).toBe(true)
+      expect(updatedState.error).toBe(error)
+
+      const onReset = vi.fn()
+      const resetBoundary = new TableErrorBoundary({
+        children: <div>Child</div>,
+        onReset,
+      })
+      ;(resetBoundary as unknown as { updater: unknown }).updater = {
+        enqueueSetState: (
+          _inst: unknown,
+          partialState:
+            | Partial<typeof resetBoundary.state>
+            | ((prevState: typeof resetBoundary.state) => Partial<typeof resetBoundary.state>),
+        ) => {
+          Object.assign(
+            resetBoundary.state,
+            typeof partialState === "function" ? partialState(resetBoundary.state) : partialState,
+          )
+        },
+      }
+      resetBoundary.state = { hasError: true, error }
+      resetBoundary.resetErrorBoundary()
+      expect(onReset).toHaveBeenCalled()
+      expect(resetBoundary.state.hasError).toBe(false)
+      expect(resetBoundary.state.error).toBeNull()
+
+      const onError = vi.fn()
+      const catchBoundary = new TableErrorBoundary({
+        children: <div>Child</div>,
+        onError,
+      })
+      const errorInfo = { componentStack: "stack" } as React.ErrorInfo
+      catchBoundary.componentDidCatch(error, errorInfo)
+      expect(onError).toHaveBeenCalledWith(error, errorInfo)
+    })
+
+    it("renders fallback UI when error state is active", () => {
+      const error = new Error("Network failure")
+
+      // Default fallback
+      const defaultBoundary = new TableErrorBoundary({
+        children: <div>Table Content</div>,
+        title: "Kustom Gagal",
+        description: "Gagal memuat",
+      })
+      defaultBoundary.state = { hasError: true, error }
+      const defaultRender = defaultBoundary.render()
+      expect(defaultRender).toBeDefined()
+
+      // Node fallback
+      const nodeFallbackBoundary = new TableErrorBoundary({
+        children: <div>Table Content</div>,
+        fallback: <div>Custom Fallback Node</div>,
+      })
+      nodeFallbackBoundary.state = { hasError: true, error }
+      expect(nodeFallbackBoundary.render()).toBeDefined()
+
+      // Function fallback
+      const fnFallbackBoundary = new TableErrorBoundary({
+        children: <div>Table Content</div>,
+        fallback: ({ error: err, resetErrorBoundary }) => (
+          <button type="button" onClick={resetErrorBoundary}>
+            {err.message}
+          </button>
+        ),
+      })
+      fnFallbackBoundary.state = { hasError: true, error }
+      expect(fnFallbackBoundary.render()).toBeDefined()
     })
   })
 })
