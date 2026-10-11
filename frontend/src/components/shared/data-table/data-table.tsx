@@ -32,6 +32,7 @@ import { LucideIcon } from "lucide-react"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableEmptyState } from "./data-table-empty-state"
+import { DataTableErrorState } from "./data-table-error-state"
 
 // Modern, tree-shakeable features configuration for generic data table in v9
 export const dataTableFeatures = tableFeatures({
@@ -62,6 +63,12 @@ export interface DataTableProps<TData extends RowData> {
   onSortingChange?: OnChangeFn<SortingState>
   isLoading?: boolean
   skeletonRowCount?: number
+  isError?: boolean
+  errorTitle?: string
+  errorDescription?: string
+  errorMessage?: string
+  retryLabel?: string
+  onRetry?: () => void
   emptyMessage?: string
   emptyTitle?: string
   emptyDescription?: string
@@ -81,6 +88,12 @@ export function DataTable<TData extends RowData>({
   onSortingChange,
   isLoading = false,
   skeletonRowCount,
+  isError = false,
+  errorTitle,
+  errorDescription,
+  errorMessage,
+  retryLabel,
+  onRetry,
   emptyMessage,
   emptyTitle,
   emptyDescription,
@@ -144,7 +157,16 @@ export function DataTable<TData extends RowData>({
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isError ? (
+              <DataTableErrorState
+                colSpan={columns.length}
+                title={errorTitle}
+                description={errorDescription}
+                errorMessage={errorMessage}
+                retryLabel={retryLabel}
+                onRetry={onRetry}
+              />
+            ) : isLoading ? (
               <DataTableSkeleton
                 columnCount={columns.length}
                 rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
