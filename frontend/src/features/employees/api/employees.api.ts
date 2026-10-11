@@ -25,7 +25,7 @@ export const employeeKeys = {
 }
 
 export async function getEmployees(params?: EmployeeListInputQuery): Promise<EmployeeListResponse> {
-  return apiClient.get<EmployeeListResponse>("/employees", {
+  return apiClient.get<EmployeeListResponse>("/api/employees", {
     params: params as Record<string, string | number | boolean | null | undefined>,
     schema: employeeListResponseSchema,
   })
