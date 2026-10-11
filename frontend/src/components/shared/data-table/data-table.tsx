@@ -1,0 +1,172 @@
+"use client"
+
+import * as React from "react"
+import {
+  columnVisibilityFeature,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  flexRender,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_text,
+  tableFeatures,
+  useTable,
+  type ColumnDef,
+  type OnChangeFn,
+  type PaginationState,
+  type RowData,
+  type SortingState,
+} from "@tanstack/react-table"
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
+import { DataTablePagination } from "./data-table-pagination"
+
+// Modern, tree-shakeable features configuration for generic data table in v9
+export const dataTableFeatures = tableFeatures({
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  rowPaginationFeature,
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    text: sortFn_text,
+  },
+})
+
+export type DataTableFeatures = typeof dataTableFeatures
+
+export interface DataTableProps<TData extends RowData> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<any, TData, any>[]
+  data: TData[]
+  // Server-side / controlled pagination & sorting options
+  pageCount?: number
+  rowCount?: number
+  pagination?: PaginationState
+  onPaginationChange?: OnChangeFn<PaginationState>
+  sorting?: SortingState
+  onSortingChange?: OnChangeFn<SortingState>
+  isLoading?: boolean
+  emptyMessage?: string
+  pageSizeOptions?: number[]
+}
+
+export function DataTable<TData extends RowData>({
+  columns,
+  data,
+  pageCount,
+  rowCount,
+  pagination: controlledPagination,
+  onPaginationChange,
+  sorting: controlledSorting,
+  onSortingChange,
+  isLoading = false,
+  emptyMessage = "No data found.",
+  pageSizeOptions,
+}: DataTableProps<TData>) {
+  // State lokal jika tabel beroperasi un-controlled / client-side
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
+  const [internalPagination, setInternalPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+
+  const isManualPagination = typeof pageCount !== "undefined" || typeof rowCount !== "undefined"
+  const isManualSorting =
+    typeof controlledSorting !== "undefined" && typeof onSortingChange === "function"
+
+  const sorting = controlledSorting ?? internalSorting
+  const setSorting = onSortingChange ?? setInternalSorting
+
+  const pagination = controlledPagination ?? internalPagination
+  const setPagination = onPaginationChange ?? setInternalPagination
+
+  const table = useTable(
+    {
+      features: dataTableFeatures,
+      data,
+      columns: columns as never,
+      pageCount,
+      rowCount,
+      state: {
+        sorting,
+        pagination,
+      },
+      onSortingChange: setSorting,
+      onPaginationChange: setPagination,
+      manualPagination: isManualPagination,
+      manualSorting: isManualSorting,
+    },
+    (state) => state,
+  )
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="rounded-lg border border-border bg-card shadow-xs">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: pagination.pageSize || 5 }).map((_, index) => (
+                <TableRow key={`loading-row-${index}`}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={`loading-cell-${colIndex}`}>
+                      <Skeleton className="h-5 w-full max-w-30" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+    </div>
+  )
+}
