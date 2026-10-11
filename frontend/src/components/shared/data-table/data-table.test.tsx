@@ -1,8 +1,11 @@
 import React from "react"
 import { describe, expect, it, vi } from "vitest"
 import { createColumnHelper } from "@tanstack/react-table"
+import { Users } from "lucide-react"
 import { DataTable, dataTableFeatures } from "./data-table"
 import { DataTableColumnHeader } from "./data-table-column-header"
+import { DataTableSkeleton } from "./data-table-skeleton"
+import { DataTableEmptyState } from "./data-table-empty-state"
 
 interface TestItem {
   id: string
@@ -41,11 +44,20 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
 
   it("handles empty state and loading state gracefully", () => {
     const emptyComponent = (
-      <DataTable columns={testColumns} data={[]} emptyMessage="Custom empty message" />
+      <DataTable
+        columns={testColumns}
+        data={[]}
+        emptyTitle="No users found"
+        emptyDescription="Please try another query."
+        emptyIcon={Users}
+        emptyAction={<button type="button">Reset</button>}
+      />
     )
     expect(emptyComponent).toBeDefined()
 
-    const loadingComponent = <DataTable columns={testColumns} data={[]} isLoading={true} />
+    const loadingComponent = (
+      <DataTable columns={testColumns} data={[]} isLoading={true} skeletonRowCount={7} />
+    )
     expect(loadingComponent).toBeDefined()
   })
 
@@ -66,5 +78,30 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     )
 
     expect(controlledComponent).toBeDefined()
+  })
+
+  describe("DataTableSkeleton component", () => {
+    it("renders skeleton rows and cells corresponding to columnCount and rowCount", () => {
+      const skeleton = <DataTableSkeleton columnCount={4} rowCount={6} />
+      expect(skeleton).toBeDefined()
+    })
+  })
+
+  describe("DataTableEmptyState component", () => {
+    it("renders empty state with default and custom values", () => {
+      const defaultEmpty = <DataTableEmptyState colSpan={4} />
+      expect(defaultEmpty).toBeDefined()
+
+      const customEmpty = (
+        <DataTableEmptyState
+          colSpan={4}
+          title="Custom Title"
+          description="Custom Description"
+          icon={Users}
+          action={<button type="button">Action</button>}
+        />
+      )
+      expect(customEmpty).toBeDefined()
+    })
   })
 })
