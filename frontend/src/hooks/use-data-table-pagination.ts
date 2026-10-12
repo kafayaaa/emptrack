@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { parseAsInteger, useQueryState } from "nuqs"
 import type { OnChangeFn, PaginationState } from "@tanstack/react-table"
 
 export interface UseDataTablePaginationOptions {
@@ -22,7 +22,7 @@ export interface UseDataTablePaginationOptions {
    */
   pageSizeParamKey?: string
   /**
-   * If true, sync pagination state with URL search params. Defaults to true.
+   * If true, sync pagination state with URL search params using nuqs. Defaults to true.
    */
   syncToUrl?: boolean
 }
@@ -54,9 +54,9 @@ export interface UseDataTablePaginationReturn {
 }
 
 /**
- * Reusable hook for server-side pagination with TanStack Table.
+ * Reusable hook for server-side pagination with TanStack Table and nuqs.
  *
- * Supports bi-directional synchronization with URL search parameters (1-indexed in URL,
+ * Supports bi-directional synchronization with URL search parameters via nuqs (1-indexed in URL,
  * 0-indexed in TanStack table state) or standalone in-memory state.
  */
 export function useDataTablePagination({
@@ -66,26 +66,28 @@ export function useDataTablePagination({
   pageSizeParamKey = "pageSize",
   syncToUrl = true,
 }: UseDataTablePaginationOptions = {}): UseDataTablePaginationReturn {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  // Convert 0-indexed default page index to 1-indexed URL page
+  const defaultPage = Math.max(1, defaultPageIndex + 1)
 
-  // Parse state directly from URL search params when syncToUrl is true
-  const urlPageIndex = React.useMemo(() => {
-    if (!syncToUrl || !searchParams) return defaultPageIndex
-    const pageParam = searchParams.get(pageParamKey)
-    if (!pageParam) return defaultPageIndex
-    const parsed = parseInt(pageParam, 10)
-    return isNaN(parsed) || parsed < 1 ? defaultPageIndex : parsed - 1
-  }, [syncToUrl, searchParams, pageParamKey, defaultPageIndex])
+  // Configure nuqs query state for page (1-indexed in URL)
+  const [urlPage, setUrlPage] = useQueryState(
+    pageParamKey,
+    parseAsInteger.withDefault(defaultPage).withOptions({
+      shallow: true,
+      clearOnDefault: true,
+      history: "push",
+    }),
+  )
 
-  const urlPageSize = React.useMemo(() => {
-    if (!syncToUrl || !searchParams) return defaultPageSize
-    const pageSizeParam = searchParams.get(pageSizeParamKey)
-    if (!pageSizeParam) return defaultPageSize
-    const parsed = parseInt(pageSizeParam, 10)
-    return isNaN(parsed) || parsed < 1 ? defaultPageSize : parsed
-  }, [syncToUrl, searchParams, pageSizeParamKey, defaultPageSize])
+  // Configure nuqs query state for pageSize
+  const [urlPageSize, setUrlPageSize] = useQueryState(
+    pageSizeParamKey,
+    parseAsInteger.withDefault(defaultPageSize).withOptions({
+      shallow: true,
+      clearOnDefault: true,
+      history: "push",
+    }),
+  )
 
   // Internal state fallback for standalone in-memory mode (when syncToUrl is false)
   const [inMemoryPagination, setInMemoryPagination] = React.useState<PaginationState>({
@@ -93,52 +95,21 @@ export function useDataTablePagination({
     pageSize: defaultPageSize,
   })
 
-  // When syncToUrl is true, URL search params is the single source of truth (no duplicate state or useEffect)
+  // Normalize current page index (0-indexed for TanStack Table) and pageSize
   const pagination: PaginationState = React.useMemo(() => {
     if (!syncToUrl) {
       return inMemoryPagination
     }
+
+    // Sanitize non-positive values from URL to safe minimums
+    const safePage = Math.max(1, urlPage)
+    const safePageSize = Math.max(1, urlPageSize)
+
     return {
-      pageIndex: urlPageIndex,
-      pageSize: urlPageSize,
+      pageIndex: safePage - 1,
+      pageSize: safePageSize,
     }
-  }, [syncToUrl, inMemoryPagination, urlPageIndex, urlPageSize])
-
-  const updateUrl = React.useCallback(
-    (newPageIndex: number, newPageSize: number) => {
-      if (!syncToUrl || !searchParams || !router || !pathname) return
-
-      const params = new URLSearchParams(searchParams.toString())
-      const serverPage = newPageIndex + 1
-
-      // Clean default params from URL query
-      if (serverPage === defaultPageIndex + 1) {
-        params.delete(pageParamKey)
-      } else {
-        params.set(pageParamKey, serverPage.toString())
-      }
-
-      if (newPageSize === defaultPageSize) {
-        params.delete(pageSizeParamKey)
-      } else {
-        params.set(pageSizeParamKey, newPageSize.toString())
-      }
-
-      const queryString = params.toString()
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname
-      router.push(newUrl, { scroll: false })
-    },
-    [
-      syncToUrl,
-      searchParams,
-      router,
-      pathname,
-      defaultPageIndex,
-      defaultPageSize,
-      pageParamKey,
-      pageSizeParamKey,
-    ],
-  )
+  }, [syncToUrl, inMemoryPagination, urlPage, urlPageSize])
 
   const onPaginationChange: OnChangeFn<PaginationState> = React.useCallback(
     (updaterOrValue) => {
@@ -150,12 +121,20 @@ export function useDataTablePagination({
       }
 
       if (syncToUrl) {
-        updateUrl(next.pageIndex, next.pageSize)
+        const nextUrlPage = Math.max(1, next.pageIndex + 1)
+        const nextUrlPageSize = Math.max(1, next.pageSize)
+
+        if (nextUrlPage !== pagination.pageIndex + 1) {
+          void setUrlPage(nextUrlPage)
+        }
+        if (nextUrlPageSize !== pagination.pageSize) {
+          void setUrlPageSize(nextUrlPageSize)
+        }
       } else {
         setInMemoryPagination(next)
       }
     },
-    [pagination, syncToUrl, updateUrl],
+    [pagination, syncToUrl, setUrlPage, setUrlPageSize],
   )
 
   const setPageIndex = React.useCallback(
