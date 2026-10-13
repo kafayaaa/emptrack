@@ -51,7 +51,10 @@ export function EmployeeTable({
     [filters, queryParams.page, queryParams.pageSize],
   )
 
-  const { data, isLoading, isError, error, refetch } = useEmployees(requestParams, queryOptions)
+  const { data, isLoading, isFetching, isPlaceholderData, isError, error, refetch } = useEmployees(
+    requestParams,
+    queryOptions,
+  )
 
   const employees = data?.data ?? []
   const totalRows = data?.meta.total
@@ -72,6 +75,8 @@ export function EmployeeTable({
         onPaginationChange={onPaginationChange}
         pageSizeOptions={pageSizeOptions}
         isLoading={isLoading}
+        isFetching={isFetching}
+        isPlaceholderData={isPlaceholderData}
         skeletonRowCount={pagination.pageSize}
         isError={isError}
         errorTitle="Gagal memuat data karyawan"
