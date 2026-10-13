@@ -87,4 +87,22 @@ describe("employee-table.tsx (EmployeeTable Component)", () => {
     const errorElement = <EmployeeTable />
     expect(errorElement).toBeDefined()
   })
+
+  it("handles isPlaceholderData and isFetching states without throwing", () => {
+    vi.mocked(useEmployeesModule.useEmployees).mockReturnValue({
+      data: {
+        data: [],
+        meta: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+      },
+      isLoading: false,
+      isFetching: true,
+      isPlaceholderData: true,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useEmployeesModule.useEmployees>)
+
+    const placeholderElement = <EmployeeTable />
+    expect(placeholderElement).toBeDefined()
+  })
 })

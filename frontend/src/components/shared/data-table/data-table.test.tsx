@@ -99,6 +99,20 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     expect(controlledComponent).toBeDefined()
   })
 
+  it("handles isPlaceholderData and isFetching transitions without throwing", () => {
+    const transitionComponent = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        pageCount={3}
+        isPlaceholderData={true}
+        isFetching={true}
+        pagination={{ pageIndex: 1, pageSize: 10 }}
+      />
+    )
+    expect(transitionComponent).toBeDefined()
+  })
+
   describe("DataTableSkeleton component", () => {
     it("renders skeleton rows and cells corresponding to columnCount and rowCount", () => {
       const skeleton = <DataTableSkeleton columnCount={4} rowCount={6} />

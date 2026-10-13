@@ -62,6 +62,8 @@ export interface DataTableProps<TData extends RowData> {
   sorting?: SortingState
   onSortingChange?: OnChangeFn<SortingState>
   isLoading?: boolean
+  isFetching?: boolean
+  isPlaceholderData?: boolean
   skeletonRowCount?: number
   isError?: boolean
   errorTitle?: string
@@ -87,6 +89,8 @@ export function DataTable<TData extends RowData>({
   sorting: controlledSorting,
   onSortingChange,
   isLoading = false,
+  isFetching = false,
+  isPlaceholderData = false,
   skeletonRowCount,
   isError = false,
   errorTitle,
@@ -137,64 +141,82 @@ export function DataTable<TData extends RowData>({
     (state) => state,
   )
 
+  const showTransitionFeedback = isPlaceholderData || (isFetching && !isLoading)
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="rounded-lg border border-border bg-card shadow-xs">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isError ? (
-              <DataTableErrorState
-                colSpan={columns.length}
-                title={errorTitle}
-                description={errorDescription}
-                errorMessage={errorMessage}
-                retryLabel={retryLabel}
-                onRetry={onRetry}
-              />
-            ) : isLoading ? (
-              <DataTableSkeleton
-                columnCount={columns.length}
-                rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
-              />
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+      <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-xs">
+        {showTransitionFeedback && (
+          <div
+            data-testid="data-table-translucent-indicator"
+            className="absolute inset-x-0 top-0 z-10 h-0.5 animate-pulse bg-primary/70"
+          />
+        )}
+        <div
+          className={`transition-opacity duration-200 ${
+            isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"
+          }`}
+        >
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <DataTableEmptyState
-                colSpan={columns.length}
-                icon={emptyIcon}
-                title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
-                description={emptyDescription}
-                action={emptyAction}
-              />
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isError ? (
+                <DataTableErrorState
+                  colSpan={columns.length}
+                  title={errorTitle}
+                  description={errorDescription}
+                  errorMessage={errorMessage}
+                  retryLabel={retryLabel}
+                  onRetry={onRetry}
+                />
+              ) : isLoading ? (
+                <DataTableSkeleton
+                  columnCount={columns.length}
+                  rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
+                />
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <DataTableEmptyState
+                  colSpan={columns.length}
+                  icon={emptyIcon}
+                  title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
+                  description={emptyDescription}
+                  action={emptyAction}
+                />
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+      <DataTablePagination
+        table={table}
+        pageSizeOptions={pageSizeOptions}
+        isDisabled={isPlaceholderData}
+      />
     </div>
   )
 }

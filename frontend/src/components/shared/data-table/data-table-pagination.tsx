@@ -25,11 +25,13 @@ export interface TablePaginatable {
 interface DataTablePaginationProps {
   table: TablePaginatable
   pageSizeOptions?: number[]
+  isDisabled?: boolean
 }
 
 export function DataTablePagination({
   table,
   pageSizeOptions = [10, 20, 30, 50, 100],
+  isDisabled = false,
 }: DataTablePaginationProps) {
   const pageIndex = table.state.pagination.pageIndex
   const pageSize = table.state.pagination.pageSize
@@ -79,8 +81,9 @@ export function DataTablePagination({
           </label>
           <select
             id="rows-per-page-select"
-            className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
             value={pageSize}
+            disabled={isDisabled}
             onChange={(e) => {
               table.setPageSize(Number(e.target.value))
             }}
@@ -103,7 +106,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon-sm"
             onClick={handleFirstPage}
-            disabled={!table.getCanPreviousPage()}
+            disabled={isDisabled || !table.getCanPreviousPage()}
             aria-label="Go to first page"
           >
             <ChevronsLeft className="size-4" />
@@ -112,7 +115,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon-sm"
             onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            disabled={isDisabled || !table.getCanPreviousPage()}
             aria-label="Go to previous page"
           >
             <ChevronLeft className="size-4" />
@@ -121,7 +124,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon-sm"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            disabled={isDisabled || !table.getCanNextPage()}
             aria-label="Go to next page"
           >
             <ChevronRight className="size-4" />
@@ -130,7 +133,7 @@ export function DataTablePagination({
             variant="outline"
             size="icon-sm"
             onClick={handleLastPage}
-            disabled={!canLastPage}
+            disabled={isDisabled || !canLastPage}
             aria-label="Go to last page"
           >
             <ChevronsRight className="size-4" />
