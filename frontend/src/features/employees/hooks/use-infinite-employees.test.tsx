@@ -4,6 +4,8 @@ import { useInfiniteEmployees } from "./use-infinite-employees"
 import * as apiModule from "../api/employees.api"
 import { employeeKeys } from "../api/employees.api"
 
+import type { EmployeeListResponse } from "../schema/employee.schema"
+
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>()
   return {
@@ -72,18 +74,18 @@ describe("useInfiniteEmployees", () => {
 
     useInfiniteEmployees()
 
-    const queryOptions = mockUseInfiniteQuery.mock.calls[0][0] as {
+    const rawOptions = mockUseInfiniteQuery.mock.calls[0][0] as unknown as {
       getNextPageParam?: (
-        lastPage: apiModule.EmployeeListResponse,
-        allPages: apiModule.EmployeeListResponse[],
+        lastPage: EmployeeListResponse,
+        allPages: EmployeeListResponse[],
         lastPageParam: number,
       ) => number | undefined
     }
 
-    expect(queryOptions.getNextPageParam).toBeDefined()
+    expect(rawOptions.getNextPageParam).toBeDefined()
 
     // Kasus masih ada halaman berikutnya (page 1 dari 5)
-    const nextPage = queryOptions.getNextPageParam!(
+    const nextPage = rawOptions.getNextPageParam!(
       {
         data: [],
         meta: { page: 1, pageSize: 20, total: 100, totalPages: 5 },
@@ -94,7 +96,7 @@ describe("useInfiniteEmployees", () => {
     expect(nextPage).toBe(2)
 
     // Kasus sudah berada di halaman terakhir (page 5 dari 5)
-    const endPage = queryOptions.getNextPageParam!(
+    const endPage = rawOptions.getNextPageParam!(
       {
         data: [],
         meta: { page: 5, pageSize: 20, total: 100, totalPages: 5 },
