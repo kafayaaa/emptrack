@@ -1,3 +1,4 @@
+import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "cn"
 import type { EmployeeStatus } from "../types"
@@ -20,12 +21,12 @@ export const EMPLOYEE_STATUS_CONFIG: Record<
   },
 }
 
-interface EmployeeStatusBadgeProps {
+export interface EmployeeStatusBadgeProps {
   status: EmployeeStatus | string
   className?: string
 }
 
-export function EmployeeStatusBadge({ status, className }: EmployeeStatusBadgeProps) {
+function BaseEmployeeStatusBadge({ status, className }: EmployeeStatusBadgeProps) {
   const config =
     status in EMPLOYEE_STATUS_CONFIG
       ? EMPLOYEE_STATUS_CONFIG[status as EmployeeStatus]
@@ -40,3 +41,5 @@ export function EmployeeStatusBadge({ status, className }: EmployeeStatusBadgePr
     </Badge>
   )
 }
+
+export const EmployeeStatusBadge = React.memo(BaseEmployeeStatusBadge)

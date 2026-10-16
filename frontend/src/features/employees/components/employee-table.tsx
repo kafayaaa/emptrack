@@ -30,7 +30,7 @@ export interface EmployeeTableProps {
  * Connected Employee Table with server-side pagination, skeleton loading,
  * error state handling, and empty state support.
  */
-export function EmployeeTable({
+function BaseEmployeeTable({
   filters,
   paginationOptions,
   queryOptions,
@@ -56,15 +56,19 @@ export function EmployeeTable({
     queryOptions,
   )
 
-  const employees = data?.data ?? []
+  const employees = React.useMemo(() => data?.data ?? [], [data?.data])
   const totalRows = data?.meta.total
   const totalPages = data?.meta.totalPages
+
+  const handleRetry = React.useCallback(() => {
+    void refetch()
+  }, [refetch])
 
   return (
     <TableErrorBoundary
       title="Failed to load employees"
       description="An unexpected error occurred while rendering the employees table."
-      onReset={() => refetch()}
+      onReset={handleRetry}
     >
       <DataTable
         columns={employeeColumns}
@@ -83,10 +87,12 @@ export function EmployeeTable({
         errorDescription="Terjadi kendala saat mengambil data karyawan dari server."
         errorMessage={error?.message}
         retryLabel="Coba Lagi"
-        onRetry={() => refetch()}
+        onRetry={handleRetry}
         emptyTitle="Tidak ada karyawan ditemukan"
         emptyDescription="Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih."
       />
     </TableErrorBoundary>
   )
 }
+
+export const EmployeeTable = React.memo(BaseEmployeeTable)
