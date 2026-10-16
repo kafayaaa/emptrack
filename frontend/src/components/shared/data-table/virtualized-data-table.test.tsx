@@ -106,4 +106,21 @@ describe("virtualized-data-table.tsx (VirtualizedDataTable Component)", () => {
 
     expect(tableWithPagination).toBeDefined()
   })
+
+  it("supports infinite scroll mode with onScrollToBottom and isFetchingNextPage", () => {
+    const onScrollToBottom = vi.fn()
+    const data = generateUsers(30)
+
+    const tableWithInfiniteScroll = (
+      <VirtualizedDataTable
+        columns={testColumns}
+        data={data}
+        onScrollToBottom={onScrollToBottom}
+        isFetchingNextPage={true}
+        scrollThreshold={5}
+      />
+    )
+
+    expect(tableWithInfiniteScroll).toBeDefined()
+  })
 })

@@ -2,7 +2,7 @@ import * as React from "react"
 import { Metadata } from "next"
 import Link from "next/link"
 import { Gauge } from "lucide-react"
-import { EmployeeTable, EmployeeTableSkeleton } from "@/features/employees"
+import { EmployeeViewContainer, EmployeeTableSkeleton } from "@/features/employees"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function EmployeePage() {
       </div>
 
       <React.Suspense fallback={<EmployeeTableSkeleton rowCount={10} />}>
-        <EmployeeTable />
+        <EmployeeViewContainer />
       </React.Suspense>
     </div>
   )

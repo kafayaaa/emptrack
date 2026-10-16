@@ -13,14 +13,7 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { LucideIcon } from "lucide-react"
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableEmptyState } from "./data-table-empty-state"
@@ -77,6 +70,21 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
   emptyIcon?: LucideIcon
   emptyAction?: React.ReactNode
   pageSizeOptions?: number[]
+
+  /**
+   * Infinite scroll callback invoked when user scrolls near the bottom of the virtual list.
+   */
+  onScrollToBottom?: () => void
+
+  /**
+   * Status indicating more pages are currently being fetched in infinite scroll mode.
+   */
+  isFetchingNextPage?: boolean
+
+  /**
+   * Distance in items from the bottom of the list to trigger onScrollToBottom. Default: 5.
+   */
+  scrollThreshold?: number
 }
 
 /**
@@ -113,6 +121,9 @@ export function VirtualizedDataTable<TData extends RowData>({
   emptyIcon,
   emptyAction,
   pageSizeOptions,
+  onScrollToBottom,
+  isFetchingNextPage = false,
+  scrollThreshold = 5,
 }: VirtualizedDataTableProps<TData>) {
   // State lokal jika tabel beroperasi un-controlled / client-side
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
@@ -166,6 +177,18 @@ export function VirtualizedDataTable<TData extends RowData>({
 
   const virtualRows = rowVirtualizer.getVirtualItems()
   const totalVirtualSize = rowVirtualizer.getTotalSize()
+
+  // Infinite scroll trigger: when the last visible virtual item is within scrollThreshold items from the end
+  React.useEffect(() => {
+    if (!onScrollToBottom || isFetchingNextPage || rows.length === 0) return
+
+    const lastItem = virtualRows[virtualRows.length - 1]
+    if (!lastItem) return
+
+    if (lastItem.index >= rows.length - 1 - scrollThreshold) {
+      onScrollToBottom()
+    }
+  }, [virtualRows, rows.length, onScrollToBottom, isFetchingNextPage, scrollThreshold])
 
   const paddingTop = virtualRows.length > 0 ? (virtualRows[0]?.start ?? 0) : 0
   const paddingBottom =
@@ -263,6 +286,22 @@ export function VirtualizedDataTable<TData extends RowData>({
                         style={{ height: `${paddingBottom}px`, padding: 0 }}
                         className="border-0"
                       />
+                    </TableRow>
+                  )}
+                  {isFetchingNextPage && (
+                    <TableRow
+                      data-testid="data-table-loading-more"
+                      className="border-0 hover:bg-transparent"
+                    >
+                      <TableCell
+                        colSpan={columns.length}
+                        className="py-3 text-center text-xs text-muted-foreground"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="size-2 animate-ping rounded-full bg-primary" />
+                          <span>Memuat data selanjutnya...</span>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   )}
                 </>

@@ -1,4 +1,7 @@
 export * from "./columns"
 export * from "./employee-status-badge"
 export * from "./employee-table"
+export * from "./employee-infinite-table"
+export * from "./employee-view-toggle"
+export * from "./employee-view-container"
 export * from "./employee-table-skeleton"
