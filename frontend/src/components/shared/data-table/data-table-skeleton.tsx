@@ -8,7 +8,7 @@ export interface DataTableSkeletonProps {
   cellWidths?: string[]
 }
 
-export function DataTableSkeleton({
+function BaseDataTableSkeleton({
   columnCount,
   rowCount = 5,
   cellWidths = ["w-24", "w-40", "w-48", "w-32", "w-28", "w-20"],
@@ -31,3 +31,5 @@ export function DataTableSkeleton({
     </>
   )
 }
+
+export const DataTableSkeleton = React.memo(BaseDataTableSkeleton)

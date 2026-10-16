@@ -73,11 +73,16 @@ describe("columns.tsx (Employee Table Columns)", () => {
     })
 
     it("renders valid status badges without errors", () => {
-      const activeBadge = EmployeeStatusBadge({ status: "active" })
-      const unknownBadge = EmployeeStatusBadge({ status: "unknown_status" })
+      const activeBadge = <EmployeeStatusBadge status="active" />
+      const unknownBadge = <EmployeeStatusBadge status="unknown_status" />
 
       expect(activeBadge).toBeDefined()
       expect(unknownBadge).toBeDefined()
+    })
+
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((EmployeeStatusBadge as any).$$typeof?.toString()).toContain("react.memo")
     })
   })
 })

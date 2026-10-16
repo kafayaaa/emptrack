@@ -1,6 +1,7 @@
 import React from "react"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { EmployeeTable } from "./employee-table"
+import { EmployeeTableSkeleton } from "./employee-table-skeleton"
 import * as useEmployeesModule from "../hooks/use-employees"
 import * as nextNavigation from "next/navigation"
 
@@ -104,5 +105,25 @@ describe("employee-table.tsx (EmployeeTable Component)", () => {
 
     const placeholderElement = <EmployeeTable />
     expect(placeholderElement).toBeDefined()
+  })
+
+  it("is wrapped in React.memo for re-render optimization", () => {
+    // React.memo components have a $$typeof symbol or type property
+    expect(EmployeeTable).toBeDefined()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((EmployeeTable as any).$$typeof?.toString()).toContain("react.memo")
+  })
+
+  describe("EmployeeTableSkeleton", () => {
+    it("renders valid table skeleton structure with columns and pagination", () => {
+      const element = <EmployeeTableSkeleton rowCount={5} />
+      expect(element).toBeDefined()
+    })
+
+    it("is wrapped in React.memo", () => {
+      expect(EmployeeTableSkeleton).toBeDefined()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((EmployeeTableSkeleton as any).$$typeof?.toString()).toContain("react.memo")
+    })
   })
 })

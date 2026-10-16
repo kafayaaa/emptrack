@@ -2,8 +2,7 @@ import * as React from "react"
 import { Metadata } from "next"
 import Link from "next/link"
 import { Gauge } from "lucide-react"
-import { EmployeeTable } from "@/features/employees"
-import { DataTableSkeleton } from "@/components/shared/data-table"
+import { EmployeeTable, EmployeeTableSkeleton } from "@/features/employees"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
@@ -29,7 +28,7 @@ export default function EmployeePage() {
         </div>
       </div>
 
-      <React.Suspense fallback={<DataTableSkeleton columnCount={6} rowCount={10} />}>
+      <React.Suspense fallback={<EmployeeTableSkeleton rowCount={10} />}>
         <EmployeeTable />
       </React.Suspense>
     </div>

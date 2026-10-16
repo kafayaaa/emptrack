@@ -14,7 +14,7 @@ interface DataTableColumnHeaderProps extends React.HTMLAttributes<HTMLDivElement
   title: string
 }
 
-export function DataTableColumnHeader({ column, title, className }: DataTableColumnHeaderProps) {
+function BaseDataTableColumnHeader({ column, title, className }: DataTableColumnHeaderProps) {
   if (!column.getCanSort()) {
     return (
       <div className={cn("text-xs font-semibold text-muted-foreground", className)}>{title}</div>
@@ -44,3 +44,5 @@ export function DataTableColumnHeader({ column, title, className }: DataTableCol
     </div>
   )
 }
+
+export const DataTableColumnHeader = React.memo(BaseDataTableColumnHeader)

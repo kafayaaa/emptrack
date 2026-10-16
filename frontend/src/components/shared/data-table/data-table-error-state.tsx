@@ -12,7 +12,7 @@ export interface DataTableErrorStateProps {
   onRetry?: () => void
 }
 
-export function DataTableErrorState({
+function BaseDataTableErrorState({
   colSpan,
   title = "Gagal memuat data",
   description = "Terjadi kesalahan saat memuat atau memproses data tabel.",
@@ -55,3 +55,5 @@ export function DataTableErrorState({
     </TableRow>
   )
 }
+
+export const DataTableErrorState = React.memo(BaseDataTableErrorState)
