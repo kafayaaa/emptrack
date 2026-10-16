@@ -28,7 +28,7 @@ interface DataTablePaginationProps {
   isDisabled?: boolean
 }
 
-export function DataTablePagination({
+function BaseDataTablePagination({
   table,
   pageSizeOptions = [10, 20, 30, 50, 100],
   isDisabled = false,
@@ -38,21 +38,36 @@ export function DataTablePagination({
   const pageCount = table.getPageCount()
   const totalRows = table.getRowCount()
 
-  const handleFirstPage = () => {
+  const handleFirstPage = React.useCallback(() => {
     if (typeof table.firstPage === "function") {
       table.firstPage()
     } else {
       table.setPageIndex(0)
     }
-  }
+  }, [table])
 
-  const handleLastPage = () => {
+  const handleLastPage = React.useCallback(() => {
     if (typeof table.lastPage === "function") {
       table.lastPage()
     } else {
       table.setPageIndex(pageCount - 1)
     }
-  }
+  }, [pageCount, table])
+
+  const handlePreviousPage = React.useCallback(() => {
+    table.previousPage()
+  }, [table])
+
+  const handleNextPage = React.useCallback(() => {
+    table.nextPage()
+  }, [table])
+
+  const handlePageSizeChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      table.setPageSize(Number(e.target.value))
+    },
+    [table],
+  )
 
   const canLastPage =
     typeof table.getCanLastPage === "function" ? table.getCanLastPage() : table.getCanNextPage()
@@ -84,9 +99,7 @@ export function DataTablePagination({
             className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
             value={pageSize}
             disabled={isDisabled}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value))
-            }}
+            onChange={handlePageSizeChange}
             aria-label="Select number of rows per page"
           >
             {pageSizeOptions.map((size) => (
@@ -114,7 +127,7 @@ export function DataTablePagination({
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => table.previousPage()}
+            onClick={handlePreviousPage}
             disabled={isDisabled || !table.getCanPreviousPage()}
             aria-label="Go to previous page"
           >
@@ -123,7 +136,7 @@ export function DataTablePagination({
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => table.nextPage()}
+            onClick={handleNextPage}
             disabled={isDisabled || !table.getCanNextPage()}
             aria-label="Go to next page"
           >
@@ -143,3 +156,5 @@ export function DataTablePagination({
     </div>
   )
 }
+
+export const DataTablePagination = React.memo(BaseDataTablePagination)

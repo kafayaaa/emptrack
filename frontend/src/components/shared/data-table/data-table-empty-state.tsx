@@ -10,7 +10,7 @@ export interface DataTableEmptyStateProps {
   action?: React.ReactNode
 }
 
-export function DataTableEmptyState({
+function BaseDataTableEmptyState({
   colSpan,
   icon: Icon = SearchX,
   title = "No data found",
@@ -36,3 +36,5 @@ export function DataTableEmptyState({
     </TableRow>
   )
 }
+
+export const DataTableEmptyState = React.memo(BaseDataTableEmptyState)

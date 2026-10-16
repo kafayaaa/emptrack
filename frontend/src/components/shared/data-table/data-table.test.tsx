@@ -7,6 +7,7 @@ import { DataTableColumnHeader } from "./data-table-column-header"
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableEmptyState } from "./data-table-empty-state"
 import { DataTableErrorState } from "./data-table-error-state"
+import { DataTablePagination } from "./data-table-pagination"
 import { TableErrorBoundary } from "./table-error-boundary"
 
 interface TestItem {
@@ -118,6 +119,11 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
       const skeleton = <DataTableSkeleton columnCount={4} rowCount={6} />
       expect(skeleton).toBeDefined()
     })
+
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((DataTableSkeleton as any).$$typeof?.toString()).toContain("react.memo")
+    })
   })
 
   describe("DataTableEmptyState component", () => {
@@ -135,6 +141,11 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
         />
       )
       expect(customEmpty).toBeDefined()
+    })
+
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((DataTableEmptyState as any).$$typeof?.toString()).toContain("react.memo")
     })
   })
 
@@ -155,6 +166,25 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
         />
       )
       expect(customError).toBeDefined()
+    })
+
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((DataTableErrorState as any).$$typeof?.toString()).toContain("react.memo")
+    })
+  })
+
+  describe("DataTableColumnHeader component", () => {
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((DataTableColumnHeader as any).$$typeof?.toString()).toContain("react.memo")
+    })
+  })
+
+  describe("DataTablePagination component", () => {
+    it("is memoized with React.memo", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((DataTablePagination as any).$$typeof?.toString()).toContain("react.memo")
     })
   })
 
