@@ -85,6 +85,12 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
    * Distance in items from the bottom of the list to trigger onScrollToBottom. Default: 5.
    */
   scrollThreshold?: number
+
+  /**
+   * Optional custom card renderer for responsive mobile layout (< md screen).
+   * If provided, cards will be rendered instead of the table on mobile viewports.
+   */
+  renderMobileCard?: (item: TData, index: number) => React.ReactNode
 }
 
 /**
@@ -124,6 +130,7 @@ export function VirtualizedDataTable<TData extends RowData>({
   onScrollToBottom,
   isFetchingNextPage = false,
   scrollThreshold = 5,
+  renderMobileCard,
 }: VirtualizedDataTableProps<TData>) {
   // State lokal jika tabel beroperasi un-controlled / client-side
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
@@ -197,6 +204,44 @@ export function VirtualizedDataTable<TData extends RowData>({
   const showTransitionFeedback = isPlaceholderData || (isFetching && !isLoading)
   const containerHeightStyle = typeof height === "number" ? `${height}px` : height
 
+  // Mobile container ref and scroll handler for infinite scrolling
+  const mobileContainerRef = React.useRef<HTMLDivElement>(null)
+  const mobileSentinelRef = React.useRef<HTMLDivElement>(null)
+
+  const handleMobileScroll = React.useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!onScrollToBottom || isFetchingNextPage || rows.length === 0) return
+      const target = e.currentTarget
+      const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight
+      // Trigger fetch when user is within 250px of the bottom
+      if (distanceToBottom <= 250) {
+        onScrollToBottom()
+      }
+    },
+    [onScrollToBottom, isFetchingNextPage, rows.length],
+  )
+
+  // IntersectionObserver as fallback/supplement for mobile scroll trigger
+  React.useEffect(() => {
+    if (!onScrollToBottom || !mobileSentinelRef.current || isFetchingNextPage) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          onScrollToBottom()
+        }
+      },
+      {
+        root: mobileContainerRef.current,
+        rootMargin: "150px",
+        threshold: 0.1,
+      },
+    )
+
+    observer.observe(mobileSentinelRef.current)
+    return () => observer.disconnect()
+  }, [onScrollToBottom, isFetchingNextPage, rows.length])
+
   return (
     <div className="flex flex-col gap-3">
       <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-xs">
@@ -207,13 +252,91 @@ export function VirtualizedDataTable<TData extends RowData>({
           />
         )}
 
+        {/* Mobile Card List View (rendered on < md when renderMobileCard is provided) */}
+        {renderMobileCard && (
+          <div
+            ref={mobileContainerRef}
+            onScroll={handleMobileScroll}
+            data-slot="virtual-mobile-container"
+            style={{ height: containerHeightStyle }}
+            className={`block overflow-auto p-3 transition-opacity duration-200 md:hidden ${
+              isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"
+            }`}
+          >
+            {isError ? (
+              <div className="p-2">
+                <DataTableErrorState
+                  colSpan={1}
+                  title={errorTitle}
+                  description={errorDescription}
+                  errorMessage={errorMessage}
+                  retryLabel={retryLabel}
+                  onRetry={onRetry}
+                />
+              </div>
+            ) : isLoading ? (
+              <div className="flex flex-col gap-3">
+                {Array.from({ length: skeletonRowCount ?? 6 }).map((_, idx) => (
+                  <div
+                    key={`virtual-mobile-skeleton-${idx}`}
+                    className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+                      <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+                    </div>
+                    <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                    <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                  </div>
+                ))}
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="p-2">
+                <DataTableEmptyState
+                  colSpan={1}
+                  icon={emptyIcon}
+                  title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
+                  description={emptyDescription}
+                  action={emptyAction}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {rows.map((row, index) => (
+                  <React.Fragment key={row.id}>
+                    {renderMobileCard(row.original, index)}
+                  </React.Fragment>
+                ))}
+
+                {/* Sentinel div to trigger loading before user hits absolute bottom */}
+                <div ref={mobileSentinelRef} className="h-1 w-full" aria-hidden="true" />
+
+                {isFetchingNextPage && (
+                  <div
+                    data-testid="data-table-loading-more-mobile"
+                    className="py-3 text-center text-xs text-muted-foreground"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="size-2 animate-ping rounded-full bg-primary" />
+                      <span>Memuat data selanjutnya...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Desktop Virtualized Table (hidden on mobile if renderMobileCard is supplied) */}
         <div
           ref={scrollContainerRef}
           data-slot="virtual-scroll-container"
           style={{ height: containerHeightStyle }}
           className={`relative overflow-auto transition-opacity duration-200 ${
-            containerClassName ?? ""
-          } ${isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"}`}
+            renderMobileCard ? "hidden md:block" : "block"
+          } ${containerClassName ?? ""} ${
+            isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"
+          }`}
         >
           <table data-slot="table" className="w-full caption-bottom text-sm text-foreground">
             <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
