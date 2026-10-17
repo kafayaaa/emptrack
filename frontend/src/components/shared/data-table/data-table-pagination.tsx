@@ -86,17 +86,17 @@ function BaseDataTablePagination({
         of <span className="font-medium text-foreground">{totalRows}</span> entries
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+      <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-6">
         <div className="flex items-center gap-2">
           <label
             htmlFor="rows-per-page-select"
-            className="text-xs font-medium text-muted-foreground"
+            className="text-xs font-medium whitespace-nowrap text-muted-foreground"
           >
             Rows per page
           </label>
           <select
             id="rows-per-page-select"
-            className="h-8 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
+            className="h-8 rounded-md border border-input bg-background px-2 py-1 text-xs font-medium text-foreground shadow-xs transition-colors outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
             value={pageSize}
             disabled={isDisabled}
             onChange={handlePageSizeChange}
@@ -110,7 +110,7 @@ function BaseDataTablePagination({
           </select>
         </div>
 
-        <div className="flex items-center text-xs font-medium text-muted-foreground">
+        <div className="flex items-center text-xs font-medium whitespace-nowrap text-muted-foreground">
           Page {pageIndex + 1} of {Math.max(pageCount, 1)}
         </div>
 

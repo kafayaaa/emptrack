@@ -77,6 +77,11 @@ export interface DataTableProps<TData extends RowData> {
   emptyIcon?: LucideIcon
   emptyAction?: React.ReactNode
   pageSizeOptions?: number[]
+  /**
+   * Optional custom card renderer for responsive mobile layout (< md screen).
+   * If provided, cards will be rendered instead of the table on mobile viewports.
+   */
+  renderMobileCard?: (item: TData, index: number) => React.ReactNode
 }
 
 export function DataTable<TData extends RowData>({
@@ -104,6 +109,7 @@ export function DataTable<TData extends RowData>({
   emptyIcon,
   emptyAction,
   pageSizeOptions,
+  renderMobileCard,
 }: DataTableProps<TData>) {
   // State lokal jika tabel beroperasi un-controlled / client-side
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
@@ -157,58 +163,115 @@ export function DataTable<TData extends RowData>({
             isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"
           }`}
         >
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
+          {/* Mobile Card View (visible on < md when renderMobileCard is provided) */}
+          {renderMobileCard && (
+            <div className="block md:hidden">
               {isError ? (
-                <DataTableErrorState
-                  colSpan={columns.length}
-                  title={errorTitle}
-                  description={errorDescription}
-                  errorMessage={errorMessage}
-                  retryLabel={retryLabel}
-                  onRetry={onRetry}
-                />
+                <div className="p-4">
+                  <DataTableErrorState
+                    colSpan={1}
+                    title={errorTitle}
+                    description={errorDescription}
+                    errorMessage={errorMessage}
+                    retryLabel={retryLabel}
+                    onRetry={onRetry}
+                  />
+                </div>
               ) : isLoading ? (
-                <DataTableSkeleton
-                  columnCount={columns.length}
-                  rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
-                />
+                <div className="flex flex-col gap-3 p-4">
+                  {Array.from({ length: skeletonRowCount ?? pagination.pageSize ?? 5 }).map(
+                    (_, idx) => (
+                      <div
+                        key={`mobile-skeleton-${idx}`}
+                        className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+                          <div className="h-5 w-16 animate-pulse rounded bg-muted" />
+                        </div>
+                        <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+                        <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                      </div>
+                    ),
+                  )}
+                </div>
               ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                <div className="flex flex-col gap-3 p-3">
+                  {table.getRowModel().rows.map((row, index) => (
+                    <React.Fragment key={row.id}>
+                      {renderMobileCard(row.original, index)}
+                    </React.Fragment>
+                  ))}
+                </div>
               ) : (
-                <DataTableEmptyState
-                  colSpan={columns.length}
-                  icon={emptyIcon}
-                  title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
-                  description={emptyDescription}
-                  action={emptyAction}
-                />
+                <div className="p-4">
+                  <DataTableEmptyState
+                    colSpan={1}
+                    icon={emptyIcon}
+                    title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
+                    description={emptyDescription}
+                    action={emptyAction}
+                  />
+                </div>
               )}
-            </TableBody>
-          </Table>
+            </div>
+          )}
+
+          {/* Desktop Table View (always available on >= md, or on all viewports if renderMobileCard is omitted) */}
+          <div className={renderMobileCard ? "hidden md:block" : "block"}>
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {isError ? (
+                  <DataTableErrorState
+                    colSpan={columns.length}
+                    title={errorTitle}
+                    description={errorDescription}
+                    errorMessage={errorMessage}
+                    retryLabel={retryLabel}
+                    onRetry={onRetry}
+                  />
+                ) : isLoading ? (
+                  <DataTableSkeleton
+                    columnCount={columns.length}
+                    rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
+                  />
+                ) : table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} data-state={row.getIsSelected?.() && "selected"}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <DataTableEmptyState
+                    colSpan={columns.length}
+                    icon={emptyIcon}
+                    title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
+                    description={emptyDescription}
+                    action={emptyAction}
+                  />
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 
