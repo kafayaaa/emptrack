@@ -54,7 +54,13 @@ describe("virtualized-data-table.tsx (VirtualizedDataTable Component)", () => {
   it("handles loading and error states properly", () => {
     const onRetry = vi.fn()
     const loadingElement = (
-      <VirtualizedDataTable columns={testColumns} data={[]} isLoading={true} skeletonRowCount={8} />
+      <VirtualizedDataTable
+        columns={testColumns}
+        data={[]}
+        isLoading={true}
+        skeletonRowCount={8}
+        cellWidths={["w-20", "w-44", "w-32"]}
+      />
     )
     expect(loadingElement).toBeDefined()
 

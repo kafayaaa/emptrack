@@ -83,6 +83,7 @@ function BaseEmployeeTable({
         isFetching={isFetching}
         isPlaceholderData={isPlaceholderData}
         skeletonRowCount={pagination.pageSize}
+        cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
         isError={isError}
         errorTitle="Gagal memuat data karyawan"
         errorDescription="Terjadi kendala saat mengambil data karyawan dari server."
