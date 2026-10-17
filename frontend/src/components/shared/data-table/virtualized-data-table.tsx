@@ -58,6 +58,7 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
   isFetching?: boolean
   isPlaceholderData?: boolean
   skeletonRowCount?: number
+  cellWidths?: string[]
   isError?: boolean
   errorTitle?: string
   errorDescription?: string
@@ -115,6 +116,7 @@ export function VirtualizedDataTable<TData extends RowData>({
   isFetching = false,
   isPlaceholderData = false,
   skeletonRowCount,
+  cellWidths,
   isError = false,
   errorTitle,
   errorDescription,
@@ -363,7 +365,11 @@ export function VirtualizedDataTable<TData extends RowData>({
                   onRetry={onRetry}
                 />
               ) : isLoading ? (
-                <DataTableSkeleton columnCount={columns.length} rowCount={skeletonRowCount ?? 10} />
+                <DataTableSkeleton
+                  columnCount={columns.length}
+                  rowCount={skeletonRowCount ?? 10}
+                  cellWidths={cellWidths}
+                />
               ) : rows.length === 0 ? (
                 <DataTableEmptyState
                   colSpan={columns.length}

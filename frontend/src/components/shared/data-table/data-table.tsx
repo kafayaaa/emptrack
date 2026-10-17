@@ -65,6 +65,7 @@ export interface DataTableProps<TData extends RowData> {
   isFetching?: boolean
   isPlaceholderData?: boolean
   skeletonRowCount?: number
+  cellWidths?: string[]
   isError?: boolean
   errorTitle?: string
   errorDescription?: string
@@ -97,6 +98,7 @@ export function DataTable<TData extends RowData>({
   isFetching = false,
   isPlaceholderData = false,
   skeletonRowCount,
+  cellWidths,
   isError = false,
   errorTitle,
   errorDescription,
@@ -249,6 +251,7 @@ export function DataTable<TData extends RowData>({
                   <DataTableSkeleton
                     columnCount={columns.length}
                     rowCount={skeletonRowCount ?? pagination.pageSize ?? 5}
+                    cellWidths={cellWidths}
                   />
                 ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => (
