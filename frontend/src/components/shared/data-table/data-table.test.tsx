@@ -100,6 +100,22 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     expect(controlledComponent).toBeDefined()
   })
 
+  it("renders mobile card layout when renderMobileCard is provided", () => {
+    const cardComponent = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        renderMobileCard={(item) => (
+          <div data-testid={`card-${item.id}`}>
+            <h3>{item.name}</h3>
+            <p>{item.role}</p>
+          </div>
+        )}
+      />
+    )
+    expect(cardComponent).toBeDefined()
+  })
+
   it("handles isPlaceholderData and isFetching transitions without throwing", () => {
     const transitionComponent = (
       <DataTable

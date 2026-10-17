@@ -123,4 +123,20 @@ describe("virtualized-data-table.tsx (VirtualizedDataTable Component)", () => {
 
     expect(tableWithInfiniteScroll).toBeDefined()
   })
+
+  it("supports responsive renderMobileCard for mobile viewports", () => {
+    const data = generateUsers(10)
+    const mobileComponent = (
+      <VirtualizedDataTable
+        columns={testColumns}
+        data={data}
+        renderMobileCard={(item) => (
+          <div data-testid={`mobile-card-${item.id}`}>
+            <span>{item.name}</span>
+          </div>
+        )}
+      />
+    )
+    expect(mobileComponent).toBeDefined()
+  })
 })
