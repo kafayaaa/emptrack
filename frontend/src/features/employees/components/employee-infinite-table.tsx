@@ -93,6 +93,7 @@ function BaseEmployeeInfiniteTable({
           overscan={10}
           rowCount={totalRows}
           isLoading={isLoading}
+          cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
           isFetching={isFetching}
           isFetchingNextPage={isFetchingNextPage}
           onScrollToBottom={handleScrollToBottom}
