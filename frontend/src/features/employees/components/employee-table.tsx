@@ -5,7 +5,8 @@ import { DataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useEmployees, type UseEmployeesOptions } from "../hooks"
 import { useDataTablePagination, type UseDataTablePaginationOptions } from "../../../hooks"
 import { employeeColumns } from "./columns"
-import type { EmployeeListInputQuery } from "../types"
+import { EmployeeMobileCard } from "./employee-mobile-card"
+import type { Employee, EmployeeListInputQuery } from "../types"
 
 export interface EmployeeTableProps {
   /**
@@ -90,6 +91,9 @@ function BaseEmployeeTable({
         onRetry={handleRetry}
         emptyTitle="Tidak ada karyawan ditemukan"
         emptyDescription="Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih."
+        renderMobileCard={(employee: Employee) => (
+          <EmployeeMobileCard key={employee.id} employee={employee} />
+        )}
       />
     </TableErrorBoundary>
   )

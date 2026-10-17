@@ -4,7 +4,8 @@ import * as React from "react"
 import { VirtualizedDataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useInfiniteEmployees, type UseInfiniteEmployeesOptions } from "../hooks"
 import { employeeColumns } from "./columns"
-import type { EmployeeListInputQuery } from "../types"
+import { EmployeeMobileCard } from "./employee-mobile-card"
+import type { Employee, EmployeeListInputQuery } from "../types"
 
 export interface EmployeeInfiniteTableProps {
   /**
@@ -68,7 +69,7 @@ function BaseEmployeeInfiniteTable({
       onReset={handleRetry}
     >
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-1 px-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Menampilkan <strong className="text-foreground">{employees.length}</strong>
             {totalRows ? ` dari ${totalRows.toLocaleString()}` : ""} data karyawan
@@ -103,6 +104,9 @@ function BaseEmployeeInfiniteTable({
           onRetry={handleRetry}
           emptyTitle="Tidak ada karyawan ditemukan"
           emptyDescription="Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih."
+          renderMobileCard={(employee: Employee) => (
+            <EmployeeMobileCard key={employee.id} employee={employee} />
+          )}
         />
       </div>
     </TableErrorBoundary>
