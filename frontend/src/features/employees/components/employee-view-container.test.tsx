@@ -1,26 +1,86 @@
 import React from "react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi, beforeEach } from "vitest"
+import { renderToStaticMarkup } from "react-dom/server"
+import * as nuqsModule from "nuqs"
 import { EmployeeViewContainer } from "./employee-view-container"
 
-vi.mock("nuqs", () => ({
-  useQueryState: vi.fn(() => ["paginated", vi.fn()]),
-  parseAsStringLiteral: vi.fn(() => ({
-    withDefault: vi.fn().mockReturnThis(),
-    withOptions: vi.fn().mockReturnThis(),
-  })),
-}))
+vi.mock("nuqs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("nuqs")>()
+  return {
+    ...actual,
+    useQueryState: vi.fn(),
+  }
+})
+
+let capturedTableFilters: unknown = null
+let capturedInfiniteFilters: unknown = null
 
 vi.mock("./employee-table", () => ({
-  EmployeeTable: () => <div data-testid="employee-table">Paginated Table</div>,
+  EmployeeTable: (props: { filters?: unknown }) => {
+    capturedTableFilters = props.filters
+    return <div data-testid="employee-table">Paginated Table</div>
+  },
 }))
 
 vi.mock("./employee-infinite-table", () => ({
-  EmployeeInfiniteTable: () => <div data-testid="employee-infinite-table">Infinite Table</div>,
+  EmployeeInfiniteTable: (props: { filters?: unknown }) => {
+    capturedInfiniteFilters = props.filters
+    return <div data-testid="employee-infinite-table">Infinite Table</div>
+  },
 }))
 
 describe("EmployeeViewContainer", () => {
-  it("renders without crashing in paginated mode", () => {
-    const element = <EmployeeViewContainer />
-    expect(element).toBeDefined()
+  beforeEach(() => {
+    vi.clearAllMocks()
+    capturedTableFilters = null
+    capturedInfiniteFilters = null
+  })
+
+  it("renders without crashing in paginated mode without active search", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "view") {
+        return ["paginated", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "search") {
+        return ["", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toContain('data-testid="employee-table"')
+    expect(capturedTableFilters).toBeUndefined()
+  })
+
+  it("passes search filter to EmployeeTable when search query is active in URL", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "view") {
+        return ["paginated", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "search") {
+        return ["Alice", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toContain('data-testid="employee-table"')
+    expect(capturedTableFilters).toEqual({ search: "Alice" })
+  })
+
+  it("passes search filter to EmployeeInfiniteTable in infinite scroll mode", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "view") {
+        return ["infinite", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "search") {
+        return ["Bob", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toContain('data-testid="employee-infinite-table"')
+    expect(capturedInfiniteFilters).toEqual({ search: "Bob" })
   })
 })
