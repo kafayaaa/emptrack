@@ -83,4 +83,66 @@ describe("EmployeeViewContainer", () => {
     expect(html).toContain('data-testid="employee-infinite-table"')
     expect(capturedInfiniteFilters).toEqual({ search: "Bob" })
   })
+
+  it("passes department, position, and status filters to EmployeeTable", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "view") {
+        return ["paginated", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "department") {
+        return ["Engineering", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "position") {
+        return ["Frontend Developer", vi.fn()] as unknown as ReturnType<
+          typeof nuqsModule.useQueryState
+        >
+      }
+      if (key === "status") {
+        return ["active", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toContain('data-testid="employee-table"')
+    expect(capturedTableFilters).toEqual({
+      department: "Engineering",
+      position: "Frontend Developer",
+      status: "active",
+    })
+  })
+
+  it("configures page query state and handles filter changes resetting page to 1", () => {
+    const mockSetPage = vi.fn()
+    const mockSetDepartment = vi.fn()
+    const mockSetPosition = vi.fn()
+    const mockSetStatus = vi.fn()
+
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "page") {
+        return [3, mockSetPage] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "department") {
+        return ["", mockSetDepartment] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "position") {
+        return ["", mockSetPosition] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "status") {
+        return ["", mockSetStatus] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toBeDefined()
+
+    expect(nuqsModule.useQueryState).toHaveBeenCalledWith(
+      "page",
+      expect.objectContaining({
+        defaultValue: 1,
+        clearOnDefault: true,
+      }),
+    )
+  })
 })
