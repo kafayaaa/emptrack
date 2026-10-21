@@ -29,7 +29,7 @@ function BaseDataTableColumnHeader({ column, title, className }: DataTableColumn
         variant="ghost"
         size="xs"
         className="-ml-2 h-7 px-2 font-semibold text-muted-foreground hover:text-foreground data-[state=open]:bg-accent"
-        onClick={() => column.toggleSorting(isSorted === "asc")}
+        onClick={() => column.toggleSorting()}
         aria-label={`Sort by ${title}`}
       >
         <span>{title}</span>
@@ -45,4 +45,4 @@ function BaseDataTableColumnHeader({ column, title, className }: DataTableColumn
   )
 }
 
-export const DataTableColumnHeader = React.memo(BaseDataTableColumnHeader)
+export const DataTableColumnHeader = React.memo(BaseDataTableColumnHeader, () => false)
