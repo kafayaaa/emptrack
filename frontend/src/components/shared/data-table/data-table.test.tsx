@@ -195,6 +195,24 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((DataTableColumnHeader as any).$$typeof?.toString()).toContain("react.memo")
     })
+
+    it("calls column.toggleSorting without arguments when clicked to support multi-directional sorting cycle", () => {
+      const toggleSortingMock = vi.fn()
+      const mockColumn = {
+        getCanSort: () => true,
+        getIsSorted: () => false as const,
+        toggleSorting: toggleSortingMock,
+      }
+
+      const element = <DataTableColumnHeader column={mockColumn} title="Test Title" />
+      expect(element).toBeDefined()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = ((DataTableColumnHeader as any).type ?? DataTableColumnHeader)(element.props)
+      const buttonElement = rendered.props.children
+      buttonElement.props.onClick()
+      expect(toggleSortingMock).toHaveBeenCalledTimes(1)
+      expect(toggleSortingMock).toHaveBeenCalledWith()
+    })
   })
 
   describe("DataTablePagination component", () => {
