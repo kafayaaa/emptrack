@@ -1,3 +1,4 @@
 export * from "./use-data-table-pagination"
+export * from "./use-data-table-sorting"
 export * from "./use-debounce"
 export * from "./use-mobile"

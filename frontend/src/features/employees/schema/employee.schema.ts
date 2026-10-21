@@ -27,6 +27,8 @@ export const EMPLOYEE_SORT_FIELDS = [
   "hireDate",
 ] as const
 
+export type EmployeeSortField = (typeof EMPLOYEE_SORT_FIELDS)[number]
+
 // Kontrak query string dari browser ke /api/employees.
 export const employeeListQuerySchema = z.object({
   // z.coerce mengubah string "2" dari URL menjadi number 2
