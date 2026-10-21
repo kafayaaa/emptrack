@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useQueryState, parseAsStringLiteral, parseAsString } from "nuqs"
+import { useQueryState, parseAsStringLiteral, parseAsString, parseAsInteger } from "nuqs"
 import {
   EmployeeTable,
   EmployeeInfiniteTable,
@@ -23,6 +23,15 @@ export function EmployeeViewContainer() {
   const [viewMode, setViewMode] = useQueryState(
     "view",
     parseAsStringLiteral(VIEW_MODES).withDefault("paginated").withOptions({
+      shallow: true,
+      clearOnDefault: true,
+      history: "push",
+    }),
+  )
+
+  const [page, setPage] = useQueryState(
+    "page",
+    parseAsInteger.withDefault(1).withOptions({
       shallow: true,
       clearOnDefault: true,
       history: "push",
@@ -77,8 +86,11 @@ export function EmployeeViewContainer() {
       void setDepartment(nextFilters.department || "")
       void setPosition(nextFilters.position || "")
       void setStatus(nextFilters.status || "")
+      if (page !== 1) {
+        void setPage(1)
+      }
     },
-    [setDepartment, setPosition, setStatus],
+    [page, setDepartment, setPosition, setStatus, setPage],
   )
 
   const tableFilters = React.useMemo(() => {
