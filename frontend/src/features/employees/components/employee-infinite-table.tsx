@@ -3,6 +3,8 @@
 import * as React from "react"
 import { VirtualizedDataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useInfiniteEmployees, type UseInfiniteEmployeesOptions } from "../hooks"
+import { useDataTableSorting, type UseDataTableSortingOptions } from "../../../hooks"
+import { EMPLOYEE_SORT_FIELDS, type EmployeeSortField } from "../schema/employee.schema"
 import { employeeColumns } from "./columns"
 import { EmployeeMobileCard } from "./employee-mobile-card"
 import type { Employee, EmployeeListInputQuery } from "../types"
@@ -12,6 +14,10 @@ export interface EmployeeInfiniteTableProps {
    * Additional filter/sorting parameters (e.g. search, department, status, sortBy, sortOrder).
    */
   filters?: Omit<EmployeeListInputQuery, "page">
+  /**
+   * Sorting options (e.g. validFields, syncToUrl).
+   */
+  sortingOptions?: UseDataTableSortingOptions<EmployeeSortField>
   /**
    * TanStack Query options passed to useInfiniteEmployees hook.
    */
@@ -23,16 +29,35 @@ export interface EmployeeInfiniteTableProps {
 }
 
 /**
- * Connected Employee Table with Infinite Scroll and Virtualized Rows.
+ * Connected Employee Table with Infinite Scroll, Virtualized Rows, and Server-Side Sorting.
  *
  * Automatically fetches subsequent pages as user scrolls through tens of thousands of rows,
  * rendering only elements in the current viewport for optimal 60fps performance.
  */
 function BaseEmployeeInfiniteTable({
   filters,
+  sortingOptions,
   queryOptions,
   height = 560,
 }: EmployeeInfiniteTableProps) {
+  const {
+    sorting,
+    onSortingChange,
+    queryParams: sortingParams,
+  } = useDataTableSorting<EmployeeSortField>({
+    validFields: EMPLOYEE_SORT_FIELDS,
+    ...sortingOptions,
+  })
+
+  const combinedFilters = React.useMemo(
+    () => ({
+      ...filters,
+      sortBy: sortingParams.sortBy,
+      sortOrder: sortingParams.sortOrder,
+    }),
+    [filters, sortingParams.sortBy, sortingParams.sortOrder],
+  )
+
   const {
     data,
     isLoading,
@@ -43,7 +68,7 @@ function BaseEmployeeInfiniteTable({
     isError,
     error,
     refetch,
-  } = useInfiniteEmployees(filters, queryOptions)
+  } = useInfiniteEmployees(combinedFilters, queryOptions)
 
   // Flatten all fetched pages into a single continuous list
   const employees = React.useMemo(() => {
@@ -92,6 +117,8 @@ function BaseEmployeeInfiniteTable({
           estimateRowHeight={48}
           overscan={10}
           rowCount={totalRows}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
           isLoading={isLoading}
           cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
           isFetching={isFetching}

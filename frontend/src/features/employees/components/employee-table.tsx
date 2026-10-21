@@ -3,7 +3,13 @@
 import * as React from "react"
 import { DataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useEmployees, type UseEmployeesOptions } from "../hooks"
-import { useDataTablePagination, type UseDataTablePaginationOptions } from "../../../hooks"
+import {
+  useDataTablePagination,
+  useDataTableSorting,
+  type UseDataTablePaginationOptions,
+  type UseDataTableSortingOptions,
+} from "../../../hooks"
+import { EMPLOYEE_SORT_FIELDS, type EmployeeSortField } from "../schema/employee.schema"
 import { employeeColumns } from "./columns"
 import { EmployeeMobileCard } from "./employee-mobile-card"
 import type { Employee, EmployeeListInputQuery } from "../types"
@@ -18,6 +24,10 @@ export interface EmployeeTableProps {
    */
   paginationOptions?: UseDataTablePaginationOptions
   /**
+   * Sorting options (e.g. validFields, syncToUrl).
+   */
+  sortingOptions?: UseDataTableSortingOptions<EmployeeSortField>
+  /**
    * TanStack Query options passed to useEmployees hook.
    */
   queryOptions?: UseEmployeesOptions
@@ -28,28 +38,50 @@ export interface EmployeeTableProps {
 }
 
 /**
- * Connected Employee Table with server-side pagination, skeleton loading,
+ * Connected Employee Table with server-side pagination, server-side sorting, skeleton loading,
  * error state handling, and empty state support.
  */
 function BaseEmployeeTable({
   filters,
   paginationOptions,
+  sortingOptions,
   queryOptions,
   pageSizeOptions = [10, 20, 30, 50, 100],
 }: EmployeeTableProps) {
-  const { pagination, onPaginationChange, queryParams } = useDataTablePagination({
+  const {
+    pagination,
+    onPaginationChange,
+    queryParams: paginationParams,
+  } = useDataTablePagination({
     defaultPageSize: 10,
     ...paginationOptions,
   })
 
-  // Combine pagination params (page, pageSize) with additional filters
+  const {
+    sorting,
+    onSortingChange,
+    queryParams: sortingParams,
+  } = useDataTableSorting<EmployeeSortField>({
+    validFields: EMPLOYEE_SORT_FIELDS,
+    ...sortingOptions,
+  })
+
+  // Combine pagination & sorting params with additional filters
   const requestParams: EmployeeListInputQuery = React.useMemo(
     () => ({
       ...filters,
-      page: queryParams.page,
-      pageSize: queryParams.pageSize,
+      page: paginationParams.page,
+      pageSize: paginationParams.pageSize,
+      sortBy: sortingParams.sortBy,
+      sortOrder: sortingParams.sortOrder,
     }),
-    [filters, queryParams.page, queryParams.pageSize],
+    [
+      filters,
+      paginationParams.page,
+      paginationParams.pageSize,
+      sortingParams.sortBy,
+      sortingParams.sortOrder,
+    ],
   )
 
   const { data, isLoading, isFetching, isPlaceholderData, isError, error, refetch } = useEmployees(
@@ -78,6 +110,8 @@ function BaseEmployeeTable({
         pageCount={totalPages}
         pagination={pagination}
         onPaginationChange={onPaginationChange}
+        sorting={sorting}
+        onSortingChange={onSortingChange}
         pageSizeOptions={pageSizeOptions}
         isLoading={isLoading}
         isFetching={isFetching}
