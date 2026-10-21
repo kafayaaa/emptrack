@@ -8,14 +8,16 @@ import {
   EmployeeTableSkeleton,
   EmployeeViewToggle,
   EmployeeSearchInput,
+  EmployeeFilters,
   VIEW_MODES,
   type ViewMode,
+  type EmployeeFiltersState,
 } from "@/features/employees"
 
 /**
  * Client view container for Employee List that manages switching between
  * Standard Pagination and Infinite Scroll mode with URL synchronization
- * and debounced search filtering.
+ * and debounced search & dropdown filtering.
  */
 export function EmployeeViewContainer() {
   const [viewMode, setViewMode] = useQueryState(
@@ -35,9 +37,58 @@ export function EmployeeViewContainer() {
     }),
   )
 
+  const [department, setDepartment] = useQueryState(
+    "department",
+    parseAsString.withDefault("").withOptions({
+      shallow: true,
+      clearOnDefault: true,
+    }),
+  )
+
+  const [position, setPosition] = useQueryState(
+    "position",
+    parseAsString.withDefault("").withOptions({
+      shallow: true,
+      clearOnDefault: true,
+    }),
+  )
+
+  const [status, setStatus] = useQueryState(
+    "status",
+    parseAsString.withDefault("").withOptions({
+      shallow: true,
+      clearOnDefault: true,
+    }),
+  )
+
   const isInfinite = viewMode === "infinite"
 
-  const tableFilters = React.useMemo(() => (search ? { search } : undefined), [search])
+  const filterState: EmployeeFiltersState = React.useMemo(
+    () => ({
+      department: department || undefined,
+      position: position || undefined,
+      status: status || undefined,
+    }),
+    [department, position, status],
+  )
+
+  const handleFiltersChange = React.useCallback(
+    (nextFilters: EmployeeFiltersState) => {
+      void setDepartment(nextFilters.department || "")
+      void setPosition(nextFilters.position || "")
+      void setStatus(nextFilters.status || "")
+    },
+    [setDepartment, setPosition, setStatus],
+  )
+
+  const tableFilters = React.useMemo(() => {
+    const filters: Record<string, string> = {}
+    if (search) filters.search = search
+    if (department) filters.department = department
+    if (position) filters.position = position
+    if (status) filters.status = status
+    return Object.keys(filters).length > 0 ? filters : undefined
+  }, [search, department, position, status])
 
   return (
     <div className="flex flex-col gap-4">
@@ -50,6 +101,8 @@ export function EmployeeViewContainer() {
           />
         </div>
       </div>
+
+      <EmployeeFilters filters={filterState} onFiltersChange={handleFiltersChange} />
 
       <React.Suspense fallback={<EmployeeTableSkeleton rowCount={10} />}>
         {isInfinite ? (
