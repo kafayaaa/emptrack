@@ -35,7 +35,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
   return (
     <article data-testid={`employee-detail-${employee.id}`} className="flex flex-col gap-6">
       {/* Back button navigation */}
-      <div>
+      <nav aria-label="Back navigation">
         <Link href="/employees">
           <Button
             variant="ghost"
@@ -46,10 +46,10 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             Back to Employees
           </Button>
         </Link>
-      </div>
+      </nav>
 
       {/* Hero profile card */}
-      <section className="rounded-xl border border-border bg-card p-6 shadow-2xs">
+      <header className="rounded-xl border border-border bg-card p-6 shadow-2xs">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">
             <div
@@ -80,88 +80,110 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                 <span className="font-mono font-medium text-foreground">
                   {employee.employeeNumber}
                 </span>
-                <span>•</span>
+                <span aria-hidden="true">•</span>
                 <span>{employee.position}</span>
-                <span>•</span>
+                <span aria-hidden="true">•</span>
                 <span>{employee.department}</span>
               </div>
             </div>
           </div>
 
           {/* Quick contact actions */}
-          <div className="flex flex-wrap items-center gap-2">
-            <a href={`mailto:${employee.email}`}>
+          <div
+            role="group"
+            aria-label="Contact actions"
+            className="flex flex-wrap items-center gap-2"
+          >
+            <a
+              href={`mailto:${employee.email}`}
+              aria-label={`Send email to ${employee.fullName} (${employee.email})`}
+            >
               <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <Mail className="size-3.5" /> Send Email
+                <Mail className="size-3.5" aria-hidden="true" /> Send Email
               </Button>
             </a>
             {employee.phone && (
-              <a href={`tel:${employee.phone}`}>
+              <a
+                href={`tel:${employee.phone}`}
+                aria-label={`Call ${employee.fullName} at ${employee.phone}`}
+              >
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                  <Phone className="size-3.5" /> Call
+                  <Phone className="size-3.5" aria-hidden="true" /> Call
                 </Button>
               </a>
             )}
           </div>
         </div>
-      </section>
+      </header>
 
       {/* Detail grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Employment Information */}
-        <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs">
+        <section
+          aria-labelledby="employment-details-title"
+          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs"
+        >
           <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <Building2 className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Employment Details</h2>
+            <Building2 className="size-4 text-primary" aria-hidden="true" />
+            <h2 id="employment-details-title" className="text-sm font-semibold text-foreground">
+              Employment Details
+            </h2>
           </header>
 
-          <div className="flex flex-col gap-3 text-sm">
+          <dl className="flex flex-col gap-3 text-sm">
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Department</span>
-              <span className="text-right font-medium text-foreground">{employee.department}</span>
+              <dt className="text-muted-foreground">Department</dt>
+              <dd className="text-right font-medium text-foreground">{employee.department}</dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Position</span>
-              <span className="flex items-center gap-1 text-right font-medium text-foreground">
-                <Briefcase className="size-3.5 text-muted-foreground" />
+              <dt className="text-muted-foreground">Position</dt>
+              <dd className="flex items-center gap-1 text-right font-medium text-foreground">
+                <Briefcase className="size-3.5 text-muted-foreground" aria-hidden="true" />
                 {employee.position}
-              </span>
+              </dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Status</span>
-              <EmployeeStatusBadge status={employee.status} />
+              <dt className="text-muted-foreground">Status</dt>
+              <dd>
+                <EmployeeStatusBadge status={employee.status} />
+              </dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Hire Date</span>
-              <span className="flex items-center gap-1 text-right font-medium text-foreground">
-                <Calendar className="size-3.5 text-muted-foreground" />
-                {formatDate(employee.hireDate)}
-              </span>
+              <dt className="text-muted-foreground">Hire Date</dt>
+              <dd className="flex items-center gap-1 text-right font-medium text-foreground">
+                <Calendar className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                <time dateTime={employee.hireDate}>{formatDate(employee.hireDate)}</time>
+              </dd>
             </div>
-          </div>
+          </dl>
         </section>
 
         {/* Role & Hierarchy */}
-        <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs">
+        <section
+          aria-labelledby="role-hierarchy-title"
+          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs"
+        >
           <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <Users className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Role & Hierarchy</h2>
+            <Users className="size-4 text-primary" aria-hidden="true" />
+            <h2 id="role-hierarchy-title" className="text-sm font-semibold text-foreground">
+              Role & Hierarchy
+            </h2>
           </header>
 
-          <div className="flex flex-col gap-3 text-sm">
+          <dl className="flex flex-col gap-3 text-sm">
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Role Level</span>
-              <span className="font-medium text-foreground">
+              <dt className="text-muted-foreground">Role Level</dt>
+              <dd className="font-medium text-foreground">
                 {employee.isManager ? "Management" : "Individual Contributor"}
-              </span>
+              </dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Direct Manager</span>
-              <span className="font-mono text-sm font-medium text-foreground">
+              <dt className="text-muted-foreground">Direct Manager</dt>
+              <dd className="font-mono text-sm font-medium text-foreground">
                 {employee.managerId ? (
                   <Link
                     href={`/employees/${employee.managerId}`}
@@ -172,62 +194,69 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                 ) : (
                   <span className="font-sans text-xs text-muted-foreground">None (Top-level)</span>
                 )}
-              </span>
+              </dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Assigned Project</span>
-              <span className="flex items-center gap-1 font-mono font-medium text-foreground">
-                <FolderGit2 className="size-3.5 text-muted-foreground" />
+              <dt className="text-muted-foreground">Assigned Project</dt>
+              <dd className="flex items-center gap-1 font-mono font-medium text-foreground">
+                <FolderGit2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
                 PRJ-{employee.projectId}
-              </span>
+              </dd>
             </div>
-          </div>
+          </dl>
         </section>
 
         {/* Contact & Identification */}
-        <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs md:col-span-2 lg:col-span-1">
+        <section
+          aria-labelledby="contact-identification-title"
+          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs md:col-span-2 lg:col-span-1"
+        >
           <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <User className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Contact & Identification</h2>
+            <User className="size-4 text-primary" aria-hidden="true" />
+            <h2 id="contact-identification-title" className="text-sm font-semibold text-foreground">
+              Contact & Identification
+            </h2>
           </header>
 
-          <div className="flex flex-col gap-3 text-sm">
+          <dl className="flex flex-col gap-3 text-sm">
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Employee ID</span>
-              <span className="font-mono font-medium text-foreground">
-                {employee.employeeNumber}
-              </span>
+              <dt className="text-muted-foreground">Employee ID</dt>
+              <dd className="font-mono font-medium text-foreground">{employee.employeeNumber}</dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">System ID</span>
-              <span className="font-mono text-xs text-muted-foreground">{employee.id}</span>
+              <dt className="text-muted-foreground">System ID</dt>
+              <dd className="font-mono text-xs text-muted-foreground">{employee.id}</dd>
             </div>
 
             <div className="flex items-start justify-between gap-2">
-              <span className="text-muted-foreground">Email</span>
-              <a
-                href={`mailto:${employee.email}`}
-                className="max-w-[180px] truncate font-medium text-primary hover:underline"
-                title={employee.email}
-              >
-                {employee.email}
-              </a>
+              <dt className="text-muted-foreground">Email</dt>
+              <dd>
+                <a
+                  href={`mailto:${employee.email}`}
+                  className="block max-w-[180px] truncate font-medium text-primary hover:underline"
+                  title={employee.email}
+                >
+                  {employee.email}
+                </a>
+              </dd>
             </div>
 
             {employee.phone && (
               <div className="flex items-start justify-between gap-2">
-                <span className="text-muted-foreground">Phone</span>
-                <a
-                  href={`tel:${employee.phone}`}
-                  className="font-medium text-foreground hover:underline"
-                >
-                  {employee.phone}
-                </a>
+                <dt className="text-muted-foreground">Phone</dt>
+                <dd>
+                  <a
+                    href={`tel:${employee.phone}`}
+                    className="font-medium text-foreground hover:underline"
+                  >
+                    {employee.phone}
+                  </a>
+                </dd>
               </div>
             )}
-          </div>
+          </dl>
         </section>
       </div>
     </article>
