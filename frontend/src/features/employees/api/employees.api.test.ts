@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { apiClient } from "@/lib/api-client"
-import { employeeKeys, getEmployees } from "./employees.api"
+import { employeeKeys, getEmployees, getEmployeeById } from "./employees.api"
 import type { EmployeeListResponse } from "../schema/employee.schema"
 
 afterEach(() => {
@@ -90,5 +90,51 @@ describe("getEmployees", () => {
     )
 
     await expect(getEmployees()).rejects.toThrow()
+  })
+})
+
+describe("getEmployeeById", () => {
+  const sampleEmployee = mockEmployeeResponse.data[0]
+
+  it("memanggil apiClient.get dengan path /api/employees/:id dan schema employeeSchema", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue(sampleEmployee)
+
+    const result = await getEmployeeById("1")
+
+    expect(getSpy).toHaveBeenCalledWith(
+      "/api/employees/1",
+      expect.objectContaining({
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toEqual(sampleEmployee)
+  })
+
+  it("berhasil memvalidasi response dengan employeeSchema", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(sampleEmployee), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    )
+
+    const result = await getEmployeeById("1")
+    expect(result).toEqual(sampleEmployee)
+  })
+
+  it("melempar ZodError jika struktur response backend tidak sesuai skema", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "1", // field wajib lainnya tidak ada
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      ),
+    )
+
+    await expect(getEmployeeById("1")).rejects.toThrow()
   })
 })
