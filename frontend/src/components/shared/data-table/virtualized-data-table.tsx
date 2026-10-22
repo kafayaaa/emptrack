@@ -5,6 +5,7 @@ import {
   flexRender,
   useTable,
   type ColumnDef,
+  type ColumnVisibilityState,
   type OnChangeFn,
   type PaginationState,
   type RowData,
@@ -18,6 +19,7 @@ import { DataTablePagination } from "./data-table-pagination"
 import { DataTableSkeleton } from "./data-table-skeleton"
 import { DataTableEmptyState } from "./data-table-empty-state"
 import { DataTableErrorState } from "./data-table-error-state"
+import { DataTableColumnVisibility } from "./data-table-column-visibility"
 import { dataTableFeatures } from "./data-table"
 
 export interface VirtualizedDataTableProps<TData extends RowData> {
@@ -52,6 +54,21 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
   onPaginationChange?: OnChangeFn<PaginationState>
   sorting?: SortingState
   onSortingChange?: OnChangeFn<SortingState>
+  columnVisibility?: ColumnVisibilityState
+  onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>
+  /**
+   * Whether to display the column visibility toggle dropdown button above the table.
+   */
+  showColumnVisibility?: boolean
+  /**
+   * Optional custom column label mapping for the visibility dropdown.
+   */
+  getColumnLabel?: (columnId: string) => string
+  /**
+   * Optional custom toolbar element or function receiving the table instance.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toolbar?: React.ReactNode | ((table: any) => React.ReactNode)
   showPagination?: boolean
 
   isLoading?: boolean
@@ -111,6 +128,11 @@ export function VirtualizedDataTable<TData extends RowData>({
   onPaginationChange,
   sorting: controlledSorting,
   onSortingChange,
+  columnVisibility: controlledColumnVisibility,
+  onColumnVisibilityChange,
+  showColumnVisibility = false,
+  getColumnLabel,
+  toolbar,
   showPagination = false,
   isLoading = false,
   isFetching = false,
@@ -140,6 +162,8 @@ export function VirtualizedDataTable<TData extends RowData>({
     pageIndex: 0,
     pageSize: 10,
   })
+  const [internalColumnVisibility, setInternalColumnVisibility] =
+    React.useState<ColumnVisibilityState>({})
 
   const isManualPagination = typeof pageCount !== "undefined" || typeof rowCount !== "undefined"
   const isManualSorting =
@@ -151,6 +175,9 @@ export function VirtualizedDataTable<TData extends RowData>({
   const pagination = controlledPagination ?? internalPagination
   const setPagination = onPaginationChange ?? setInternalPagination
 
+  const columnVisibility = controlledColumnVisibility ?? internalColumnVisibility
+  const setColumnVisibility = onColumnVisibilityChange ?? setInternalColumnVisibility
+
   const table = useTable(
     {
       features: dataTableFeatures,
@@ -161,9 +188,11 @@ export function VirtualizedDataTable<TData extends RowData>({
       state: {
         sorting,
         pagination,
+        columnVisibility,
       },
       onSortingChange: setSorting,
       onPaginationChange: setPagination,
+      onColumnVisibilityChange: setColumnVisibility,
       manualPagination: isManualPagination,
       manualSorting: isManualSorting,
     },
@@ -244,8 +273,21 @@ export function VirtualizedDataTable<TData extends RowData>({
     return () => observer.disconnect()
   }, [onScrollToBottom, isFetchingNextPage, rows.length])
 
+  const visibleColumnCount = table.getVisibleLeafColumns().length || columns.length
+
   return (
     <div className="flex flex-col gap-3">
+      {(showColumnVisibility || toolbar) && (
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {typeof toolbar === "function" ? toolbar(table) : toolbar}
+          </div>
+          {showColumnVisibility && (
+            <DataTableColumnVisibility table={table} getColumnLabel={getColumnLabel} />
+          )}
+        </div>
+      )}
+
       <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-xs">
         {showTransitionFeedback && (
           <div
@@ -357,7 +399,7 @@ export function VirtualizedDataTable<TData extends RowData>({
             <TableBody>
               {isError ? (
                 <DataTableErrorState
-                  colSpan={columns.length}
+                  colSpan={visibleColumnCount}
                   title={errorTitle}
                   description={errorDescription}
                   errorMessage={errorMessage}
@@ -366,13 +408,13 @@ export function VirtualizedDataTable<TData extends RowData>({
                 />
               ) : isLoading ? (
                 <DataTableSkeleton
-                  columnCount={columns.length}
+                  columnCount={visibleColumnCount}
                   rowCount={skeletonRowCount ?? 10}
                   cellWidths={cellWidths}
                 />
               ) : rows.length === 0 ? (
                 <DataTableEmptyState
-                  colSpan={columns.length}
+                  colSpan={visibleColumnCount}
                   icon={emptyIcon}
                   title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
                   description={emptyDescription}
@@ -383,7 +425,7 @@ export function VirtualizedDataTable<TData extends RowData>({
                   {paddingTop > 0 && (
                     <TableRow className="border-0 hover:bg-transparent">
                       <TableCell
-                        colSpan={columns.length}
+                        colSpan={visibleColumnCount}
                         style={{ height: `${paddingTop}px`, padding: 0 }}
                         className="border-0"
                       />
