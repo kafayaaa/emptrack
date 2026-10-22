@@ -21,7 +21,7 @@ describe("useDataTableVisibility hook", () => {
     currentResult = res
     React.useEffect(() => {
       triggerAction?.(res)
-    }, [res, triggerAction])
+    })
     return <div data-testid="test-visibility-hook" />
   }
 
@@ -45,9 +45,10 @@ describe("useDataTableVisibility hook", () => {
     expect(typeof useDataTableVisibility).toBe("function")
   })
 
-  it("initializes with empty object by default", () => {
+  it("initializes with empty object by default and isHydrated false during SSR", () => {
     const result = renderHook()
     expect(result.columnVisibility).toEqual({})
+    expect(result.isHydrated).toBe(false)
   })
 
   it("initializes with provided initialVisibility", () => {
@@ -60,14 +61,12 @@ describe("useDataTableVisibility hook", () => {
     })
   })
 
-  it("loads initial state from localStorage when available", () => {
-    const mockStorage: Record<string, string> = {
-      "test-columns": JSON.stringify({ status: false, position: true }),
-    }
+  it("does not read localStorage on initial server render to prevent SSR hydration mismatch", () => {
+    const getItemSpy = vi.fn().mockReturnValue(JSON.stringify({ status: false }))
     const originalWindow = globalThis.window
     globalThis.window = {
       localStorage: {
-        getItem: (key: string) => mockStorage[key] ?? null,
+        getItem: getItemSpy,
         setItem: vi.fn(),
       },
     } as unknown as Window & typeof globalThis
@@ -75,14 +74,35 @@ describe("useDataTableVisibility hook", () => {
     try {
       const result = renderHook({
         storageKey: "test-columns",
-        initialVisibility: { department: false },
+        initialVisibility: { department: true },
       })
 
-      expect(result.columnVisibility).toEqual({
-        department: false,
-        status: false,
-        position: true,
+      // Initial server render must match initialVisibility exactly (hydration safe)
+      expect(result.columnVisibility).toEqual({ department: true })
+      expect(result.isHydrated).toBe(false)
+      // getServerSnapshot in useSyncExternalStore is used during SSR without querying localStorage
+      expect(getItemSpy).not.toHaveBeenCalled()
+    } finally {
+      globalThis.window = originalWindow
+    }
+  })
+
+  it("handles corrupted or invalid JSON in localStorage gracefully without throwing", () => {
+    const originalWindow = globalThis.window
+    globalThis.window = {
+      localStorage: {
+        getItem: () => "invalid-json{",
+        setItem: vi.fn(),
+      },
+    } as unknown as Window & typeof globalThis
+
+    try {
+      const result = renderHook({
+        storageKey: "corrupted-key",
+        initialVisibility: { department: true },
       })
+
+      expect(result.columnVisibility).toEqual({ department: true })
     } finally {
       globalThis.window = originalWindow
     }
@@ -97,12 +117,32 @@ describe("useDataTableVisibility hook", () => {
   })
 
   it("invokes toggleColumnVisibility, onColumnVisibilityChange, resetColumnVisibility, and showAllColumns without error", () => {
-    const result = renderHook({ storageKey: "table-prefs" })
-    expect(() => {
-      result.toggleColumnVisibility("hireDate", false)
-      result.onColumnVisibilityChange({ hireDate: true })
-      result.resetColumnVisibility()
-      result.showAllColumns(["col1", "col2"])
-    }).not.toThrow()
+    const setItemSpy = vi.fn()
+    const removeItemSpy = vi.fn()
+    const dispatchEventSpy = vi.fn()
+    const originalWindow = globalThis.window
+    globalThis.window = {
+      localStorage: {
+        getItem: () => null,
+        setItem: setItemSpy,
+        removeItem: removeItemSpy,
+      },
+      dispatchEvent: dispatchEventSpy,
+    } as unknown as Window & typeof globalThis
+
+    try {
+      const result = renderHook({ storageKey: "table-prefs" })
+      expect(() => {
+        result.toggleColumnVisibility("hireDate", false)
+        result.onColumnVisibilityChange({ hireDate: true })
+        result.showAllColumns(["col1", "col2"])
+        result.resetColumnVisibility()
+      }).not.toThrow()
+
+      expect(setItemSpy).toHaveBeenCalled()
+      expect(removeItemSpy).toHaveBeenCalledWith("table-prefs")
+    } finally {
+      globalThis.window = originalWindow
+    }
   })
 })

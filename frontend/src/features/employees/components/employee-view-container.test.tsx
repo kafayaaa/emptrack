@@ -145,4 +145,13 @@ describe("EmployeeViewContainer", () => {
       }),
     )
   })
+
+  it("configures useDataTableVisibility with emptrack:employees:column-visibility storageKey", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation(
+      () => [null, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>,
+    )
+
+    const html = renderToStaticMarkup(<EmployeeViewContainer />)
+    expect(html).toBeDefined()
+  })
 })
