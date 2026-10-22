@@ -9,8 +9,9 @@ import {
   type UseDataTablePaginationOptions,
   type UseDataTableSortingOptions,
 } from "../../../hooks"
+import type { ColumnVisibilityState, OnChangeFn } from "@tanstack/react-table"
 import { EMPLOYEE_SORT_FIELDS, type EmployeeSortField } from "../schema/employee.schema"
-import { employeeColumns } from "./columns"
+import { employeeColumns, getEmployeeColumnLabel } from "./columns"
 import { EmployeeMobileCard } from "./employee-mobile-card"
 import type { Employee, EmployeeListInputQuery } from "../types"
 
@@ -35,6 +36,18 @@ export interface EmployeeTableProps {
    * Page size options shown in the pagination dropdown.
    */
   pageSizeOptions?: number[]
+  /**
+   * Column visibility state for controlled visibility.
+   */
+  columnVisibility?: ColumnVisibilityState
+  /**
+   * Callback fired when column visibility changes.
+   */
+  onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>
+  /**
+   * Whether to display the Column Visibility DropdownMenu above the table. Default: true.
+   */
+  showColumnVisibility?: boolean
 }
 
 /**
@@ -47,6 +60,9 @@ function BaseEmployeeTable({
   sortingOptions,
   queryOptions,
   pageSizeOptions = [10, 20, 30, 50, 100],
+  columnVisibility,
+  onColumnVisibilityChange,
+  showColumnVisibility = true,
 }: EmployeeTableProps) {
   const {
     pagination,
@@ -112,6 +128,10 @@ function BaseEmployeeTable({
         onPaginationChange={onPaginationChange}
         sorting={sorting}
         onSortingChange={onSortingChange}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        showColumnVisibility={showColumnVisibility}
+        getColumnLabel={getEmployeeColumnLabel}
         pageSizeOptions={pageSizeOptions}
         isLoading={isLoading}
         isFetching={isFetching}

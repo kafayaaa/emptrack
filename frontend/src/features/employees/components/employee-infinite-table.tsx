@@ -4,8 +4,9 @@ import * as React from "react"
 import { VirtualizedDataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useInfiniteEmployees, type UseInfiniteEmployeesOptions } from "../hooks"
 import { useDataTableSorting, type UseDataTableSortingOptions } from "../../../hooks"
+import type { ColumnVisibilityState, OnChangeFn } from "@tanstack/react-table"
 import { EMPLOYEE_SORT_FIELDS, type EmployeeSortField } from "../schema/employee.schema"
-import { employeeColumns } from "./columns"
+import { employeeColumns, getEmployeeColumnLabel } from "./columns"
 import { EmployeeMobileCard } from "./employee-mobile-card"
 import type { Employee, EmployeeListInputQuery } from "../types"
 
@@ -26,6 +27,18 @@ export interface EmployeeInfiniteTableProps {
    * Height of the virtualized scroll viewport container. Default: 560px.
    */
   height?: number | string
+  /**
+   * Column visibility state for controlled visibility.
+   */
+  columnVisibility?: ColumnVisibilityState
+  /**
+   * Callback fired when column visibility changes.
+   */
+  onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>
+  /**
+   * Whether to display the Column Visibility DropdownMenu above the table. Default: true.
+   */
+  showColumnVisibility?: boolean
 }
 
 /**
@@ -39,6 +52,9 @@ function BaseEmployeeInfiniteTable({
   sortingOptions,
   queryOptions,
   height = 560,
+  columnVisibility,
+  onColumnVisibilityChange,
+  showColumnVisibility = true,
 }: EmployeeInfiniteTableProps) {
   const {
     sorting,
@@ -119,6 +135,10 @@ function BaseEmployeeInfiniteTable({
           rowCount={totalRows}
           sorting={sorting}
           onSortingChange={onSortingChange}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={onColumnVisibilityChange}
+          showColumnVisibility={showColumnVisibility}
+          getColumnLabel={getEmployeeColumnLabel}
           isLoading={isLoading}
           cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
           isFetching={isFetching}

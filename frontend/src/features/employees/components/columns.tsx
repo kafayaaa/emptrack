@@ -5,6 +5,19 @@ import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 
+export const EMPLOYEE_COLUMN_LABELS: Record<string, string> = {
+  employeeNumber: "Employee ID",
+  fullName: "Full Name",
+  department: "Department",
+  position: "Position",
+  status: "Status",
+  hireDate: "Hire Date",
+}
+
+export function getEmployeeColumnLabel(columnId: string): string {
+  return EMPLOYEE_COLUMN_LABELS[columnId] ?? columnId
+}
+
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Employee>()
 
 export const employeeColumns = columnHelper.columns([
