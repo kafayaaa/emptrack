@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { createColumnHelper } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, type dataTableFeatures } from "@/components/shared/data-table"
@@ -34,7 +35,12 @@ export const employeeColumns = columnHelper.columns([
       const employee = info.row.original
       return (
         <div className="flex flex-col gap-0.5">
-          <span className="font-medium text-foreground">{employee.fullName}</span>
+          <Link
+            href={`/employees/${employee.id}`}
+            className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
+          >
+            {employee.fullName}
+          </Link>
           <span className="text-xs text-muted-foreground">{employee.email}</span>
         </div>
       )

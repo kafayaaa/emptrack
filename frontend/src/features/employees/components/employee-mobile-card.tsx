@@ -1,4 +1,5 @@
 import * as React from "react"
+import Link from "next/link"
 import { Building2, Calendar, Mail, Phone, ShieldCheck, User } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/date"
@@ -23,9 +24,12 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
           </div>
           <div className="flex min-w-0 flex-col">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="truncate text-sm font-semibold text-foreground">
+              <Link
+                href={`/employees/${employee.id}`}
+                className="truncate text-sm font-semibold text-foreground transition-colors hover:text-primary hover:underline"
+              >
                 {employee.fullName}
-              </span>
+              </Link>
               {employee.isManager && (
                 <Badge
                   variant="secondary"
