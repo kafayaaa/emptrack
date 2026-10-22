@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, type dataTableFeatures } from "@/components/shared/data-table"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
+import { usePrefetchEmployee } from "../hooks"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 
 export const EMPLOYEE_COLUMN_LABELS: Record<string, string> = {
@@ -19,6 +20,24 @@ export function getEmployeeColumnLabel(columnId: string): string {
   return EMPLOYEE_COLUMN_LABELS[columnId] ?? columnId
 }
 
+export function EmployeeNameCell({ employee }: { employee: Employee }) {
+  const { prefetchEmployee } = usePrefetchEmployee()
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Link
+        href={`/employees/${employee.id}`}
+        onMouseEnter={() => prefetchEmployee(employee.id)}
+        onFocus={() => prefetchEmployee(employee.id)}
+        className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
+      >
+        {employee.fullName}
+      </Link>
+      <span className="text-xs text-muted-foreground">{employee.email}</span>
+    </div>
+  )
+}
+
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Employee>()
 
 export const employeeColumns = columnHelper.columns([
@@ -31,20 +50,7 @@ export const employeeColumns = columnHelper.columns([
   }),
   columnHelper.accessor("fullName", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Full Name" />,
-    cell: (info) => {
-      const employee = info.row.original
-      return (
-        <div className="flex flex-col gap-0.5">
-          <Link
-            href={`/employees/${employee.id}`}
-            className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
-          >
-            {employee.fullName}
-          </Link>
-          <span className="text-xs text-muted-foreground">{employee.email}</span>
-        </div>
-      )
-    },
+    cell: (info) => <EmployeeNameCell employee={info.row.original} />,
     enableSorting: true,
   }),
   columnHelper.accessor("department", {

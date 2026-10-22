@@ -1,7 +1,18 @@
 import React from "react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { EmployeeMobileCard } from "./employee-mobile-card"
 import type { Employee } from "../types"
+
+const mockPrefetchEmployee = vi.fn()
+vi.mock("../hooks", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../hooks")>()
+  return {
+    ...actual,
+    usePrefetchEmployee: () => ({
+      prefetchEmployee: mockPrefetchEmployee,
+    }),
+  }
+})
 
 const mockEmployee: Employee = {
   id: "emp-1",
@@ -38,5 +49,30 @@ describe("EmployeeMobileCard", () => {
     const element = <EmployeeMobileCard employee={nonManagerEmployee} />
     expect(element).toBeDefined()
     expect(element.props.employee.isManager).toBe(false)
+  })
+
+  it("triggers prefetchEmployee on mouseEnter, focus, and touchStart on the employee link", () => {
+    mockPrefetchEmployee.mockClear()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rendered = (EmployeeMobileCard as any).type({ employee: mockEmployee })
+
+    // Header -> leftContainer -> detailsDiv -> nameDiv -> Link
+    const header = rendered.props.children[0]
+    const leftContainer = header.props.children[0]
+    const detailsDiv = leftContainer.props.children[1]
+    const nameDiv = detailsDiv.props.children[0]
+    const linkElement = nameDiv.props.children[0]
+
+    expect(linkElement.props.href).toBe("/employees/emp-1")
+
+    linkElement.props.onMouseEnter()
+    expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-1")
+
+    linkElement.props.onFocus()
+    expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-1")
+
+    linkElement.props.onTouchStart()
+    expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-1")
+    expect(mockPrefetchEmployee).toHaveBeenCalledTimes(3)
   })
 })
