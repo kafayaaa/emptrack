@@ -1,7 +1,23 @@
-import { describe, expect, it } from "vitest"
-import { employeeColumns, EMPLOYEE_COLUMN_LABELS, getEmployeeColumnLabel } from "./columns"
+import { describe, expect, it, vi } from "vitest"
+import {
+  employeeColumns,
+  EMPLOYEE_COLUMN_LABELS,
+  getEmployeeColumnLabel,
+  EmployeeNameCell,
+} from "./columns"
 import { EMPLOYEE_STATUS_CONFIG, EmployeeStatusBadge } from "./employee-status-badge"
 import type { Employee } from "../types"
+
+const mockPrefetchEmployee = vi.fn()
+vi.mock("../hooks", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../hooks")>()
+  return {
+    ...actual,
+    usePrefetchEmployee: () => ({
+      prefetchEmployee: mockPrefetchEmployee,
+    }),
+  }
+})
 
 describe("columns.tsx (Employee Table Columns)", () => {
   describe("employeeColumns definition", () => {
@@ -99,6 +115,40 @@ describe("columns.tsx (Employee Table Columns)", () => {
     it("is memoized with React.memo", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((EmployeeStatusBadge as any).$$typeof?.toString()).toContain("react.memo")
+    })
+  })
+
+  describe("EmployeeNameCell", () => {
+    const sampleEmployee: Employee = {
+      id: "emp-99",
+      employeeNumber: "EMP-00099",
+      fullName: "Bruce Wayne",
+      email: "bruce@wayne.test",
+      phone: "+62 812 0000 9999",
+      department: "Management",
+      position: "CEO",
+      status: "active",
+      hireDate: "2020-01-01",
+      isManager: true,
+      managerId: null,
+      projectId: "proj-99",
+    }
+
+    it("renders employee link with name and email", () => {
+      const cellElement = EmployeeNameCell({ employee: sampleEmployee })
+      expect(cellElement).toBeDefined()
+    })
+
+    it("triggers prefetchEmployee on mouseEnter and focus", () => {
+      mockPrefetchEmployee.mockClear()
+      const cellElement = EmployeeNameCell({ employee: sampleEmployee })
+      const linkElement = cellElement.props.children[0]
+
+      linkElement.props.onMouseEnter()
+      expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-99")
+
+      linkElement.props.onFocus()
+      expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-99")
     })
   })
 })

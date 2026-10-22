@@ -4,6 +4,7 @@ import { Building2, Calendar, Mail, Phone, ShieldCheck, User } from "lucide-reac
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
+import { usePrefetchEmployee } from "../hooks"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 
 export interface EmployeeMobileCardProps {
@@ -11,6 +12,8 @@ export interface EmployeeMobileCardProps {
 }
 
 function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
+  const { prefetchEmployee } = usePrefetchEmployee()
+
   return (
     <div
       data-testid={`employee-mobile-card-${employee.id}`}
@@ -26,6 +29,9 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
             <div className="flex flex-wrap items-center gap-1.5">
               <Link
                 href={`/employees/${employee.id}`}
+                onMouseEnter={() => prefetchEmployee(employee.id)}
+                onFocus={() => prefetchEmployee(employee.id)}
+                onTouchStart={() => prefetchEmployee(employee.id)}
                 className="truncate text-sm font-semibold text-foreground transition-colors hover:text-primary hover:underline"
               >
                 {employee.fullName}
