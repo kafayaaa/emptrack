@@ -24,17 +24,47 @@ const mockEmployee: Employee = {
 }
 
 describe("EmployeeDetailSkeleton", () => {
-  it("merender skeleton loading tanpa error", () => {
+  it("merender skeleton loading dengan semantic role status dan aria-busy", () => {
     const html = renderToStaticMarkup(<EmployeeDetailSkeleton />)
     expect(html).toContain('data-testid="employee-detail-skeleton"')
+    expect(html).toContain('role="status"')
+    expect(html).toContain('aria-busy="true"')
+    expect(html).toContain('aria-label="Loading employee details"')
+    expect(html).toContain("Loading employee details...")
   })
 })
 
 describe("EmployeeDetailView", () => {
-  it("merender informasi detail employee lengkap", () => {
+  it("merender informasi detail employee lengkap dengan struktur semantic HTML yang kaya", () => {
     const html = renderToStaticMarkup(<EmployeeDetailView employee={mockEmployee} />)
 
-    expect(html).toContain("Daruna Daruna Oktovian")
+    // Heading utama
+    expect(html).toContain("<h1")
+    expect(html).toContain("Daruna Daruna Oktovian</h1>")
+
+    // Navigasi
+    expect(html).toContain('<nav aria-label="Back navigation"')
+
+    // Sub-heading dan section semantik
+    expect(html).toContain('aria-labelledby="employment-details-title"')
+    expect(html).toContain('id="employment-details-title"')
+    expect(html).toContain('aria-labelledby="role-hierarchy-title"')
+    expect(html).toContain('aria-labelledby="contact-identification-title"')
+
+    // Description List (<dl>, <dt>, <dd>)
+    expect(html).toContain("<dl")
+    expect(html).toContain('<dt class="text-muted-foreground">Department</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Position</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Hire Date</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Role Level</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Direct Manager</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Assigned Project</dt>')
+    expect(html).toContain('<dt class="text-muted-foreground">Employee ID</dt>')
+
+    // Semantic <time> element
+    expect(html).toContain('<time dateTime="2017-01-18"')
+
+    // Content verification
     expect(html).toContain("EMP-00001")
     expect(html).toContain("Engineering")
     expect(html).toContain("Manager")
@@ -82,7 +112,7 @@ describe("EmployeeDetailContainer", () => {
     expect(html).toContain('data-testid="employee-detail-skeleton"')
   })
 
-  it("merender tampilan not found saat error 404", () => {
+  it("merender tampilan not found dengan role region saat error 404", () => {
     vi.spyOn(hooksModule, "useEmployee").mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -94,10 +124,11 @@ describe("EmployeeDetailContainer", () => {
 
     const html = renderToStaticMarkup(<EmployeeDetailContainer id="999" />)
     expect(html).toContain('data-testid="employee-detail-not-found"')
+    expect(html).toContain('role="region"')
     expect(html).toContain("Employee Not Found")
   })
 
-  it("merender tampilan error umum saat terjadi error lain", () => {
+  it("merender tampilan error dengan role alert saat terjadi error lain", () => {
     vi.spyOn(hooksModule, "useEmployee").mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -109,6 +140,7 @@ describe("EmployeeDetailContainer", () => {
 
     const html = renderToStaticMarkup(<EmployeeDetailContainer id="1" />)
     expect(html).toContain('data-testid="employee-detail-error"')
+    expect(html).toContain('role="alert"')
     expect(html).toContain("Unable to Load Employee Details")
     expect(html).toContain("Network Error")
   })

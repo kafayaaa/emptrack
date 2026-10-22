@@ -29,6 +29,8 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
       return (
         <div
           data-testid="employee-detail-not-found"
+          role="region"
+          aria-label="Employee not found notice"
           className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-8 text-center"
         >
           <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -55,6 +57,7 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
     return (
       <div
         data-testid="employee-detail-error"
+        role="alert"
         className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-8 text-center"
       >
         <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
