@@ -123,7 +123,10 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
             <div className="flex items-start justify-between gap-2">
               <span className="text-muted-foreground">Position</span>
-              <span className="text-right font-medium text-foreground">{employee.position}</span>
+              <span className="flex items-center gap-1 text-right font-medium text-foreground">
+                <Briefcase className="size-3.5 text-muted-foreground" />
+                {employee.position}
+              </span>
             </div>
 
             <div className="flex items-start justify-between gap-2">
