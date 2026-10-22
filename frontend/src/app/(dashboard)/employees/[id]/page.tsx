@@ -1,6 +1,7 @@
 import * as React from "react"
 import type { Metadata } from "next"
-import { EmployeeDetailContainer, EmployeeDetailSkeleton } from "@/features/employees"
+import { notFound } from "next/navigation"
+import { EmployeeDetailContainer } from "@/features/employees"
 import { getEmployeeByIdServer } from "@/features/employees/api/employees.server"
 
 interface EmployeeDetailPageProps {
@@ -50,10 +51,11 @@ export async function generateMetadata({ params }: EmployeeDetailPageProps): Pro
 
 export default async function EmployeeDetailPage({ params }: EmployeeDetailPageProps) {
   const { id } = await params
+  const employee = await getEmployeeByIdServer(id)
 
-  return (
-    <React.Suspense fallback={<EmployeeDetailSkeleton />}>
-      <EmployeeDetailContainer id={id} />
-    </React.Suspense>
-  )
+  if (!employee) {
+    notFound()
+  }
+
+  return <EmployeeDetailContainer id={id} />
 }

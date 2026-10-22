@@ -5,6 +5,14 @@ import EmployeeDetailPage, { generateMetadata } from "./page"
 import * as serverApiModule from "@/features/employees/api/employees.server"
 import type { Employee } from "@/features/employees/schema/employee.schema"
 
+const mockNotFound = vi.fn()
+vi.mock("next/navigation", () => ({
+  notFound: () => {
+    mockNotFound()
+    throw new Error("NEXT_NOT_FOUND")
+  },
+}))
+
 vi.mock("@/features/employees", () => ({
   EmployeeDetailContainer: ({ id }: { id: string }) => (
     <div data-testid="mock-employee-detail-container">Container ID: {id}</div>
@@ -16,7 +24,7 @@ vi.mock("@/features/employees/api/employees.server", () => ({
   getEmployeeByIdServer: vi.fn(),
 }))
 
-describe("EmployeeDetailPage (/employees/[id]) - Dynamic SEO Metadata (EMPTRACK-52)", () => {
+describe("EmployeeDetailPage (/employees/[id]) - Page & SEO (EMPTRACK-54)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -86,14 +94,28 @@ describe("EmployeeDetailPage (/employees/[id]) - Dynamic SEO Metadata (EMPTRACK-
   })
 
   describe("Page component rendering", () => {
-    it("merender EmployeeDetailContainer dengan ID yang di-resolve dari params", async () => {
+    it("merender EmployeeDetailContainer dengan ID yang di-resolve dari params saat karyawan ditemukan", async () => {
+      vi.spyOn(serverApiModule, "getEmployeeByIdServer").mockResolvedValue(mockEmployee)
+
       const pageJsx = await EmployeeDetailPage({
-        params: Promise.resolve({ id: "101" }),
+        params: Promise.resolve({ id: "1" }),
       })
 
       const html = renderToStaticMarkup(pageJsx)
-      expect(html).toContain("Container ID: 101")
+      expect(html).toContain("Container ID: 1")
       expect(html).toContain('data-testid="mock-employee-detail-container"')
+    })
+
+    it("memanggil notFound() saat karyawan tidak ditemukan di server", async () => {
+      vi.spyOn(serverApiModule, "getEmployeeByIdServer").mockResolvedValue(null)
+
+      await expect(
+        EmployeeDetailPage({
+          params: Promise.resolve({ id: "999999" }),
+        }),
+      ).rejects.toThrow("NEXT_NOT_FOUND")
+
+      expect(mockNotFound).toHaveBeenCalledTimes(1)
     })
   })
 })
