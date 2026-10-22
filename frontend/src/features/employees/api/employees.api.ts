@@ -2,6 +2,7 @@ import { z } from "zod"
 import { apiClient } from "@/lib/api-client"
 import {
   employeeSchema,
+  type Employee,
   type EmployeeListInputQuery,
   type EmployeeListResponse,
 } from "../schema/employee.schema"
@@ -31,5 +32,11 @@ export async function getEmployees(params?: EmployeeListInputQuery): Promise<Emp
   return apiClient.get<EmployeeListResponse>("/api/employees", {
     params: params as Record<string, string | number | boolean | null | undefined>,
     schema: employeeListResponseSchema,
+  })
+}
+
+export async function getEmployeeById(id: string): Promise<Employee> {
+  return apiClient.get<Employee>(`/api/employees/${id}`, {
+    schema: employeeSchema,
   })
 }
