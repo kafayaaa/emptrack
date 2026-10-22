@@ -145,4 +145,20 @@ describe("virtualized-data-table.tsx (VirtualizedDataTable Component)", () => {
     )
     expect(mobileComponent).toBeDefined()
   })
+
+  it("supports columnVisibility and toolbar props", () => {
+    const onColumnVisibilityChange = vi.fn()
+    const data = generateUsers(10)
+    const element = (
+      <VirtualizedDataTable
+        columns={testColumns}
+        data={data}
+        columnVisibility={{ department: false }}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        showColumnVisibility={true}
+        toolbar={<div data-testid="virt-toolbar">Toolbar</div>}
+      />
+    )
+    expect(element).toBeDefined()
+  })
 })

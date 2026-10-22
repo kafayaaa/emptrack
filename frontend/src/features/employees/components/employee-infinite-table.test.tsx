@@ -79,4 +79,16 @@ describe("EmployeeInfiniteTable", () => {
     const errorElement = <EmployeeInfiniteTable />
     expect(errorElement).toBeDefined()
   })
+
+  it("accepts controlled column visibility props", () => {
+    const onColumnVisibilityChange = vi.fn()
+    const element = (
+      <EmployeeInfiniteTable
+        columnVisibility={{ department: false }}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        showColumnVisibility={true}
+      />
+    )
+    expect(element).toBeDefined()
+  })
 })

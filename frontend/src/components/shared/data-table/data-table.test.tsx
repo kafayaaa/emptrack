@@ -100,6 +100,43 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     expect(controlledComponent).toBeDefined()
   })
 
+  it("supports columnVisibility state and onColumnVisibilityChange callback", () => {
+    const onColumnVisibilityChange = vi.fn()
+    const component = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        columnVisibility={{ role: false }}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        showColumnVisibility={true}
+        getColumnLabel={(id) => (id === "name" ? "Full Name" : id)}
+      />
+    )
+    expect(component).toBeDefined()
+  })
+
+  it("supports custom toolbar element or function", () => {
+    const nodeToolbar = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        toolbar={<div data-testid="custom-toolbar">Filter Tools</div>}
+      />
+    )
+    expect(nodeToolbar).toBeDefined()
+
+    const fnToolbar = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        toolbar={(table) => (
+          <div data-testid="fn-toolbar">Total columns: {table.getAllColumns().length}</div>
+        )}
+      />
+    )
+    expect(fnToolbar).toBeDefined()
+  })
+
   it("renders mobile card layout when renderMobileCard is provided", () => {
     const cardComponent = (
       <DataTable

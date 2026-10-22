@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { employeeColumns } from "./columns"
+import { employeeColumns, EMPLOYEE_COLUMN_LABELS, getEmployeeColumnLabel } from "./columns"
 import { EMPLOYEE_STATUS_CONFIG, EmployeeStatusBadge } from "./employee-status-badge"
 import type { Employee } from "../types"
 
@@ -53,6 +53,22 @@ describe("columns.tsx (Employee Table Columns)", () => {
           expect(cellResult).toBeDefined()
         }
       })
+    })
+  })
+
+  describe("EMPLOYEE_COLUMN_LABELS and getEmployeeColumnLabel", () => {
+    it("maps all columns to human readable titles", () => {
+      expect(EMPLOYEE_COLUMN_LABELS.employeeNumber).toBe("Employee ID")
+      expect(EMPLOYEE_COLUMN_LABELS.fullName).toBe("Full Name")
+      expect(EMPLOYEE_COLUMN_LABELS.department).toBe("Department")
+      expect(EMPLOYEE_COLUMN_LABELS.position).toBe("Position")
+      expect(EMPLOYEE_COLUMN_LABELS.status).toBe("Status")
+      expect(EMPLOYEE_COLUMN_LABELS.hireDate).toBe("Hire Date")
+    })
+
+    it("returns correct label or fallback to id", () => {
+      expect(getEmployeeColumnLabel("employeeNumber")).toBe("Employee ID")
+      expect(getEmployeeColumnLabel("unknownCol")).toBe("unknownCol")
     })
   })
 

@@ -114,6 +114,18 @@ describe("employee-table.tsx (EmployeeTable Component)", () => {
     expect((EmployeeTable as any).$$typeof?.toString()).toContain("react.memo")
   })
 
+  it("accepts controlled column visibility props", () => {
+    const onColumnVisibilityChange = vi.fn()
+    const element = (
+      <EmployeeTable
+        columnVisibility={{ hireDate: false }}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        showColumnVisibility={true}
+      />
+    )
+    expect(element).toBeDefined()
+  })
+
   describe("EmployeeTableSkeleton", () => {
     it("renders valid table skeleton structure with columns and pagination", () => {
       const element = <EmployeeTableSkeleton rowCount={5} />

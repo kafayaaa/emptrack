@@ -13,6 +13,7 @@ import {
   type ViewMode,
   type EmployeeFiltersState,
 } from "@/features/employees"
+import { useDataTableVisibility } from "@/hooks"
 
 /**
  * Client view container for Employee List that manages switching between
@@ -72,6 +73,10 @@ export function EmployeeViewContainer() {
 
   const isInfinite = viewMode === "infinite"
 
+  const { columnVisibility, onColumnVisibilityChange } = useDataTableVisibility({
+    storageKey: "emptrack:employees:column-visibility",
+  })
+
   const filterState: EmployeeFiltersState = React.useMemo(
     () => ({
       department: department || undefined,
@@ -118,9 +123,18 @@ export function EmployeeViewContainer() {
 
       <React.Suspense fallback={<EmployeeTableSkeleton rowCount={10} />}>
         {isInfinite ? (
-          <EmployeeInfiniteTable filters={tableFilters} height={580} />
+          <EmployeeInfiniteTable
+            filters={tableFilters}
+            height={580}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={onColumnVisibilityChange}
+          />
         ) : (
-          <EmployeeTable filters={tableFilters} />
+          <EmployeeTable
+            filters={tableFilters}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={onColumnVisibilityChange}
+          />
         )}
       </React.Suspense>
     </div>
