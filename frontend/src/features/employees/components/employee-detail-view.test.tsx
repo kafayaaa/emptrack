@@ -74,6 +74,32 @@ describe("EmployeeDetailView", () => {
     expect(html).toContain(`mailto:${mockEmployee.email}`)
     expect(html).toContain(`tel:${mockEmployee.phone}`)
     expect(html).toContain("DO") // Initials
+
+    // Avatar layout (EMPTRACK-56)
+    expect(html).toContain('data-slot="avatar"')
+    expect(html).toContain('data-size="xl"')
+    expect(html).toContain('data-slot="avatar-fallback"')
+    expect(html).toContain('aria-label="Avatar for Daruna Daruna Oktovian"')
+
+    // Card structure (EMPTRACK-56)
+    expect(html).toContain('data-slot="card"')
+
+    // Tabs layout & accessibility (EMPTRACK-56)
+    expect(html).toContain('role="tablist"')
+    expect(html).toContain('role="tab"')
+    expect(html).toContain('role="tabpanel"')
+    expect(html).toContain("Overview")
+    expect(html).toContain("Projects &amp; Team")
+    expect(html).toContain("Assets &amp; Inventory")
+    expect(html).toContain("Activity Log")
+
+    // Additional tab panels content
+    expect(html).toContain("Active Project Assignment")
+    expect(html).toContain("Reporting &amp; Team Hierarchy")
+    expect(html).toContain("Assigned Assets &amp; Hardware")
+    expect(html).toContain("Browse Inventory Catalog")
+    expect(html).toContain("Activity &amp; Profile History")
+    expect(html).toContain("Account Created &amp; Onboarded")
   })
 
   it("merender manajer langsung jika managerId tersedia dan bukan manajer jika isManager: false", () => {

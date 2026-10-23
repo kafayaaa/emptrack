@@ -2,20 +2,34 @@ import * as React from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
+  ArrowRight,
   Building2,
   Briefcase,
   Calendar,
+  Clock,
   FolderGit2,
+  Laptop,
   Mail,
   Phone,
   ShieldCheck,
   User,
   Users,
 } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
+import { EmployeeInfoCard } from "./employee-info-card"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 
 export interface EmployeeDetailViewProps {
@@ -49,15 +63,18 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
       </nav>
 
       {/* Hero profile card */}
-      <header className="rounded-xl border border-border bg-card p-6 shadow-2xs">
+      <Card as="header" className="p-6 shadow-2xs">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-4">
-            <div
-              aria-hidden="true"
-              className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold tracking-wider text-primary ring-4 ring-primary/5"
+            <Avatar
+              size="xl"
+              className="ring-4 ring-primary/10"
+              aria-label={`Avatar for ${employee.fullName}`}
             >
-              {initials}
-            </div>
+              <AvatarFallback className="bg-primary/10 text-xl font-bold tracking-wider text-primary">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
 
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -114,151 +131,376 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             )}
           </div>
         </div>
-      </header>
+      </Card>
 
-      {/* Detail grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Employment Information */}
-        <section
-          aria-labelledby="employment-details-title"
-          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs"
-        >
-          <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <Building2 className="size-4 text-primary" aria-hidden="true" />
-            <h2 id="employment-details-title" className="text-sm font-semibold text-foreground">
-              Employment Details
-            </h2>
-          </header>
+      {/* Tabs Layout */}
+      <Tabs defaultValue="overview" className="flex flex-col gap-6">
+        <div className="overflow-x-auto pb-1">
+          <TabsList aria-label="Employee detail sections" className="h-10 p-1">
+            <TabsTrigger value="overview" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+              <Building2 className="size-4" aria-hidden="true" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+              <FolderGit2 className="size-4" aria-hidden="true" />
+              Projects & Team
+            </TabsTrigger>
+            <TabsTrigger value="assets" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+              <Laptop className="size-4" aria-hidden="true" />
+              Assets & Inventory
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+              <Clock className="size-4" aria-hidden="true" />
+              Activity Log
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-          <dl className="flex flex-col gap-3 text-sm">
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Department</dt>
-              <dd className="text-right font-medium text-foreground">{employee.department}</dd>
-            </div>
+        {/* Tab 1: Overview */}
+        <TabsContent value="overview" keepMounted className="mt-0">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Employment Information */}
+            <EmployeeInfoCard
+              id="employment-details-title"
+              title="Employment Details"
+              icon={Building2}
+            >
+              <dl className="flex flex-col gap-3 text-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Department</dt>
+                  <dd className="text-right font-medium text-foreground">{employee.department}</dd>
+                </div>
 
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Position</dt>
-              <dd className="flex items-center gap-1 text-right font-medium text-foreground">
-                <Briefcase className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                {employee.position}
-              </dd>
-            </div>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Position</dt>
+                  <dd className="flex items-center gap-1 text-right font-medium text-foreground">
+                    <Briefcase className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    {employee.position}
+                  </dd>
+                </div>
 
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Status</dt>
-              <dd>
-                <EmployeeStatusBadge status={employee.status} />
-              </dd>
-            </div>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Status</dt>
+                  <dd>
+                    <EmployeeStatusBadge status={employee.status} />
+                  </dd>
+                </div>
 
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Hire Date</dt>
-              <dd className="flex items-center gap-1 text-right font-medium text-foreground">
-                <Calendar className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                <time dateTime={employee.hireDate}>{formatDate(employee.hireDate)}</time>
-              </dd>
-            </div>
-          </dl>
-        </section>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Hire Date</dt>
+                  <dd className="flex items-center gap-1 text-right font-medium text-foreground">
+                    <Calendar className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    <time dateTime={employee.hireDate}>{formatDate(employee.hireDate)}</time>
+                  </dd>
+                </div>
+              </dl>
+            </EmployeeInfoCard>
 
-        {/* Role & Hierarchy */}
-        <section
-          aria-labelledby="role-hierarchy-title"
-          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs"
-        >
-          <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <Users className="size-4 text-primary" aria-hidden="true" />
-            <h2 id="role-hierarchy-title" className="text-sm font-semibold text-foreground">
-              Role & Hierarchy
-            </h2>
-          </header>
+            {/* Role & Hierarchy */}
+            <EmployeeInfoCard id="role-hierarchy-title" title="Role & Hierarchy" icon={Users}>
+              <dl className="flex flex-col gap-3 text-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Role Level</dt>
+                  <dd className="font-medium text-foreground">
+                    {employee.isManager ? "Management" : "Individual Contributor"}
+                  </dd>
+                </div>
 
-          <dl className="flex flex-col gap-3 text-sm">
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Role Level</dt>
-              <dd className="font-medium text-foreground">
-                {employee.isManager ? "Management" : "Individual Contributor"}
-              </dd>
-            </div>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Direct Manager</dt>
+                  <dd className="font-mono text-sm font-medium text-foreground">
+                    {employee.managerId ? (
+                      <Link
+                        href={`/employees/${employee.managerId}`}
+                        className="text-primary hover:underline"
+                      >
+                        EMP-{employee.managerId.padStart(5, "0")}
+                      </Link>
+                    ) : (
+                      <span className="font-sans text-xs text-muted-foreground">
+                        None (Top-level)
+                      </span>
+                    )}
+                  </dd>
+                </div>
 
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Direct Manager</dt>
-              <dd className="font-mono text-sm font-medium text-foreground">
-                {employee.managerId ? (
-                  <Link
-                    href={`/employees/${employee.managerId}`}
-                    className="text-primary hover:underline"
-                  >
-                    EMP-{employee.managerId.padStart(5, "0")}
-                  </Link>
-                ) : (
-                  <span className="font-sans text-xs text-muted-foreground">None (Top-level)</span>
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Assigned Project</dt>
+                  <dd className="flex items-center gap-1 font-mono font-medium text-foreground">
+                    <FolderGit2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    PRJ-{employee.projectId}
+                  </dd>
+                </div>
+              </dl>
+            </EmployeeInfoCard>
+
+            {/* Contact & Identification */}
+            <EmployeeInfoCard
+              id="contact-identification-title"
+              title="Contact & Identification"
+              icon={User}
+              className="md:col-span-2 lg:col-span-1"
+            >
+              <dl className="flex flex-col gap-3 text-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Employee ID</dt>
+                  <dd className="font-mono font-medium text-foreground">
+                    {employee.employeeNumber}
+                  </dd>
+                </div>
+
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">System ID</dt>
+                  <dd className="font-mono text-xs text-muted-foreground">{employee.id}</dd>
+                </div>
+
+                <div className="flex items-start justify-between gap-2">
+                  <dt className="text-muted-foreground">Email</dt>
+                  <dd>
+                    <a
+                      href={`mailto:${employee.email}`}
+                      className="block max-w-[180px] truncate font-medium text-primary hover:underline"
+                      title={employee.email}
+                    >
+                      {employee.email}
+                    </a>
+                  </dd>
+                </div>
+
+                {employee.phone && (
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Phone</dt>
+                    <dd>
+                      <a
+                        href={`tel:${employee.phone}`}
+                        className="font-medium text-foreground hover:underline"
+                      >
+                        {employee.phone}
+                      </a>
+                    </dd>
+                  </div>
                 )}
-              </dd>
-            </div>
+              </dl>
+            </EmployeeInfoCard>
+          </div>
+        </TabsContent>
 
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Assigned Project</dt>
-              <dd className="flex items-center gap-1 font-mono font-medium text-foreground">
-                <FolderGit2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                PRJ-{employee.projectId}
-              </dd>
-            </div>
-          </dl>
-        </section>
+        {/* Tab 2: Projects & Team */}
+        <TabsContent value="projects" keepMounted className="mt-0">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+              <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
+                <FolderGit2 className="size-4 text-primary" aria-hidden="true" />
+                <div>
+                  <CardTitle as="h2" className="text-sm font-semibold text-foreground">
+                    Active Project Assignment
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Current operational allocation and project scope
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <dl className="flex flex-col gap-3 text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Project Code</dt>
+                    <dd className="font-mono font-medium text-foreground">
+                      PRJ-{employee.projectId}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Department Scope</dt>
+                    <dd className="font-medium text-foreground">{employee.department}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Role on Project</dt>
+                    <dd className="font-medium text-foreground">{employee.position}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Assignment Status</dt>
+                    <dd>
+                      <Badge
+                        variant="outline"
+                        className="border-success/30 bg-success/10 text-xs font-normal text-success"
+                      >
+                        Active Assignment
+                      </Badge>
+                    </dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
 
-        {/* Contact & Identification */}
-        <section
-          aria-labelledby="contact-identification-title"
-          className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-2xs md:col-span-2 lg:col-span-1"
-        >
-          <header className="flex items-center gap-2 border-b border-border/60 pb-3">
-            <User className="size-4 text-primary" aria-hidden="true" />
-            <h2 id="contact-identification-title" className="text-sm font-semibold text-foreground">
-              Contact & Identification
-            </h2>
-          </header>
+            <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+              <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
+                <Users className="size-4 text-primary" aria-hidden="true" />
+                <div>
+                  <CardTitle as="h2" className="text-sm font-semibold text-foreground">
+                    Reporting & Team Hierarchy
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Supervision and organization structure
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <dl className="flex flex-col gap-3 text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Leadership Role</dt>
+                    <dd className="font-medium text-foreground">
+                      {employee.isManager ? "Team Manager / Lead" : "Individual Contributor"}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Reporting To</dt>
+                    <dd className="font-mono text-sm font-medium text-foreground">
+                      {employee.managerId ? (
+                        <Link
+                          href={`/employees/${employee.managerId}`}
+                          className="text-primary hover:underline"
+                        >
+                          EMP-{employee.managerId.padStart(5, "0")}
+                        </Link>
+                      ) : (
+                        <span className="font-sans text-xs text-muted-foreground">
+                          Top-Level Executive
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <dt className="text-muted-foreground">Division</dt>
+                    <dd className="font-medium text-foreground">{employee.department} Division</dd>
+                  </div>
+                </dl>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-          <dl className="flex flex-col gap-3 text-sm">
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Employee ID</dt>
-              <dd className="font-mono font-medium text-foreground">{employee.employeeNumber}</dd>
-            </div>
-
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">System ID</dt>
-              <dd className="font-mono text-xs text-muted-foreground">{employee.id}</dd>
-            </div>
-
-            <div className="flex items-start justify-between gap-2">
-              <dt className="text-muted-foreground">Email</dt>
-              <dd>
-                <a
-                  href={`mailto:${employee.email}`}
-                  className="block max-w-[180px] truncate font-medium text-primary hover:underline"
-                  title={employee.email}
-                >
-                  {employee.email}
-                </a>
-              </dd>
-            </div>
-
-            {employee.phone && (
-              <div className="flex items-start justify-between gap-2">
-                <dt className="text-muted-foreground">Phone</dt>
-                <dd>
-                  <a
-                    href={`tel:${employee.phone}`}
-                    className="font-medium text-foreground hover:underline"
-                  >
-                    {employee.phone}
-                  </a>
-                </dd>
+        {/* Tab 3: Assets & Inventory */}
+        <TabsContent value="assets" keepMounted className="mt-0">
+          <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 p-0 pb-3">
+              <div className="flex items-center gap-2">
+                <Laptop className="size-4 text-primary" aria-hidden="true" />
+                <div>
+                  <CardTitle as="h2" className="text-sm font-semibold text-foreground">
+                    Assigned Assets & Hardware
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Company equipment and resources assigned to {employee.fullName}
+                  </CardDescription>
+                </div>
               </div>
-            )}
-          </dl>
-        </section>
-      </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <Laptop
+                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <div className="flex flex-col gap-0.5 text-xs">
+                    <span className="font-medium text-foreground">Standard Workstation Kit</span>
+                    <span className="text-muted-foreground">
+                      Assigned for {employee.position} role in {employee.department}
+                    </span>
+                    <span className="mt-1 font-mono text-[11px] text-muted-foreground">
+                      Device Tag: AST-{employee.id.padStart(4, "0")}-LT
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <ShieldCheck
+                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <div className="flex flex-col gap-0.5 text-xs">
+                    <span className="font-medium text-foreground">Security Keycard & Badge</span>
+                    <span className="text-muted-foreground">
+                      Facility access linked to {employee.employeeNumber}
+                    </span>
+                    <span className="mt-1 font-mono text-[11px] text-muted-foreground">
+                      Badge ID: SEC-{employee.employeeNumber}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex items-center justify-end border-t border-border/60 p-0 pt-3">
+              <Link href="/inventory">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                  Browse Inventory Catalog <ArrowRight className="size-3.5" aria-hidden="true" />
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* Tab 4: Activity Log */}
+        <TabsContent value="activity" keepMounted className="mt-0">
+          <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+            <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
+              <Clock className="size-4 text-primary" aria-hidden="true" />
+              <div>
+                <CardTitle as="h2" className="text-sm font-semibold text-foreground">
+                  Activity & Profile History
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Chronological record of employment status and changes
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ol className="relative flex flex-col gap-4 border-l border-border pl-4 text-xs">
+                <li className="relative flex flex-col gap-1">
+                  <div
+                    className="absolute top-0.5 -left-[21px] size-2.5 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                  <span className="font-medium text-foreground">Account Created & Onboarded</span>
+                  <span className="text-muted-foreground">
+                    Officially joined {employee.department} as {employee.position}.
+                  </span>
+                  <time dateTime={employee.hireDate} className="text-[11px] text-muted-foreground">
+                    {formatDate(employee.hireDate)}
+                  </time>
+                </li>
+
+                <li className="relative flex flex-col gap-1">
+                  <div
+                    className="absolute top-0.5 -left-[21px] size-2.5 rounded-full bg-muted-foreground/40"
+                    aria-hidden="true"
+                  />
+                  <span className="font-medium text-foreground">Project Allocation</span>
+                  <span className="text-muted-foreground">
+                    Assigned to project PRJ-{employee.projectId} as primary contributor.
+                  </span>
+                  <span className="font-mono text-[11px] text-muted-foreground">
+                    PRJ-{employee.projectId}
+                  </span>
+                </li>
+
+                <li className="relative flex flex-col gap-1">
+                  <div
+                    className="absolute top-0.5 -left-[21px] size-2.5 rounded-full bg-muted-foreground/40"
+                    aria-hidden="true"
+                  />
+                  <span className="font-medium text-foreground">Record Status Verified</span>
+                  <span className="text-muted-foreground">
+                    Employee status recorded as {employee.status}.
+                  </span>
+                  <span className="font-mono text-[11px] text-muted-foreground">
+                    {employee.employeeNumber}
+                  </span>
+                </li>
+              </ol>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </article>
   )
 }
