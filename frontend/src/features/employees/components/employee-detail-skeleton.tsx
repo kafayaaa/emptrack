@@ -38,6 +38,11 @@ export function EmployeeDetailSkeleton() {
         </div>
       </header>
 
+      {/* Tabs navigation skeleton */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1" aria-hidden="true">
+        <Skeleton className="h-10 w-96 max-w-full rounded-lg" />
+      </div>
+
       {/* Detail grid skeleton */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Employment Information Card Skeleton */}
