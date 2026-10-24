@@ -8,6 +8,7 @@ export interface DataTableEmptyStateProps {
   title?: string
   description?: string
   action?: React.ReactNode
+  headingLevel?: "h2" | "h3"
 }
 
 function BaseDataTableEmptyState({
@@ -16,7 +17,10 @@ function BaseDataTableEmptyState({
   title = "No data found",
   description = "No results match your criteria. Try adjusting your filters or search keywords.",
   action,
+  headingLevel = "h2",
 }: DataTableEmptyStateProps) {
+  const Heading = headingLevel
+
   return (
     <TableRow>
       <TableCell colSpan={colSpan} className="h-64 text-center">
@@ -25,7 +29,7 @@ function BaseDataTableEmptyState({
             <Icon className="h-6 w-6 stroke-[1.75]" />
           </div>
           <div className="max-w-sm space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <Heading className="text-sm font-semibold text-foreground">{title}</Heading>
             {description ? (
               <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             ) : null}

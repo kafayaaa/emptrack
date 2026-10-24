@@ -27,7 +27,7 @@ export default function EmployeeNotFound() {
         <UserX className="size-7" />
       </div>
 
-      <h2 className="mt-4 text-lg font-semibold text-foreground">Employee Not Found</h2>
+      <h1 className="mt-4 text-lg font-semibold text-foreground">Employee Not Found</h1>
 
       <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
         The employee you are looking for could not be found or may have been removed from the

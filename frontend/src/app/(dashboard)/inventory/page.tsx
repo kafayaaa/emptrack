@@ -5,5 +5,14 @@ export const metadata: Metadata = {
 }
 
 export default function InventoryPage() {
-  return <h1>Inventory Page</h1>
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Inventory</h1>
+        <p className="text-sm text-muted-foreground">
+          Track and manage company hardware, equipment, and assets.
+        </p>
+      </div>
+    </div>
+  )
 }

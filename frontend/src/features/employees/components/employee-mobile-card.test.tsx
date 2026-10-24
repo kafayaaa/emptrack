@@ -75,4 +75,13 @@ describe("EmployeeMobileCard", () => {
     expect(mockPrefetchEmployee).toHaveBeenCalledWith("emp-1")
     expect(mockPrefetchEmployee).toHaveBeenCalledTimes(3)
   })
+
+  it("renders accessible contact links and decorative aria-hidden icons (EMPTRACK-59)", async () => {
+    const { renderToStaticMarkup } = await import("react-dom/server")
+    const html = renderToStaticMarkup(<EmployeeMobileCard employee={mockEmployee} />)
+
+    expect(html).toContain(`aria-label="Send email to Sarah Connor (${mockEmployee.email})"`)
+    expect(html).toContain(`aria-label="Call Sarah Connor at ${mockEmployee.phone}"`)
+    expect(html).toContain('aria-hidden="true"')
+  })
 })

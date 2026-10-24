@@ -10,6 +10,7 @@ export interface DataTableErrorStateProps {
   errorMessage?: string
   retryLabel?: string
   onRetry?: () => void
+  headingLevel?: "h2" | "h3"
 }
 
 function BaseDataTableErrorState({
@@ -19,7 +20,10 @@ function BaseDataTableErrorState({
   errorMessage,
   retryLabel = "Coba lagi",
   onRetry,
+  headingLevel = "h2",
 }: DataTableErrorStateProps) {
+  const Heading = headingLevel
+
   return (
     <TableRow>
       <TableCell colSpan={colSpan} className="h-64 text-center">
@@ -32,7 +36,7 @@ function BaseDataTableErrorState({
             <AlertCircle className="h-6 w-6 stroke-[1.75]" />
           </div>
           <div className="max-w-md space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <Heading className="text-sm font-semibold text-foreground">{title}</Heading>
             {description ? (
               <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             ) : null}
