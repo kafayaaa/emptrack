@@ -7,6 +7,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app"
 import { ThemeProvider } from "./theme-provider"
 import { getQueryClient } from "@/lib/query-client"
 import { TooltipProvider } from "../ui/tooltip"
+import { Toaster } from "../ui/sonner"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Tidak perlu useState: getQueryClient() sudah menangani server vs browser.
@@ -24,6 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <NuqsAdapter>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>{children}</TooltipProvider>
+            <Toaster richColors closeButton position="top-right" />
             {/* Otomatis tidak ikut ke bundle production. */}
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
