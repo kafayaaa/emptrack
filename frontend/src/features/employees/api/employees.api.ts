@@ -6,6 +6,7 @@ import {
   type EmployeeListInputQuery,
   type EmployeeListResponse,
 } from "../schema/employee.schema"
+import type { EmployeeFormValues } from "../schema/employee-form.schema"
 
 export const employeeListResponseSchema = z.object({
   data: z.array(employeeSchema),
@@ -37,6 +38,12 @@ export async function getEmployees(params?: EmployeeListInputQuery): Promise<Emp
 
 export async function getEmployeeById(id: string): Promise<Employee> {
   return apiClient.get<Employee>(`/api/employees/${id}`, {
+    schema: employeeSchema,
+  })
+}
+
+export async function createEmployee(data: EmployeeFormValues): Promise<Employee> {
+  return apiClient.post<Employee>("/api/employees", data, {
     schema: employeeSchema,
   })
 }

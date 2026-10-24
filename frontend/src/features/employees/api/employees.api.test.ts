@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { apiClient } from "@/lib/api-client"
-import { employeeKeys, getEmployees, getEmployeeById } from "./employees.api"
+import { employeeKeys, getEmployees, getEmployeeById, createEmployee } from "./employees.api"
 import type { EmployeeListResponse } from "../schema/employee.schema"
 
 afterEach(() => {
@@ -136,5 +136,37 @@ describe("getEmployeeById", () => {
     )
 
     await expect(getEmployeeById("1")).rejects.toThrow()
+  })
+})
+
+describe("createEmployee", () => {
+  const newEmployeeData = {
+    employeeNumber: "EMP-00100",
+    fullName: "Budi Santoso",
+    email: "budi.santoso@perusahaan.com",
+    phone: "+62 812-3456-7890",
+    department: "Engineering",
+    position: "Frontend Developer",
+    status: "active" as const,
+    hireDate: "2024-01-15",
+    isManager: false,
+    managerId: null,
+    projectId: "101",
+  }
+
+  it("memanggil apiClient.post dengan path /api/employees dan body data", async () => {
+    const createdEmployee = { id: "emp-new", ...newEmployeeData }
+    const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue(createdEmployee)
+
+    const result = await createEmployee(newEmployeeData)
+
+    expect(postSpy).toHaveBeenCalledWith(
+      "/api/employees",
+      newEmployeeData,
+      expect.objectContaining({
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toEqual(createdEmployee)
   })
 })
