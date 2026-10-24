@@ -6,6 +6,14 @@ import * as apiModule from "../api/employees.api"
 import { employeeKeys } from "../api/employees.api"
 import type { Employee } from "../types"
 
+const mockPush = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}))
+
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>()
   return {
@@ -23,7 +31,8 @@ vi.mock("sonner", () => ({
 }))
 
 describe("useCreateEmployee", () => {
-  const mockInvalidateQueries = vi.fn()
+  const mockInvalidateQueries = vi.fn().mockResolvedValue(undefined)
+  const mockSetQueryData = vi.fn()
   const mockMutate = vi.fn()
   const mockMutateAsync = vi.fn()
 
@@ -46,6 +55,7 @@ describe("useCreateEmployee", () => {
     vi.clearAllMocks()
     vi.mocked(useQueryClient).mockReturnValue({
       invalidateQueries: mockInvalidateQueries,
+      setQueryData: mockSetQueryData,
     } as unknown as ReturnType<typeof useQueryClient>)
 
     vi.mocked(useMutation).mockReturnValue({
@@ -99,29 +109,61 @@ describe("useCreateEmployee", () => {
     expect(result).toEqual(dummyCreatedEmployee)
   })
 
-  it("menginvalidasi cache query list dan memicu toast sukses pada onSuccess", () => {
+  it("mengisi cache detail (cache priming), menginvalidasi query list, dan memicu toast sukses dengan tombol aksi", async () => {
     const onSuccessCallback = vi.fn()
     useCreateEmployee({ onSuccess: onSuccessCallback })
 
     const mutationConfig = vi.mocked(useMutation).mock.calls[0][0] as {
-      onSuccess: (data: Employee) => void
+      onSuccess: (data: Employee) => Promise<void>
     }
 
-    mutationConfig.onSuccess(dummyCreatedEmployee)
+    await mutationConfig.onSuccess(dummyCreatedEmployee)
 
+    // Cache priming detail
+    expect(mockSetQueryData).toHaveBeenCalledWith(
+      employeeKeys.detail(dummyCreatedEmployee.id),
+      dummyCreatedEmployee,
+    )
+
+    // Invalidation list queries
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: employeeKeys.lists(),
     })
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: employeeKeys.infiniteLists(),
     })
+
+    // Toast notification
     expect(toast.success).toHaveBeenCalledWith(
       "Karyawan Berhasil Ditambahkan",
       expect.objectContaining({
         description: expect.stringContaining("Dewi Lestari"),
+        action: expect.objectContaining({
+          label: "Lihat Profil",
+          onClick: expect.any(Function),
+        }),
       }),
     )
+
+    // Invoke action click to test navigation
+    const toastCall = vi.mocked(toast.success).mock.calls[0][1] as {
+      action?: { onClick: () => void }
+    }
+    toastCall.action?.onClick()
+    expect(mockPush).toHaveBeenCalledWith(`/employees/${dummyCreatedEmployee.id}`)
+
     expect(onSuccessCallback).toHaveBeenCalledWith(dummyCreatedEmployee)
+  })
+
+  it("melakukan redirect otomatis ke halaman detail jika redirectToDetail bernilai true", async () => {
+    useCreateEmployee({ redirectToDetail: true })
+
+    const mutationConfig = vi.mocked(useMutation).mock.calls[0][0] as {
+      onSuccess: (data: Employee) => Promise<void>
+    }
+
+    await mutationConfig.onSuccess(dummyCreatedEmployee)
+    expect(mockPush).toHaveBeenCalledWith(`/employees/${dummyCreatedEmployee.id}`)
   })
 
   it("memicu toast error dan memanggil onError callback pada onError", () => {
