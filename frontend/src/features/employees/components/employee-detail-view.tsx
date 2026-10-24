@@ -63,22 +63,22 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
       </nav>
 
       {/* Hero profile card */}
-      <Card as="header" className="p-6 shadow-2xs">
+      <Card as="header" className="p-4 shadow-2xs sm:p-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3.5 sm:gap-4">
             <Avatar
               size="xl"
-              className="ring-4 ring-primary/10"
+              className="size-14 shrink-0 ring-4 ring-primary/10 sm:size-16"
               aria-label={`Avatar for ${employee.fullName}`}
             >
-              <AvatarFallback className="bg-primary/10 text-xl font-bold tracking-wider text-primary">
+              <AvatarFallback className="bg-primary/10 text-lg font-bold tracking-wider text-primary sm:text-xl">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                <h1 className="truncate text-lg font-bold tracking-tight text-foreground sm:text-2xl">
                   {employee.fullName}
                 </h1>
                 {employee.isManager && (
@@ -93,7 +93,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                 <EmployeeStatusBadge status={employee.status} />
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground sm:text-sm">
                 <span className="font-mono font-medium text-foreground">
                   {employee.employeeNumber}
                 </span>
@@ -109,13 +109,14 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
           <div
             role="group"
             aria-label="Contact actions"
-            className="flex flex-wrap items-center gap-2"
+            className="flex w-full flex-row items-center gap-2 sm:w-auto"
           >
             <a
               href={`mailto:${employee.email}`}
               aria-label={`Send email to ${employee.fullName} (${employee.email})`}
+              className="flex-1 sm:flex-initial"
             >
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs sm:w-auto">
                 <Mail className="size-3.5" aria-hidden="true" /> Send Email
               </Button>
             </a>
@@ -123,8 +124,9 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               <a
                 href={`tel:${employee.phone}`}
                 aria-label={`Call ${employee.fullName} at ${employee.phone}`}
+                className="flex-1 sm:flex-initial"
               >
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs sm:w-auto">
                   <Phone className="size-3.5" aria-hidden="true" /> Call
                 </Button>
               </a>
@@ -135,21 +137,36 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
       {/* Tabs Layout */}
       <Tabs defaultValue="overview" className="flex flex-col gap-6">
-        <div className="overflow-x-auto pb-1">
-          <TabsList aria-label="Employee detail sections" className="h-10 p-1">
-            <TabsTrigger value="overview" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+        <div className="[scrollbar-width:none] overflow-x-auto pb-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <TabsList
+            aria-label="Employee detail sections"
+            className="h-10 w-full justify-start p-1 sm:w-auto"
+          >
+            <TabsTrigger
+              value="overview"
+              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
+            >
               <Building2 className="size-4" aria-hidden="true" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="projects" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+            <TabsTrigger
+              value="projects"
+              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
+            >
               <FolderGit2 className="size-4" aria-hidden="true" />
               Projects & Team
             </TabsTrigger>
-            <TabsTrigger value="assets" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+            <TabsTrigger
+              value="assets"
+              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
+            >
               <Laptop className="size-4" aria-hidden="true" />
               Assets & Inventory
             </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-2 px-3 py-1.5 text-xs sm:text-sm">
+            <TabsTrigger
+              value="activity"
+              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
+            >
               <Clock className="size-4" aria-hidden="true" />
               Activity Log
             </TabsTrigger>
@@ -167,12 +184,12 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             >
               <dl className="flex flex-col gap-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Department</dt>
+                  <dt className="shrink-0 text-muted-foreground">Department</dt>
                   <dd className="text-right font-medium text-foreground">{employee.department}</dd>
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Position</dt>
+                  <dt className="shrink-0 text-muted-foreground">Position</dt>
                   <dd className="flex items-center gap-1 text-right font-medium text-foreground">
                     <Briefcase className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     {employee.position}
@@ -180,14 +197,14 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Status</dt>
+                  <dt className="shrink-0 text-muted-foreground">Status</dt>
                   <dd>
                     <EmployeeStatusBadge status={employee.status} />
                   </dd>
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Hire Date</dt>
+                  <dt className="shrink-0 text-muted-foreground">Hire Date</dt>
                   <dd className="flex items-center gap-1 text-right font-medium text-foreground">
                     <Calendar className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     <time dateTime={employee.hireDate}>{formatDate(employee.hireDate)}</time>
@@ -200,15 +217,15 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             <EmployeeInfoCard id="role-hierarchy-title" title="Role & Hierarchy" icon={Users}>
               <dl className="flex flex-col gap-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Role Level</dt>
-                  <dd className="font-medium text-foreground">
+                  <dt className="shrink-0 text-muted-foreground">Role Level</dt>
+                  <dd className="text-right font-medium text-foreground">
                     {employee.isManager ? "Management" : "Individual Contributor"}
                   </dd>
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Direct Manager</dt>
-                  <dd className="font-mono text-sm font-medium text-foreground">
+                  <dt className="shrink-0 text-muted-foreground">Direct Manager</dt>
+                  <dd className="text-right font-mono text-sm font-medium text-foreground">
                     {employee.managerId ? (
                       <Link
                         href={`/employees/${employee.managerId}`}
@@ -225,8 +242,8 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Assigned Project</dt>
-                  <dd className="flex items-center gap-1 font-mono font-medium text-foreground">
+                  <dt className="shrink-0 text-muted-foreground">Assigned Project</dt>
+                  <dd className="flex items-center gap-1 text-right font-mono font-medium text-foreground">
                     <FolderGit2 className="size-3.5 text-muted-foreground" aria-hidden="true" />
                     PRJ-{employee.projectId}
                   </dd>
@@ -243,23 +260,25 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             >
               <dl className="flex flex-col gap-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Employee ID</dt>
-                  <dd className="font-mono font-medium text-foreground">
+                  <dt className="shrink-0 text-muted-foreground">Employee ID</dt>
+                  <dd className="text-right font-mono font-medium text-foreground">
                     {employee.employeeNumber}
                   </dd>
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">System ID</dt>
-                  <dd className="font-mono text-xs text-muted-foreground">{employee.id}</dd>
+                  <dt className="shrink-0 text-muted-foreground">System ID</dt>
+                  <dd className="text-right font-mono text-xs text-muted-foreground">
+                    {employee.id}
+                  </dd>
                 </div>
 
                 <div className="flex items-start justify-between gap-2">
-                  <dt className="text-muted-foreground">Email</dt>
-                  <dd>
+                  <dt className="shrink-0 text-muted-foreground">Email</dt>
+                  <dd className="min-w-0">
                     <a
                       href={`mailto:${employee.email}`}
-                      className="block max-w-[180px] truncate font-medium text-primary hover:underline"
+                      className="block max-w-[170px] truncate text-right font-medium text-primary hover:underline sm:max-w-[280px] md:max-w-[200px] lg:max-w-[180px] xl:max-w-none"
                       title={employee.email}
                     >
                       {employee.email}
@@ -269,8 +288,8 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
                 {employee.phone && (
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Phone</dt>
-                    <dd>
+                    <dt className="shrink-0 text-muted-foreground">Phone</dt>
+                    <dd className="text-right">
                       <a
                         href={`tel:${employee.phone}`}
                         className="font-medium text-foreground hover:underline"
@@ -288,7 +307,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
         {/* Tab 2: Projects & Team */}
         <TabsContent value="projects" keepMounted className="mt-0">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+            <Card className="flex flex-col gap-4 p-4 shadow-2xs sm:p-5">
               <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
                 <FolderGit2 className="size-4 text-primary" aria-hidden="true" />
                 <div>
@@ -303,21 +322,23 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               <CardContent className="p-0">
                 <dl className="flex flex-col gap-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Project Code</dt>
+                    <dt className="shrink-0 text-muted-foreground">Project Code</dt>
                     <dd className="font-mono font-medium text-foreground">
                       PRJ-{employee.projectId}
                     </dd>
                   </div>
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Department Scope</dt>
-                    <dd className="font-medium text-foreground">{employee.department}</dd>
+                    <dt className="shrink-0 text-muted-foreground">Department Scope</dt>
+                    <dd className="text-right font-medium text-foreground">
+                      {employee.department}
+                    </dd>
                   </div>
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Role on Project</dt>
-                    <dd className="font-medium text-foreground">{employee.position}</dd>
+                    <dt className="shrink-0 text-muted-foreground">Role on Project</dt>
+                    <dd className="text-right font-medium text-foreground">{employee.position}</dd>
                   </div>
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Assignment Status</dt>
+                    <dt className="shrink-0 text-muted-foreground">Assignment Status</dt>
                     <dd>
                       <Badge
                         variant="outline"
@@ -331,7 +352,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               </CardContent>
             </Card>
 
-            <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+            <Card className="flex flex-col gap-4 p-4 shadow-2xs sm:p-5">
               <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
                 <Users className="size-4 text-primary" aria-hidden="true" />
                 <div>
@@ -346,14 +367,14 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               <CardContent className="p-0">
                 <dl className="flex flex-col gap-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Leadership Role</dt>
-                    <dd className="font-medium text-foreground">
+                    <dt className="shrink-0 text-muted-foreground">Leadership Role</dt>
+                    <dd className="text-right font-medium text-foreground">
                       {employee.isManager ? "Team Manager / Lead" : "Individual Contributor"}
                     </dd>
                   </div>
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Reporting To</dt>
-                    <dd className="font-mono text-sm font-medium text-foreground">
+                    <dt className="shrink-0 text-muted-foreground">Reporting To</dt>
+                    <dd className="text-right font-mono text-sm font-medium text-foreground">
                       {employee.managerId ? (
                         <Link
                           href={`/employees/${employee.managerId}`}
@@ -369,8 +390,10 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
                     </dd>
                   </div>
                   <div className="flex items-start justify-between gap-2">
-                    <dt className="text-muted-foreground">Division</dt>
-                    <dd className="font-medium text-foreground">{employee.department} Division</dd>
+                    <dt className="shrink-0 text-muted-foreground">Division</dt>
+                    <dd className="text-right font-medium text-foreground">
+                      {employee.department} Division
+                    </dd>
                   </div>
                 </dl>
               </CardContent>
@@ -380,8 +403,8 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
         {/* Tab 3: Assets & Inventory */}
         <TabsContent value="assets" keepMounted className="mt-0">
-          <Card className="flex flex-col gap-4 p-5 shadow-2xs">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 p-0 pb-3">
+          <Card className="flex flex-col gap-4 p-4 shadow-2xs sm:p-5">
+            <CardHeader className="flex flex-col gap-1.5 border-b border-border/60 p-0 pb-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <Laptop className="size-4 text-primary" aria-hidden="true" />
                 <div>
@@ -430,8 +453,8 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               </div>
             </CardContent>
             <CardFooter className="flex items-center justify-end border-t border-border/60 p-0 pt-3">
-              <Link href="/inventory">
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Link href="/inventory" className="w-full sm:w-auto">
+                <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs sm:w-auto">
                   Browse Inventory Catalog <ArrowRight className="size-3.5" aria-hidden="true" />
                 </Button>
               </Link>
@@ -441,7 +464,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
         {/* Tab 4: Activity Log */}
         <TabsContent value="activity" keepMounted className="mt-0">
-          <Card className="flex flex-col gap-4 p-5 shadow-2xs">
+          <Card className="flex flex-col gap-4 p-4 shadow-2xs sm:p-5">
             <CardHeader className="flex flex-row items-center gap-2 border-b border-border/60 p-0 pb-3">
               <Clock className="size-4 text-primary" aria-hidden="true" />
               <div>
