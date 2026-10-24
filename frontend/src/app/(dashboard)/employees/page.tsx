@@ -2,7 +2,11 @@ import * as React from "react"
 import { Metadata } from "next"
 import Link from "next/link"
 import { Gauge } from "lucide-react"
-import { EmployeeViewContainer, EmployeeTableSkeleton } from "@/features/employees"
+import {
+  EmployeeViewContainer,
+  EmployeeTableSkeleton,
+  EmployeeCreateDialog,
+} from "@/features/employees"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
@@ -19,7 +23,8 @@ export default function EmployeePage() {
             Manage and monitor all organization members and their employment details.
           </p>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          <EmployeeCreateDialog />
           <Link href="/employees/benchmark">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
               <Gauge className="size-3.5" /> Virtualization Benchmark (10k)
