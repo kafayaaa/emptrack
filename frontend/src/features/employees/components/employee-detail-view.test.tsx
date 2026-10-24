@@ -84,14 +84,17 @@ describe("EmployeeDetailView", () => {
     // Card structure (EMPTRACK-56)
     expect(html).toContain('data-slot="card"')
 
-    // Tabs layout & accessibility (EMPTRACK-56)
+    // Tabs layout & accessibility (EMPTRACK-56 & EMPTRACK-57)
     expect(html).toContain('role="tablist"')
     expect(html).toContain('role="tab"')
     expect(html).toContain('role="tabpanel"')
     expect(html).toContain("Overview")
-    expect(html).toContain("Projects &amp; Team")
-    expect(html).toContain("Assets &amp; Inventory")
-    expect(html).toContain("Activity Log")
+    expect(html).toContain("Projects")
+    expect(html).toContain("&amp; Team")
+    expect(html).toContain("Assets")
+    expect(html).toContain("&amp; Inventory")
+    expect(html).toContain("Activity")
+    expect(html).toContain("Log")
 
     // Additional tab panels content
     expect(html).toContain("Active Project Assignment")
@@ -113,8 +116,9 @@ describe("EmployeeDetailView", () => {
     expect(html).toContain("w-full")
     expect(html).toContain("sm:w-auto")
 
-    // Tabs List responsif (w-full justify-start di mobile, sm:w-auto)
-    expect(html).toContain("w-full justify-start")
+    // Segmented tabs responsif (grid grid-cols-4 di mobile, sm:inline-flex)
+    expect(html).toContain("grid-cols-4")
+    expect(html).toContain("sm:inline-flex")
 
     // Truncate email responsif
     expect(html).toContain("max-w-[170px]")

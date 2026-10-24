@@ -137,41 +137,45 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
       {/* Tabs Layout */}
       <Tabs defaultValue="overview" className="flex flex-col gap-6">
-        <div className="[scrollbar-width:none] overflow-x-auto pb-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <TabsList
-            aria-label="Employee detail sections"
-            className="h-10 w-full justify-start p-1 sm:w-auto"
+        <TabsList
+          aria-label="Employee detail sections"
+          className="grid h-10 w-full grid-cols-4 p-1 sm:inline-flex sm:h-10 sm:w-auto"
+        >
+          <TabsTrigger
+            value="overview"
+            className="h-full gap-1.5 px-1 py-1.5 text-xs whitespace-nowrap sm:gap-2 sm:px-3 sm:text-sm"
           >
-            <TabsTrigger
-              value="overview"
-              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
-            >
-              <Building2 className="size-4" aria-hidden="true" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="projects"
-              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
-            >
-              <FolderGit2 className="size-4" aria-hidden="true" />
-              Projects & Team
-            </TabsTrigger>
-            <TabsTrigger
-              value="assets"
-              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
-            >
-              <Laptop className="size-4" aria-hidden="true" />
-              Assets & Inventory
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="gap-2 px-3 py-1.5 text-xs whitespace-nowrap sm:text-sm"
-            >
-              <Clock className="size-4" aria-hidden="true" />
-              Activity Log
-            </TabsTrigger>
-          </TabsList>
-        </div>
+            <Building2 className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+            <span>Overview</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="projects"
+            className="h-full gap-1.5 px-1 py-1.5 text-xs whitespace-nowrap sm:gap-2 sm:px-3 sm:text-sm"
+          >
+            <FolderGit2 className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+            <span>
+              Projects<span className="hidden sm:inline"> & Team</span>
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="assets"
+            className="h-full gap-1.5 px-1 py-1.5 text-xs whitespace-nowrap sm:gap-2 sm:px-3 sm:text-sm"
+          >
+            <Laptop className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+            <span>
+              Assets<span className="hidden sm:inline"> & Inventory</span>
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="activity"
+            className="h-full gap-1.5 px-1 py-1.5 text-xs whitespace-nowrap sm:gap-2 sm:px-3 sm:text-sm"
+          >
+            <Clock className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+            <span>
+              Activity<span className="hidden sm:inline"> Log</span>
+            </span>
+          </TabsTrigger>
+        </TabsList>
 
         {/* Tab 1: Overview */}
         <TabsContent value="overview" keepMounted className="mt-0">

@@ -40,10 +40,13 @@ export function EmployeeDetailSkeleton() {
 
       {/* Tabs navigation skeleton */}
       <div
-        className="flex [scrollbar-width:none] items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="grid h-10 w-full grid-cols-4 gap-1 rounded-lg bg-muted p-1 sm:inline-flex sm:h-10 sm:w-auto"
         aria-hidden="true"
       >
-        <Skeleton className="h-10 w-full rounded-lg sm:w-96" />
+        <Skeleton className="h-full w-full rounded-md sm:w-24" />
+        <Skeleton className="h-full w-full rounded-md sm:w-28" />
+        <Skeleton className="h-full w-full rounded-md sm:w-32" />
+        <Skeleton className="h-full w-full rounded-md sm:w-24" />
       </div>
 
       {/* Detail grid skeleton */}
