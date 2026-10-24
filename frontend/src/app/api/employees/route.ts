@@ -4,8 +4,10 @@ import { serverEnv } from "@/env.server"
 import {
   employeeListQuerySchema,
   jsonServerEmployeeListSchema,
+  employeeSchema,
   type EmployeeListResponse,
 } from "@/features/employees/schema/employee.schema"
+import { employeeFormSchema } from "@/features/employees/schema/employee-form.schema"
 
 // Helper agar semua error punya bentuk yang sama.
 function errorResponse(status: number, code: string, message: string, details?: unknown) {
@@ -89,6 +91,60 @@ export async function GET(request: NextRequest) {
       return errorResponse(504, "UPSTREAM_TIMEOUT", "Backend terlalu lama merespons.")
     }
     // Backend mati / koneksi ditolak. Detail error tidak dikirim ke client.
+    return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
+  }
+}
+
+export async function POST(request: NextRequest) {
+  let bodyJson: unknown
+  try {
+    bodyJson = await request.json()
+  } catch {
+    return errorResponse(400, "INVALID_JSON", "Format body request bukan JSON yang valid.")
+  }
+
+  // 1. VALIDASI INPUT DENGAN FORM SCHEMA
+  const parsed = employeeFormSchema.safeParse(bodyJson)
+  if (!parsed.success) {
+    return errorResponse(
+      400,
+      "INVALID_BODY",
+      "Data karyawan tidak valid.",
+      z.flattenError(parsed.error).fieldErrors,
+    )
+  }
+
+  // 2. FORWARD KE UPSTREAM BACKEND
+  const upstream = new URL("/employees", serverEnv.BACKEND_URL)
+  try {
+    const res = await fetch(upstream, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(parsed.data),
+      signal: AbortSignal.timeout(5000),
+    })
+
+    if (!res.ok) {
+      return errorResponse(502, "UPSTREAM_ERROR", "Backend mengembalikan error saat menyimpan.")
+    }
+
+    const rawData = await res.json()
+    const validatedData = employeeSchema.safeParse(rawData)
+    if (!validatedData.success) {
+      return errorResponse(
+        502,
+        "UPSTREAM_INVALID",
+        "Format data balasan backend tidak sesuai skema.",
+      )
+    }
+
+    return NextResponse.json(validatedData.data, { status: 201 })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      return errorResponse(504, "UPSTREAM_TIMEOUT", "Backend terlalu lama merespons.")
+    }
     return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
   }
 }
