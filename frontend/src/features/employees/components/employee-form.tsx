@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useForm, useWatch } from "react-hook-form"
+import { useForm, useWatch, type FieldErrors } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { cn } from "cn"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -97,6 +98,8 @@ export function EmployeeForm({
   const form = useForm<EmployeeFormInput, unknown, EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues,
+    mode: "onTouched",
+    reValidateMode: "onChange",
   })
 
   // Pantau perubahan departemen untuk memperbarui opsi posisi secara dinamis
@@ -112,14 +115,28 @@ export function EmployeeForm({
     return ALL_EMPLOYEE_POSITIONS
   }, [selectedDepartment])
 
-  const handleSubmit = async (values: EmployeeFormValues) => {
-    await onSubmit(values)
+  const handleValid = async (values: EmployeeFormValues) => {
+    try {
+      await onSubmit(values)
+    } catch (err) {
+      toast.error("Gagal Menyimpan Data Karyawan", {
+        description:
+          err instanceof Error ? err.message : "Terjadi kesalahan pada sistem saat menyimpan data.",
+      })
+    }
+  }
+
+  const handleInvalid = (errors: FieldErrors<EmployeeFormInput>) => {
+    const errorCount = Object.keys(errors).length
+    toast.error("Validasi Formulir Gagal", {
+      description: `Terdapat ${errorCount} kolom yang belum terisi dengan benar. Mohon periksa kolom bertanda merah.`,
+    })
   }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleValid, handleInvalid)}
         className={cn("space-y-8", className)}
         noValidate
       >
