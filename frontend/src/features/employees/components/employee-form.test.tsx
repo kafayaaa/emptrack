@@ -74,4 +74,20 @@ describe("EmployeeForm component", () => {
     expect(html).toContain("Menyimpan...")
     expect(html).toContain("disabled")
   })
+
+  it("renders form element with noValidate attribute", () => {
+    const html = renderToStaticMarkup(<EmployeeForm onSubmit={vi.fn()} />)
+    expect(html).toContain("<form")
+    expect(html.toLowerCase()).toContain("novalidate")
+  })
+
+  it("renders specific positions when department is pre-selected in initialData", () => {
+    const html = renderToStaticMarkup(
+      <EmployeeForm
+        initialData={{ ...dummyEmployee, department: "Finance", position: "Accountant" }}
+        onSubmit={vi.fn()}
+      />,
+    )
+    expect(html).toContain("Accountant")
+  })
 })

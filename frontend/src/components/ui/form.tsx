@@ -11,6 +11,7 @@ import {
   useFormState,
 } from "react-hook-form"
 import { cn } from "cn"
+import { AlertCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
 
 const Form = FormProvider
@@ -144,10 +145,11 @@ function FormMessage({ className, children, ...props }: React.ComponentProps<"p"
       data-slot="form-message"
       id={formMessageId}
       role="alert"
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn("flex items-center gap-1.5 text-xs font-medium text-destructive", className)}
       {...props}
     >
-      {body}
+      <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
+      <span>{body}</span>
     </p>
   )
 }
