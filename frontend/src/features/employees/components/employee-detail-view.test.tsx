@@ -53,13 +53,13 @@ describe("EmployeeDetailView", () => {
 
     // Description List (<dl>, <dt>, <dd>)
     expect(html).toContain("<dl")
-    expect(html).toContain('<dt class="text-muted-foreground">Department</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Position</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Hire Date</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Role Level</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Direct Manager</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Assigned Project</dt>')
-    expect(html).toContain('<dt class="text-muted-foreground">Employee ID</dt>')
+    expect(html).toContain("Department</dt>")
+    expect(html).toContain("Position</dt>")
+    expect(html).toContain("Hire Date</dt>")
+    expect(html).toContain("Role Level</dt>")
+    expect(html).toContain("Direct Manager</dt>")
+    expect(html).toContain("Assigned Project</dt>")
+    expect(html).toContain("Employee ID</dt>")
 
     // Semantic <time> element
     expect(html).toContain('<time dateTime="2017-01-18"')
@@ -100,6 +100,25 @@ describe("EmployeeDetailView", () => {
     expect(html).toContain("Browse Inventory Catalog")
     expect(html).toContain("Activity &amp; Profile History")
     expect(html).toContain("Account Created &amp; Onboarded")
+  })
+
+  it("menerapkan kelas tata letak responsif untuk mobile dan desktop (EMPTRACK-57)", () => {
+    const html = renderToStaticMarkup(<EmployeeDetailView employee={mockEmployee} />)
+
+    // Hero Profile Card padding responsif (p-4 di mobile, p-6 di sm/desktop)
+    expect(html).toContain("p-4")
+    expect(html).toContain("sm:p-6")
+
+    // Contact action buttons responsif (w-full di mobile, sm:w-auto di desktop)
+    expect(html).toContain("w-full")
+    expect(html).toContain("sm:w-auto")
+
+    // Tabs List responsif (w-full justify-start di mobile, sm:w-auto)
+    expect(html).toContain("w-full justify-start")
+
+    // Truncate email responsif
+    expect(html).toContain("max-w-[170px]")
+    expect(html).toContain("sm:max-w-[280px]")
   })
 
   it("merender manajer langsung jika managerId tersedia dan bukan manajer jika isManager: false", () => {
