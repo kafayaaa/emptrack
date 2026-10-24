@@ -31,20 +31,22 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
           data-testid="employee-detail-not-found"
           role="region"
           aria-label="Employee not found notice"
-          className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-8 text-center"
+          className="flex min-h-[350px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-6 text-center sm:min-h-[400px] sm:p-8"
         >
-          <div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <UserX className="size-7" />
+          <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground sm:size-14">
+            <UserX className="size-6 sm:size-7" />
           </div>
-          <h2 className="mt-4 text-lg font-semibold text-foreground">Employee Not Found</h2>
-          <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
+          <h2 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
+            Employee Not Found
+          </h2>
+          <p className="mt-1.5 max-w-md text-xs text-muted-foreground sm:text-sm">
             We couldn&apos;t find an employee with ID{" "}
             <span className="font-mono font-medium text-foreground">&quot;{id}&quot;</span>. The
             record might have been removed or the ID might be incorrect.
           </p>
-          <div className="mt-6">
-            <Link href="/employees">
-              <Button variant="default" size="sm" className="gap-2">
+          <div className="mt-6 w-full sm:w-auto">
+            <Link href="/employees" className="w-full sm:w-auto">
+              <Button variant="default" size="sm" className="w-full gap-2 sm:w-auto">
                 <ArrowLeft className="size-4" />
                 Back to Employees List
               </Button>
@@ -58,30 +60,30 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
       <div
         data-testid="employee-detail-error"
         role="alert"
-        className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-8 text-center"
+        className="flex min-h-[350px] flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center sm:min-h-[400px] sm:p-8"
       >
-        <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <AlertCircle className="size-7" />
+        <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive sm:size-14">
+          <AlertCircle className="size-6 sm:size-7" />
         </div>
-        <h2 className="mt-4 text-lg font-semibold text-foreground">
+        <h2 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
           Unable to Load Employee Details
         </h2>
-        <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
+        <p className="mt-1.5 max-w-md text-xs text-muted-foreground sm:text-sm">
           {error?.message || "An unexpected error occurred while communicating with the server."}
         </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
           <Button
             variant="outline"
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="gap-2"
+            className="w-full gap-2 sm:w-auto"
           >
             <RefreshCw className={`size-3.5 ${isFetching ? "animate-spin" : ""}`} />
             Try Again
           </Button>
-          <Link href="/employees">
-            <Button variant="ghost" size="sm" className="gap-2">
+          <Link href="/employees" className="w-full sm:w-auto">
+            <Button variant="ghost" size="sm" className="w-full gap-2 sm:w-auto">
               <ArrowLeft className="size-4" />
               Back to Employees
             </Button>
