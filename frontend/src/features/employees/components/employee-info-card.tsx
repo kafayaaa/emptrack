@@ -24,7 +24,7 @@ export function EmployeeInfoCard({
     <Card
       as="section"
       aria-labelledby={id}
-      className={cn("flex flex-col gap-4 p-5 shadow-2xs", className)}
+      className={cn("flex flex-col gap-4 p-4 shadow-2xs sm:p-5", className)}
       {...props}
     >
       <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 p-0 pb-3">
