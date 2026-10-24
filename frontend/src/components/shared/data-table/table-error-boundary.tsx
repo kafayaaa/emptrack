@@ -80,7 +80,7 @@ export class TableErrorBoundary extends React.Component<
             <AlertCircle className="h-6 w-6 stroke-[1.75]" />
           </div>
           <div className="max-w-md space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <h2 className="text-sm font-semibold text-foreground">{title}</h2>
             <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             {error.message ? (
               <p className="mt-1 font-mono text-[11px] break-all text-destructive/80">

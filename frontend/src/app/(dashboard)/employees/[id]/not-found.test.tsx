@@ -10,7 +10,7 @@ describe("EmployeeNotFound (/employees/[id]/not-found.tsx)", () => {
     expect(html).toContain('data-testid="employee-not-found"')
     expect(html).toContain('role="region"')
     expect(html).toContain('aria-label="Employee not found notice"')
-    expect(html).toContain("Employee Not Found</h2>")
+    expect(html).toContain("Employee Not Found</h1>")
     expect(html).toContain('href="/employees"')
     expect(html).toContain("Back to Employees")
   })

@@ -36,9 +36,9 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
           <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground sm:size-14">
             <UserX className="size-6 sm:size-7" />
           </div>
-          <h2 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
+          <h1 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
             Employee Not Found
-          </h2>
+          </h1>
           <p className="mt-1.5 max-w-md text-xs text-muted-foreground sm:text-sm">
             We couldn&apos;t find an employee with ID{" "}
             <span className="font-mono font-medium text-foreground">&quot;{id}&quot;</span>. The
@@ -65,9 +65,9 @@ export function EmployeeDetailContainer({ id }: EmployeeDetailContainerProps) {
         <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive sm:size-14">
           <AlertCircle className="size-6 sm:size-7" />
         </div>
-        <h2 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
+        <h1 className="mt-4 text-base font-semibold text-foreground sm:text-lg">
           Unable to Load Employee Details
-        </h2>
+        </h1>
         <p className="mt-1.5 max-w-md text-xs text-muted-foreground sm:text-sm">
           {error?.message || "An unexpected error occurred while communicating with the server."}
         </p>
