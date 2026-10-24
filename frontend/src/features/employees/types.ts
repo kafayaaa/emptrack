@@ -6,4 +6,6 @@ export type {
   EmployeeSortField,
 } from "./schema/employee.schema"
 
+export type { EmployeeFormValues, EmployeeFormInput } from "./schema/employee-form.schema"
+
 export type EmployeeStatus = "active" | "on_leave" | "inactive"
