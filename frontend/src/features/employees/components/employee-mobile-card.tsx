@@ -22,7 +22,10 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
       {/* Top Header: Name, Employee ID, and Status Badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2.5">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+          >
             <User className="size-4" />
           </div>
           <div className="flex min-w-0 flex-col">
@@ -41,7 +44,7 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
                   variant="secondary"
                   className="flex items-center gap-1 px-1.5 py-0 text-[10px] font-medium"
                 >
-                  <ShieldCheck className="size-3 text-primary" />
+                  <ShieldCheck className="size-3 text-primary" aria-hidden="true" />
                   Manager
                 </Badge>
               )}
@@ -57,7 +60,7 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
       {/* Details Grid */}
       <div className="grid grid-cols-2 gap-2 border-t border-border/60 pt-2 text-xs">
         <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
-          <Building2 className="size-3.5 shrink-0 text-muted-foreground/70" />
+          <Building2 className="size-3.5 shrink-0 text-muted-foreground/70" aria-hidden="true" />
           <span className="truncate" title={employee.department}>
             {employee.department}
           </span>
@@ -70,9 +73,10 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
         </div>
 
         <div className="col-span-2 flex min-w-0 items-center gap-1.5 text-muted-foreground">
-          <Mail className="size-3.5 shrink-0 text-muted-foreground/70" />
+          <Mail className="size-3.5 shrink-0 text-muted-foreground/70" aria-hidden="true" />
           <a
             href={`mailto:${employee.email}`}
+            aria-label={`Send email to ${employee.fullName} (${employee.email})`}
             className="truncate transition-colors hover:text-foreground hover:underline"
           >
             {employee.email}
@@ -81,9 +85,10 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
 
         {employee.phone && (
           <div className="col-span-2 flex min-w-0 items-center gap-1.5 text-muted-foreground">
-            <Phone className="size-3.5 shrink-0 text-muted-foreground/70" />
+            <Phone className="size-3.5 shrink-0 text-muted-foreground/70" aria-hidden="true" />
             <a
               href={`tel:${employee.phone}`}
+              aria-label={`Call ${employee.fullName} at ${employee.phone}`}
               className="truncate transition-colors hover:text-foreground hover:underline"
             >
               {employee.phone}
@@ -92,7 +97,7 @@ function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
         )}
 
         <div className="col-span-2 flex min-w-0 items-center gap-1.5 pt-0.5 text-[11px] text-muted-foreground/80">
-          <Calendar className="size-3.5 shrink-0 text-muted-foreground/70" />
+          <Calendar className="size-3.5 shrink-0 text-muted-foreground/70" aria-hidden="true" />
           <span>Hired on {formatDate(employee.hireDate)}</span>
         </div>
       </div>
