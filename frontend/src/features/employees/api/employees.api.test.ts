@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest"
 import { apiClient } from "@/lib/api-client"
-import { employeeKeys, getEmployees, getEmployeeById, createEmployee } from "./employees.api"
+import {
+  employeeKeys,
+  getEmployees,
+  getEmployeeById,
+  createEmployee,
+  updateEmployee,
+} from "./employees.api"
 import type { EmployeeListResponse } from "../schema/employee.schema"
 
 afterEach(() => {
@@ -168,5 +174,37 @@ describe("createEmployee", () => {
       }),
     )
     expect(result).toEqual(createdEmployee)
+  })
+})
+
+describe("updateEmployee", () => {
+  const updateData = {
+    employeeNumber: "EMP-00100",
+    fullName: "Budi Santoso Diperbarui",
+    email: "budi.update@perusahaan.com",
+    phone: "+62 812-3456-7890",
+    department: "Engineering",
+    position: "Frontend Developer",
+    status: "active" as const,
+    hireDate: "2024-01-15",
+    isManager: true,
+    managerId: null,
+    projectId: "102",
+  }
+
+  it("memanggil apiClient.patch dengan path /api/employees/:id dan body data", async () => {
+    const updatedEmployee = { id: "emp-100", ...updateData }
+    const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValue(updatedEmployee)
+
+    const result = await updateEmployee("emp-100", updateData)
+
+    expect(patchSpy).toHaveBeenCalledWith(
+      "/api/employees/emp-100",
+      updateData,
+      expect.objectContaining({
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toEqual(updatedEmployee)
   })
 })
