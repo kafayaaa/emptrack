@@ -72,8 +72,13 @@ export function EmployeeEditDialog({
 
   const handleSubmit = React.useCallback(
     async (values: EmployeeFormValues) => {
-      await mutateAsync(values)
+      // Tutup modal seketika untuk memberikan feedback responsif instan (optimistic UI)
       handleOpenChange(false)
+      try {
+        await mutateAsync(values)
+      } catch {
+        // Error, rollback, dan toast error ditangani oleh hook useUpdateEmployee
+      }
     },
     [mutateAsync, handleOpenChange],
   )
