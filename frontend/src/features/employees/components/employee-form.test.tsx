@@ -4,6 +4,10 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { EmployeeForm } from "./employee-form"
 import type { Employee } from "../types"
 
+vi.mock("../api/employees.api", () => ({
+  checkEmployeeEmailUnique: vi.fn().mockResolvedValue(true),
+}))
+
 describe("EmployeeForm component", () => {
   const dummyEmployee: Employee = {
     id: "emp-1",
@@ -89,5 +93,11 @@ describe("EmployeeForm component", () => {
       />,
     )
     expect(html).toContain("Accountant")
+  })
+
+  it("renders email input with proper attributes", () => {
+    const html = renderToStaticMarkup(<EmployeeForm onSubmit={vi.fn()} />)
+    expect(html).toContain('name="email"')
+    expect(html).toContain('type="email"')
   })
 })
