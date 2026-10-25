@@ -3,6 +3,7 @@ import { z } from "zod"
 import { serverEnv } from "@/env.server"
 import { employeeSchema } from "@/features/employees/schema/employee.schema"
 import { employeeFormSchema } from "@/features/employees/schema/employee-form.schema"
+import { isEmployeeEmailUniqueServer } from "@/features/employees/api/employees.server"
 
 // Helper agar semua error punya bentuk yang sama konsisten dengan /api/employees
 function errorResponse(status: number, code: string, message: string, details?: unknown) {
@@ -77,6 +78,24 @@ export async function PATCH(
       "Data karyawan tidak valid.",
       z.flattenError(parsed.error).fieldErrors,
     )
+  }
+
+  // 1.5. VALIDASI KEUNIKAN EMAIL
+  try {
+    const isUnique = await isEmployeeEmailUniqueServer(parsed.data.email, id)
+    if (!isUnique) {
+      return errorResponse(
+        409,
+        "EMAIL_ALREADY_EXISTS",
+        "Email perusahaan sudah digunakan oleh karyawan lain.",
+        { email: ["Email perusahaan sudah digunakan oleh karyawan lain."] },
+      )
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      return errorResponse(504, "UPSTREAM_TIMEOUT", "Backend terlalu lama merespons.")
+    }
+    return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
   }
 
   const upstream = new URL(`/employees/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)

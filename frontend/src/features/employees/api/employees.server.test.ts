@@ -7,7 +7,7 @@ vi.mock("@/env.server", () => ({
   },
 }))
 
-import { getEmployeeByIdServer } from "./employees.server"
+import { getEmployeeByIdServer, isEmployeeEmailUniqueServer } from "./employees.server"
 
 describe("getEmployeeByIdServer", () => {
   const originalFetch = globalThis.fetch
@@ -99,5 +99,87 @@ describe("getEmployeeByIdServer", () => {
 
     const result = await getEmployeeByIdServer("1")
     expect(result).toBeNull()
+  })
+})
+
+describe("isEmployeeEmailUniqueServer", () => {
+  const originalFetch = globalThis.fetch
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  it("mengembalikan false jika email kosong", async () => {
+    expect(await isEmployeeEmailUniqueServer("")).toBe(false)
+    expect(await isEmployeeEmailUniqueServer("   ")).toBe(false)
+  })
+
+  it("mengembalikan true jika tidak ada record yang cocok di backend", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    )
+
+    const result = await isEmployeeEmailUniqueServer("unique.new@perusahaan.com")
+    expect(result).toBe(true)
+  })
+
+  it("mengembalikan false jika email sudah digunakan oleh karyawan lain", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            id: "emp-10",
+            email: "used@perusahaan.com",
+          },
+        ]),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+
+    const result = await isEmployeeEmailUniqueServer("used@perusahaan.com")
+    expect(result).toBe(false)
+  })
+
+  it("mengabaikan karyawan dengan excludeId yang cocok (mode edit)", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            id: "emp-10",
+            email: "self@perusahaan.com",
+          },
+        ]),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    )
+
+    const result = await isEmployeeEmailUniqueServer("self@perusahaan.com", "emp-10")
+    expect(result).toBe(true)
+  })
+
+  it("melempar error jika upstream gagal merespons", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response("Server Error", {
+        status: 500,
+        headers: { "Content-Type": "text/plain" },
+      }),
+    )
+
+    await expect(isEmployeeEmailUniqueServer("test@perusahaan.com")).rejects.toThrow(
+      /Upstream error/,
+    )
   })
 })

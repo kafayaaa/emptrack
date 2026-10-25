@@ -53,3 +53,23 @@ export async function updateEmployee(id: string, data: EmployeeFormValues): Prom
     schema: employeeSchema,
   })
 }
+
+export const checkEmailResponseSchema = z.object({
+  isUnique: z.boolean(),
+})
+
+export type CheckEmailResponse = z.infer<typeof checkEmailResponseSchema>
+
+export async function checkEmployeeEmailUnique(
+  email: string,
+  excludeId?: string,
+): Promise<boolean> {
+  const params: Record<string, string> = { email: email.trim().toLowerCase() }
+  if (excludeId) params.excludeId = excludeId.trim()
+
+  const res = await apiClient.get<CheckEmailResponse>("/api/employees/check-email", {
+    params,
+    schema: checkEmailResponseSchema,
+  })
+  return res.isUnique
+}

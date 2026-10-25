@@ -59,10 +59,20 @@ async function request<T>(
     response.status === 204 ? undefined : isJson ? await response.json() : await response.text()
 
   if (!response.ok) {
-    const message =
-      typeof payload === "object" && payload && "message" in payload
-        ? String(payload.message)
-        : response.statusText
+    let message = response.statusText
+    if (typeof payload === "object" && payload !== null) {
+      if ("message" in payload && typeof payload.message === "string") {
+        message = payload.message
+      } else if (
+        "error" in payload &&
+        typeof payload.error === "object" &&
+        payload.error !== null &&
+        "message" in payload.error &&
+        typeof (payload.error as { message: unknown }).message === "string"
+      ) {
+        message = (payload.error as { message: string }).message
+      }
+    }
     throw new ApiError(response.status, message, payload)
   }
 
