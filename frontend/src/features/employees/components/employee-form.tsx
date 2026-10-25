@@ -39,6 +39,9 @@ import {
   type EmployeeFormValues,
   type EmployeeFormInput,
 } from "../schema/employee-form.schema"
+import { useDebounce } from "@/hooks/use-debounce"
+import { ApiError } from "@/lib/api-client"
+import { checkEmployeeEmailUnique } from "../api/employees.api"
 import type { Employee } from "../types"
 
 export interface EmployeeFormProps {
@@ -115,10 +118,94 @@ export function EmployeeForm({
     return ALL_EMPLOYEE_POSITIONS
   }, [selectedDepartment])
 
+  // Pantau input email untuk validasi asinkron dengan debounce
+  const currentEmail = useWatch({
+    control: form.control,
+    name: "email",
+  })
+  const debouncedEmail = useDebounce(currentEmail?.trim(), 400)
+  const [isCheckingEmail, setIsCheckingEmail] = React.useState(false)
+  const [asyncUniqueResult, setAsyncUniqueResult] = React.useState<boolean | null>(null)
+
+  const isEmailFormatValid = Boolean(
+    debouncedEmail && debouncedEmail.includes("@") && debouncedEmail.includes("."),
+  )
+  const isSameAsInitialEmail = Boolean(
+    initialData?.email &&
+    debouncedEmail &&
+    initialData.email.trim().toLowerCase() === debouncedEmail.toLowerCase(),
+  )
+
+  const isEmailUnique = isSameAsInitialEmail ? true : isEmailFormatValid ? asyncUniqueResult : null
+
+  React.useEffect(() => {
+    if (!isEmailFormatValid || isSameAsInitialEmail) {
+      if (isSameAsInitialEmail && form.formState.errors.email?.type === "manual") {
+        form.clearErrors("email")
+      }
+      return
+    }
+
+    let isCancelled = false
+
+    Promise.resolve().then(() => {
+      if (isCancelled) return
+      setIsCheckingEmail(true)
+
+      checkEmployeeEmailUnique(debouncedEmail, initialData?.id)
+        .then((unique) => {
+          if (isCancelled) return
+          setAsyncUniqueResult(unique)
+          if (!unique) {
+            form.setError("email", {
+              type: "manual",
+              message: "Email sudah digunakan oleh karyawan lain",
+            })
+          } else if (form.formState.errors.email?.type === "manual") {
+            form.clearErrors("email")
+          }
+        })
+        .catch(() => {
+          // Abaikan error jaringan saat async check agar tidak memblokir pengetikan
+        })
+        .finally(() => {
+          if (!isCancelled) {
+            setIsCheckingEmail(false)
+          }
+        })
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [debouncedEmail, initialData?.id, isSameAsInitialEmail, isEmailFormatValid, form])
+
   const handleValid = async (values: EmployeeFormValues) => {
+    // Jika hasil pemeriksaan menunjukkan email duplikat, cegah submit
+    if (isEmailUnique === false) {
+      form.setError("email", {
+        type: "manual",
+        message: "Email sudah digunakan oleh karyawan lain",
+      })
+      return
+    }
+
     try {
       await onSubmit(values)
     } catch (err) {
+      if (
+        err instanceof ApiError &&
+        (err.status === 409 ||
+          (typeof err.data === "object" &&
+            err.data &&
+            "error" in err.data &&
+            (err.data as { error: { code: string } }).error?.code === "EMAIL_ALREADY_EXISTS"))
+      ) {
+        form.setError("email", {
+          type: "manual",
+          message: "Email sudah digunakan oleh karyawan lain",
+        })
+      }
       toast.error("Gagal Menyimpan Data Karyawan", {
         description:
           err instanceof Error ? err.message : "Terjadi kesalahan pada sistem saat menyimpan data.",
@@ -183,7 +270,26 @@ export function EmployeeForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Perusahaan</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Email Perusahaan</FormLabel>
+                    {isCheckingEmail && (
+                      <span
+                        className="flex items-center gap-1 text-xs text-muted-foreground"
+                        data-testid="email-checking-indicator"
+                      >
+                        <Loader2 className="size-3 animate-spin" aria-hidden="true" />
+                        <span>Memeriksa ketersediaan...</span>
+                      </span>
+                    )}
+                    {!isCheckingEmail && isEmailUnique === true && debouncedEmail && (
+                      <span
+                        className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                        data-testid="email-available-indicator"
+                      >
+                        ✓ Email tersedia
+                      </span>
+                    )}
+                  </div>
                   <FormControl>
                     <Input
                       type="email"
@@ -429,8 +535,8 @@ export function EmployeeForm({
             </Button>
           )}
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" disabled={isSubmitting || isCheckingEmail} aria-busy={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
             {isSubmitting ? "Menyimpan..." : isEditMode ? "Simpan Perubahan" : "Tambah Karyawan"}
           </Button>
         </div>

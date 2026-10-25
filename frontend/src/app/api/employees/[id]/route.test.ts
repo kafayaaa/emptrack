@@ -227,7 +227,18 @@ describe("PATCH /api/employees/[id]", () => {
   })
 
   it("mengembalikan 404 jika karyawan tidak ditemukan di upstream", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(new Response("Not found", { status: 404 }))
+    globalThis.fetch = vi.fn().mockImplementation((url: URL | string) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      return Promise.resolve(new Response("Not found", { status: 404 }))
+    })
 
     const request = new NextRequest("http://localhost:3000/api/employees/999", {
       method: "PATCH",
@@ -243,14 +254,64 @@ describe("PATCH /api/employees/[id]", () => {
     expect(json.error.code).toBe("NOT_FOUND")
   })
 
+  it("mengembalikan 409 EMAIL_ALREADY_EXISTS jika email sudah digunakan karyawan lain saat edit", async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: URL | string) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify([
+              {
+                id: "other-employee",
+                email: validPayload.email,
+              },
+            ]),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 404 }))
+    })
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "PATCH",
+      body: JSON.stringify(validPayload),
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(409)
+    const json = await response.json()
+    expect(json.error.code).toBe("EMAIL_ALREADY_EXISTS")
+  })
+
   it("mengembalikan 200 dengan data terupdate saat upstream berhasil", async () => {
     const updatedEmployee = { id: "1", ...validPayload }
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(updatedEmployee), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
-    )
+    const fetchMock = vi.fn().mockImplementation((url: URL | string, options?: RequestInit) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      if (options?.method === "PATCH") {
+        return Promise.resolve(
+          new Response(JSON.stringify(updatedEmployee), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 404 }))
+    })
     globalThis.fetch = fetchMock
 
     const request = new NextRequest("http://localhost:3000/api/employees/1", {

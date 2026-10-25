@@ -6,6 +6,7 @@ import {
   getEmployeeById,
   createEmployee,
   updateEmployee,
+  checkEmployeeEmailUnique,
 } from "./employees.api"
 import type { EmployeeListResponse } from "../schema/employee.schema"
 
@@ -206,5 +207,32 @@ describe("updateEmployee", () => {
       }),
     )
     expect(result).toEqual(updatedEmployee)
+  })
+})
+
+describe("checkEmployeeEmailUnique", () => {
+  it("memanggil apiClient.get dengan path /api/employees/check-email dan query params", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ isUnique: true })
+
+    const result = await checkEmployeeEmailUnique("budi@perusahaan.com", "emp-1")
+
+    expect(getSpy).toHaveBeenCalledWith(
+      "/api/employees/check-email",
+      expect.objectContaining({
+        params: {
+          email: "budi@perusahaan.com",
+          excludeId: "emp-1",
+        },
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toBe(true)
+  })
+
+  it("mengembalikan false jika email sudah terpakai", async () => {
+    vi.spyOn(apiClient, "get").mockResolvedValue({ isUnique: false })
+
+    const result = await checkEmployeeEmailUnique("used@perusahaan.com")
+    expect(result).toBe(false)
   })
 })

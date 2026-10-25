@@ -69,12 +69,26 @@ describe("POST /api/employees", () => {
       ...validPayload,
     }
 
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(upstreamResponse), {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      }),
-    )
+    const fetchMock = vi.fn().mockImplementation((url: URL | string, options?: RequestInit) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      if (options?.method === "POST") {
+        return Promise.resolve(
+          new Response(JSON.stringify(upstreamResponse), {
+            status: 201,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 404 }))
+    })
     globalThis.fetch = fetchMock
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
@@ -96,12 +110,61 @@ describe("POST /api/employees", () => {
     )
   })
 
-  it("mengembalikan 502 jika upstream backend mengembalikan error", async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue(
-      new Response("Internal error", {
-        status: 500,
-      }),
-    )
+  it("mengembalikan 409 EMAIL_ALREADY_EXISTS jika email sudah digunakan karyawan lain", async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: URL | string) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify([
+              {
+                id: "emp-existing",
+                email: validPayload.email,
+              },
+            ]),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 404 }))
+    })
+
+    const request = new NextRequest("http://localhost:3000/api/employees", {
+      method: "POST",
+      body: JSON.stringify(validPayload),
+      headers: { "Content-Type": "application/json" },
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(409)
+    const json = await response.json()
+    expect(json.error.code).toBe("EMAIL_ALREADY_EXISTS")
+    expect(json.error.details.email).toBeDefined()
+  })
+
+  it("mengembalikan 502 jika upstream backend mengembalikan error saat menyimpan", async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: URL | string, options?: RequestInit) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("email=")) {
+        return Promise.resolve(
+          new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      if (options?.method === "POST") {
+        return Promise.resolve(
+          new Response("Internal error", {
+            status: 500,
+          }),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 500 }))
+    })
 
     const request = new NextRequest("http://localhost:3000/api/employees", {
       method: "POST",
