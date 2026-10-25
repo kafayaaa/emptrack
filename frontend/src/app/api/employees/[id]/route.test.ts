@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NextRequest } from "next/server"
-import { GET } from "./route"
+import { GET, PATCH } from "./route"
 
 vi.mock("@/env.server", () => ({
   serverEnv: {
@@ -153,5 +153,123 @@ describe("GET /api/employees/[id]", () => {
     expect(response.status).toBe(502)
     const json = await response.json()
     expect(json.error.code).toBe("UPSTREAM_UNREACHABLE")
+  })
+})
+
+describe("PATCH /api/employees/[id]", () => {
+  const originalFetch = globalThis.fetch
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  const validPayload = {
+    employeeNumber: "EMP-00001",
+    fullName: "Daruna Daruna Oktovian Update",
+    email: "daruna.update@emptrack.test",
+    phone: "+62 812-3456-7890",
+    department: "Engineering",
+    position: "Frontend Developer",
+    status: "active",
+    hireDate: "2017-01-18",
+    isManager: false,
+    managerId: null,
+    projectId: "101",
+  }
+
+  it("mengembalikan 400 jika ID kosong", async () => {
+    const request = new NextRequest("http://localhost:3000/api/employees/%20", {
+      method: "PATCH",
+      body: JSON.stringify(validPayload),
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "   " }),
+    })
+
+    expect(response.status).toBe(400)
+    const json = await response.json()
+    expect(json.error.code).toBe("INVALID_ID")
+  })
+
+  it("mengembalikan 400 jika body bukan JSON valid", async () => {
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "PATCH",
+      body: "not-json",
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(400)
+    const json = await response.json()
+    expect(json.error.code).toBe("INVALID_JSON")
+  })
+
+  it("mengembalikan 400 jika data tidak valid", async () => {
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "PATCH",
+      body: JSON.stringify({ ...validPayload, email: "invalid-email" }),
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(400)
+    const json = await response.json()
+    expect(json.error.code).toBe("INVALID_BODY")
+  })
+
+  it("mengembalikan 404 jika karyawan tidak ditemukan di upstream", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(new Response("Not found", { status: 404 }))
+
+    const request = new NextRequest("http://localhost:3000/api/employees/999", {
+      method: "PATCH",
+      body: JSON.stringify(validPayload),
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "999" }),
+    })
+
+    expect(response.status).toBe(404)
+    const json = await response.json()
+    expect(json.error.code).toBe("NOT_FOUND")
+  })
+
+  it("mengembalikan 200 dengan data terupdate saat upstream berhasil", async () => {
+    const updatedEmployee = { id: "1", ...validPayload }
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(updatedEmployee), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    )
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "PATCH",
+      body: JSON.stringify(validPayload),
+      headers: { "Content-Type": "application/json" },
+    })
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(200)
+    const json = await response.json()
+    expect(json.fullName).toBe("Daruna Daruna Oktovian Update")
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("/employees/1", "http://localhost:4000"),
+      expect.objectContaining({
+        method: "PATCH",
+      }),
+    )
   })
 })

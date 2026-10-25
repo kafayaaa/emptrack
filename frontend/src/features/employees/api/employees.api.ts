@@ -47,3 +47,9 @@ export async function createEmployee(data: EmployeeFormValues): Promise<Employee
     schema: employeeSchema,
   })
 }
+
+export async function updateEmployee(id: string, data: EmployeeFormValues): Promise<Employee> {
+  return apiClient.patch<Employee>(`/api/employees/${encodeURIComponent(id)}`, data, {
+    schema: employeeSchema,
+  })
+}

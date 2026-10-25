@@ -31,6 +31,7 @@ import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
 import { EmployeeInfoCard } from "./employee-info-card"
 import { EmployeeStatusBadge } from "./employee-status-badge"
+import { EmployeeEditDialog } from "./employee-edit-dialog"
 
 export interface EmployeeDetailViewProps {
   employee: Employee
@@ -105,12 +106,13 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             </div>
           </div>
 
-          {/* Quick contact actions */}
+          {/* Quick contact and edit actions */}
           <div
             role="group"
-            aria-label="Contact actions"
-            className="flex w-full flex-row items-center gap-2 sm:w-auto"
+            aria-label="Employee actions"
+            className="flex w-full flex-wrap items-center gap-2 sm:w-auto"
           >
+            <EmployeeEditDialog employee={employee} />
             <a
               href={`mailto:${employee.email}`}
               aria-label={`Send email to ${employee.fullName} (${employee.email})`}
