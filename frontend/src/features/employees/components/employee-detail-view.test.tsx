@@ -8,6 +8,13 @@ import * as hooksModule from "../hooks/use-employee"
 import { ApiError } from "@/lib/api-client"
 import type { Employee } from "../types"
 
+vi.mock("../hooks/use-update-employee", () => ({
+  useUpdateEmployee: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+}))
+
 const mockEmployee: Employee = {
   id: "1",
   employeeNumber: "EMP-00001",
@@ -73,6 +80,7 @@ describe("EmployeeDetailView", () => {
     expect(html).toContain("None (Top-level)")
     expect(html).toContain(`mailto:${mockEmployee.email}`)
     expect(html).toContain(`tel:${mockEmployee.phone}`)
+    expect(html).toContain("Edit Data")
     expect(html).toContain("DO") // Initials
 
     // Avatar layout (EMPTRACK-56)
