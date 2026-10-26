@@ -54,6 +54,19 @@ export async function updateEmployee(id: string, data: EmployeeFormValues): Prom
   })
 }
 
+export const deleteEmployeeResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string().optional(),
+})
+
+export type DeleteEmployeeResponse = z.infer<typeof deleteEmployeeResponseSchema>
+
+export async function deleteEmployee(id: string): Promise<DeleteEmployeeResponse> {
+  return apiClient.delete<DeleteEmployeeResponse>(`/api/employees/${encodeURIComponent(id)}`, {
+    schema: deleteEmployeeResponseSchema,
+  })
+}
+
 export const checkEmailResponseSchema = z.object({
   isUnique: z.boolean(),
 })

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { NextRequest } from "next/server"
-import { GET, PATCH } from "./route"
+import { GET, PATCH, DELETE } from "./route"
 
 vi.mock("@/env.server", () => ({
   serverEnv: {
@@ -330,6 +330,132 @@ describe("PATCH /api/employees/[id]", () => {
       new URL("/employees/1", "http://localhost:4000"),
       expect.objectContaining({
         method: "PATCH",
+      }),
+    )
+  })
+})
+
+describe("DELETE /api/employees/[id]", () => {
+  const originalFetch = globalThis.fetch
+
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
+
+  it("mengembalikan 400 jika ID kosong atau whitespace", async () => {
+    const request = new NextRequest("http://localhost:3000/api/employees/%20", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "   " }),
+    })
+
+    expect(response.status).toBe(400)
+    const json = await response.json()
+    expect(json.error.code).toBe("INVALID_ID")
+  })
+
+  it("mengembalikan 404 jika karyawan tidak ditemukan di upstream", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({}), {
+        status: 404,
+      }),
+    )
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/non-existent", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "non-existent" }),
+    })
+
+    expect(response.status).toBe(404)
+    const json = await response.json()
+    expect(json.error.code).toBe("NOT_FOUND")
+  })
+
+  it("mengembalikan 502 jika upstream mengembalikan status error selain 404", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Internal Error" }), {
+        status: 500,
+      }),
+    )
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(502)
+    const json = await response.json()
+    expect(json.error.code).toBe("UPSTREAM_ERROR")
+  })
+
+  it("mengembalikan 504 jika upstream timeout", async () => {
+    const timeoutError = new DOMException("The operation was aborted", "TimeoutError")
+    const fetchMock = vi.fn().mockRejectedValue(timeoutError)
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(504)
+    const json = await response.json()
+    expect(json.error.code).toBe("UPSTREAM_TIMEOUT")
+  })
+
+  it("mengembalikan 502 jika upstream tidak dapat dihubungi", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(new Error("Network failed"))
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(502)
+    const json = await response.json()
+    expect(json.error.code).toBe("UPSTREAM_UNREACHABLE")
+  })
+
+  it("mengembalikan 200 dengan konfirmasi saat upstream berhasil menghapus", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    )
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/employees/1", {
+      method: "DELETE",
+    })
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: "1" }),
+    })
+
+    expect(response.status).toBe(200)
+    const json = await response.json()
+    expect(json.success).toBe(true)
+    expect(json.message).toBe("Karyawan berhasil dihapus.")
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("/employees/1", "http://localhost:4000"),
+      expect.objectContaining({
+        method: "DELETE",
       }),
     )
   })

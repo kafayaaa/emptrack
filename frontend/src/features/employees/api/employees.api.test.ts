@@ -6,6 +6,7 @@ import {
   getEmployeeById,
   createEmployee,
   updateEmployee,
+  deleteEmployee,
   checkEmployeeEmailUnique,
 } from "./employees.api"
 import type { EmployeeListResponse } from "../schema/employee.schema"
@@ -207,6 +208,24 @@ describe("updateEmployee", () => {
       }),
     )
     expect(result).toEqual(updatedEmployee)
+  })
+})
+
+describe("deleteEmployee", () => {
+  it("memanggil apiClient.delete dengan path /api/employees/:id yang ter-encode", async () => {
+    const deleteSpy = vi
+      .spyOn(apiClient, "delete")
+      .mockResolvedValue({ success: true, message: "Karyawan berhasil dihapus." })
+
+    const result = await deleteEmployee("emp/123")
+
+    expect(deleteSpy).toHaveBeenCalledWith(
+      "/api/employees/emp%2F123",
+      expect.objectContaining({
+        schema: expect.any(Object),
+      }),
+    )
+    expect(result).toEqual({ success: true, message: "Karyawan berhasil dihapus." })
   })
 })
 
