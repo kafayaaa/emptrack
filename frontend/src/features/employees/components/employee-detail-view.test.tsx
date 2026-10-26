@@ -15,6 +15,13 @@ vi.mock("../hooks/use-update-employee", () => ({
   }),
 }))
 
+vi.mock("../hooks/use-delete-employee", () => ({
+  useDeleteEmployee: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
+}))
+
 const mockEmployee: Employee = {
   id: "1",
   employeeNumber: "EMP-00001",
@@ -81,6 +88,7 @@ describe("EmployeeDetailView", () => {
     expect(html).toContain(`mailto:${mockEmployee.email}`)
     expect(html).toContain(`tel:${mockEmployee.phone}`)
     expect(html).toContain("Edit Data")
+    expect(html).toContain("Hapus Data")
     expect(html).toContain("DO") // Initials
 
     // Avatar layout (EMPTRACK-56)
