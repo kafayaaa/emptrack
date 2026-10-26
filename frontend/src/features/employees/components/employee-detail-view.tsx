@@ -32,6 +32,7 @@ import type { Employee } from "../types"
 import { EmployeeInfoCard } from "./employee-info-card"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 import { EmployeeEditDialog } from "./employee-edit-dialog"
+import { EmployeeDeleteDialog } from "./employee-delete-dialog"
 
 export interface EmployeeDetailViewProps {
   employee: Employee
@@ -113,6 +114,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
             className="flex w-full flex-wrap items-center gap-2 sm:w-auto"
           >
             <EmployeeEditDialog employee={employee} />
+            <EmployeeDeleteDialog employee={employee} redirectToIndex />
             <a
               href={`mailto:${employee.email}`}
               aria-label={`Send email to ${employee.fullName} (${employee.email})`}
