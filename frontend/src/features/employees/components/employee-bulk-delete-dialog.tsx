@@ -18,8 +18,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
 import { useBulkDeleteEmployees } from "../hooks/use-bulk-delete-employees"
+import { useControllableState } from "@/hooks/use-controllable-state"
 
 export interface EmployeeBulkDeleteDialogProps {
   /**
@@ -60,10 +60,11 @@ export function EmployeeBulkDeleteDialog({
   onSuccess,
   className,
 }: EmployeeBulkDeleteDialogProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
-
-  const isControlled = controlledOpen !== undefined
-  const isOpen = isControlled ? controlledOpen : uncontrolledOpen
+  const [isOpen, setIsOpen] = useControllableState({
+    value: controlledOpen,
+    defaultValue: false,
+    onChange: setControlledOpen,
+  })
 
   const { mutateAsync, isPending, progress, resetProgress } = useBulkDeleteEmployees({
     onSuccess: () => {
@@ -76,16 +77,13 @@ export function EmployeeBulkDeleteDialog({
       // Cegah menutup modal saat proses delete sedang berjalan
       if (isPending) return
 
-      if (!isControlled) {
-        setUncontrolledOpen(nextOpen)
-      }
-      setControlledOpen?.(nextOpen)
+      setIsOpen(nextOpen)
 
       if (!nextOpen) {
         resetProgress()
       }
     },
-    [isControlled, isPending, resetProgress, setControlledOpen],
+    [isPending, resetProgress, setIsOpen],
   )
 
   const handleConfirmDelete = React.useCallback(
@@ -95,16 +93,13 @@ export function EmployeeBulkDeleteDialog({
 
       try {
         await mutateAsync(employeeIds)
-        if (!isControlled) {
-          setUncontrolledOpen(false)
-        }
-        setControlledOpen?.(false)
+        setIsOpen(false)
         resetProgress()
       } catch {
         // Error telah ditangani dan dinotifikasikan via toast oleh useBulkDeleteEmployees
       }
     },
-    [employeeIds, isControlled, mutateAsync, resetProgress, setControlledOpen],
+    [employeeIds, mutateAsync, resetProgress, setIsOpen],
   )
 
   const count = employeeIds.length

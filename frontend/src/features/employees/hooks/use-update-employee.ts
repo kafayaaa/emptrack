@@ -1,21 +1,19 @@
 "use client"
 
-import {
-  useMutation,
-  useQueryClient,
-  type InfiniteData,
-  type QueryKey,
-} from "@tanstack/react-query"
+import { useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { updateEmployee, employeeKeys } from "../api/employees.api"
-import type { EmployeeListResponse } from "../schema/employee.schema"
 import type { EmployeeFormValues } from "../schema/employee-form.schema"
-import type { Employee } from "../types"
+import type { Employee, EmployeeListResponse } from "../types"
+import {
+  snapshotEmployeeLists,
+  rollbackEmployeeLists,
+  invalidateEmployeeLists,
+  type EmployeeListsCacheSnapshot,
+} from "./employee-cache-utils"
 
-export interface UpdateEmployeeMutationContext {
+export interface UpdateEmployeeMutationContext extends EmployeeListsCacheSnapshot {
   previousEmployee?: Employee
-  previousLists?: Array<[QueryKey, EmployeeListResponse | undefined]>
-  previousInfiniteLists?: Array<[QueryKey, InfiniteData<EmployeeListResponse> | undefined]>
 }
 
 export interface UseUpdateEmployeeOptions {
@@ -51,12 +49,7 @@ export function useUpdateEmployee(id: string, options?: UseUpdateEmployeeOptions
 
       // 2. Snapshot data sebelum perubahan untuk rollback jika terjadi error
       const previousEmployee = queryClient.getQueryData<Employee>(employeeKeys.detail(id))
-      const previousLists = queryClient.getQueriesData<EmployeeListResponse>({
-        queryKey: employeeKeys.lists(),
-      })
-      const previousInfiniteLists = queryClient.getQueriesData<InfiniteData<EmployeeListResponse>>({
-        queryKey: employeeKeys.infiniteLists(),
-      })
+      const snapshots = snapshotEmployeeLists(queryClient)
 
       // 3. Optimistic update untuk detail karyawan
       if (previousEmployee) {
@@ -95,8 +88,7 @@ export function useUpdateEmployee(id: string, options?: UseUpdateEmployeeOptions
 
       return {
         previousEmployee,
-        previousLists,
-        previousInfiniteLists,
+        ...snapshots,
       }
     },
     onError: (error, _newValues, context) => {
@@ -105,19 +97,8 @@ export function useUpdateEmployee(id: string, options?: UseUpdateEmployeeOptions
         queryClient.setQueryData(employeeKeys.detail(id), context.previousEmployee)
       }
 
-      // Rollback paginated list caches
-      if (context?.previousLists) {
-        for (const [queryKey, data] of context.previousLists) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
-
-      // Rollback infinite list caches
-      if (context?.previousInfiniteLists) {
-        for (const [queryKey, data] of context.previousInfiniteLists) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
+      // Rollback cache lists (paginated & infinite)
+      rollbackEmployeeLists(queryClient, context)
 
       toast.error("Gagal Memperbarui Data Karyawan", {
         description:
@@ -142,8 +123,7 @@ export function useUpdateEmployee(id: string, options?: UseUpdateEmployeeOptions
       // Invalidate semua query terkait agar cache 100% konsisten dengan database
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: employeeKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: employeeKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: employeeKeys.infiniteLists() }),
+        invalidateEmployeeLists(queryClient),
       ])
 
       options?.onSettled?.(data, error)

@@ -17,6 +17,7 @@ import {
 import { EmployeeForm } from "./employee-form"
 import { useCreateEmployee } from "../hooks/use-create-employee"
 import type { EmployeeFormValues } from "../schema/employee-form.schema"
+import { useControllableState } from "@/hooks/use-controllable-state"
 
 export interface EmployeeCreateDialogProps {
   /**
@@ -47,33 +48,24 @@ export function EmployeeCreateDialog({
   onOpenChange: setControlledOpen,
   className,
 }: EmployeeCreateDialogProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
-
-  const isControlled = controlledOpen !== undefined
-  const isOpen = isControlled ? controlledOpen : uncontrolledOpen
-
-  const handleOpenChange = React.useCallback(
-    (nextOpen: boolean) => {
-      if (!isControlled) {
-        setUncontrolledOpen(nextOpen)
-      }
-      setControlledOpen?.(nextOpen)
-    },
-    [isControlled, setControlledOpen],
-  )
+  const [isOpen, setIsOpen] = useControllableState({
+    value: controlledOpen,
+    defaultValue: false,
+    onChange: setControlledOpen,
+  })
 
   const { mutateAsync, isPending } = useCreateEmployee()
 
   const handleSubmit = React.useCallback(
     async (values: EmployeeFormValues) => {
       await mutateAsync(values)
-      handleOpenChange(false)
+      setIsOpen(false)
     },
-    [mutateAsync, handleOpenChange],
+    [mutateAsync, setIsOpen],
   )
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         render={
           trigger ? (
@@ -102,7 +94,7 @@ export function EmployeeCreateDialog({
           <div className="flex-1 overflow-y-auto px-6 py-4">
             <EmployeeForm
               onSubmit={handleSubmit}
-              onCancel={() => handleOpenChange(false)}
+              onCancel={() => setIsOpen(false)}
               isSubmitting={isPending}
             />
           </div>
