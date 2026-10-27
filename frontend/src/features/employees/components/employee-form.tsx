@@ -146,15 +146,15 @@ export function EmployeeForm({
       return
     }
 
-    let isCancelled = false
+    const controller = new AbortController()
 
     Promise.resolve().then(() => {
-      if (isCancelled) return
+      if (controller.signal.aborted) return
       setIsCheckingEmail(true)
 
-      checkEmployeeEmailUnique(debouncedEmail, initialData?.id)
+      checkEmployeeEmailUnique(debouncedEmail, initialData?.id, { signal: controller.signal })
         .then((unique) => {
-          if (isCancelled) return
+          if (controller.signal.aborted) return
           setAsyncUniqueResult(unique)
           if (!unique) {
             form.setError("email", {
@@ -165,18 +165,25 @@ export function EmployeeForm({
             form.clearErrors("email")
           }
         })
-        .catch(() => {
-          // Abaikan error jaringan saat async check agar tidak memblokir pengetikan
+        .catch((error) => {
+          // Abaikan AbortError / pembatalan request agar tidak mereset state yang sedang berjalan
+          if (
+            error instanceof Error &&
+            (error.name === "AbortError" || error.message.includes("aborted"))
+          ) {
+            return
+          }
+          // Abaikan error jaringan lainnya saat async check agar tidak memblokir pengetikan
         })
         .finally(() => {
-          if (!isCancelled) {
+          if (!controller.signal.aborted) {
             setIsCheckingEmail(false)
           }
         })
     })
 
     return () => {
-      isCancelled = true
+      controller.abort()
     }
   }, [debouncedEmail, initialData?.id, isSameAsInitialEmail, isEmailFormatValid, form])
 

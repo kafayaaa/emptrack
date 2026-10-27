@@ -21,7 +21,7 @@ export const EMPLOYEE_DETAIL_CACHE_CONFIG = {
 export function useEmployee(id: string, options?: UseEmployeeOptions) {
   return useQuery({
     queryKey: employeeKeys.detail(id),
-    queryFn: () => getEmployeeById(id),
+    queryFn: ({ signal }) => getEmployeeById(id, { signal }),
     enabled: Boolean(id && id.trim().length > 0),
     staleTime: EMPLOYEE_DETAIL_CACHE_CONFIG.STALE_TIME,
     gcTime: EMPLOYEE_DETAIL_CACHE_CONFIG.GC_TIME,

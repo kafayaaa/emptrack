@@ -43,7 +43,7 @@ export function useEmployees(params?: EmployeeListInputQuery, options?: UseEmplo
 
   return useQuery({
     queryKey: employeeKeys.list(params),
-    queryFn: () => getEmployees(params),
+    queryFn: ({ signal }) => getEmployees(params, { signal }),
     placeholderData: keepPreviousData,
     staleTime: defaultStaleTime,
     gcTime: EMPLOYEE_CACHE_CONFIG.GC_TIME,

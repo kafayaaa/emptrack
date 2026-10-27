@@ -20,28 +20,49 @@ export const employeeListResponseSchema = z.object({
 
 export { employeeKeys } from "./employee-keys"
 
-export async function getEmployees(params?: EmployeeListInputQuery): Promise<EmployeeListResponse> {
+export interface RequestSignalOptions {
+  signal?: AbortSignal
+}
+
+export async function getEmployees(
+  params?: EmployeeListInputQuery,
+  options?: RequestSignalOptions,
+): Promise<EmployeeListResponse> {
   return apiClient.get<EmployeeListResponse>("/api/employees", {
     params: params as Record<string, string | number | boolean | null | undefined>,
     schema: employeeListResponseSchema,
+    signal: options?.signal,
   })
 }
 
-export async function getEmployeeById(id: string): Promise<Employee> {
+export async function getEmployeeById(
+  id: string,
+  options?: RequestSignalOptions,
+): Promise<Employee> {
   return apiClient.get<Employee>(`/api/employees/${id}`, {
     schema: employeeSchema,
+    signal: options?.signal,
   })
 }
 
-export async function createEmployee(data: EmployeeFormValues): Promise<Employee> {
+export async function createEmployee(
+  data: EmployeeFormValues,
+  options?: RequestSignalOptions,
+): Promise<Employee> {
   return apiClient.post<Employee>("/api/employees", data, {
     schema: employeeSchema,
+    signal: options?.signal,
   })
 }
 
-export async function updateEmployee(id: string, data: EmployeeFormValues): Promise<Employee> {
+export async function updateEmployee(
+  id: string,
+  data: EmployeeFormValues,
+  options?: RequestSignalOptions,
+): Promise<Employee> {
   return apiClient.patch<Employee>(`/api/employees/${encodeURIComponent(id)}`, data, {
     schema: employeeSchema,
+    signal: options?.signal,
   })
 }
 
@@ -52,9 +73,13 @@ export const deleteEmployeeResponseSchema = z.object({
 
 export type DeleteEmployeeResponse = z.infer<typeof deleteEmployeeResponseSchema>
 
-export async function deleteEmployee(id: string): Promise<DeleteEmployeeResponse> {
+export async function deleteEmployee(
+  id: string,
+  options?: RequestSignalOptions,
+): Promise<DeleteEmployeeResponse> {
   return apiClient.delete<DeleteEmployeeResponse>(`/api/employees/${encodeURIComponent(id)}`, {
     schema: deleteEmployeeResponseSchema,
+    signal: options?.signal,
   })
 }
 
@@ -67,6 +92,7 @@ export type CheckEmailResponse = z.infer<typeof checkEmailResponseSchema>
 export async function checkEmployeeEmailUnique(
   email: string,
   excludeId?: string,
+  options?: RequestSignalOptions,
 ): Promise<boolean> {
   const params: Record<string, string> = { email: email.trim().toLowerCase() }
   if (excludeId) params.excludeId = excludeId.trim()
@@ -74,6 +100,7 @@ export async function checkEmployeeEmailUnique(
   const res = await apiClient.get<CheckEmailResponse>("/api/employees/check-email", {
     params,
     schema: checkEmailResponseSchema,
+    signal: options?.signal,
   })
   return res.isUnique
 }
