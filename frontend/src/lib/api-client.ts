@@ -42,6 +42,7 @@ async function request<T>(
   const finalSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal
 
   const response = await fetch(buildUrl(path, params), {
+    cache: init.cache ?? "no-store",
     ...init,
     method,
     credentials: "include",
