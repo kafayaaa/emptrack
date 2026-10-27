@@ -49,7 +49,7 @@ describe("useInfiniteEmployees", () => {
     useInfiniteEmployees(params)
 
     const queryOptions = mockUseInfiniteQuery.mock.calls[0][0] as {
-      queryFn?: (context: { pageParam: number }) => unknown
+      queryFn?: (context: { pageParam: number; signal?: AbortSignal }) => unknown
     }
 
     const getEmployeesSpy = vi.spyOn(apiModule, "getEmployees").mockResolvedValue({
@@ -57,15 +57,19 @@ describe("useInfiniteEmployees", () => {
       meta: { page: 3, pageSize: 25, total: 100, totalPages: 4 },
     })
 
+    const controller = new AbortController()
     if (queryOptions.queryFn) {
-      queryOptions.queryFn({ pageParam: 3 })
+      queryOptions.queryFn({ pageParam: 3, signal: controller.signal })
     }
 
-    expect(getEmployeesSpy).toHaveBeenCalledWith({
-      pageSize: 25,
-      department: "Engineering",
-      page: 3,
-    })
+    expect(getEmployeesSpy).toHaveBeenCalledWith(
+      {
+        pageSize: 25,
+        department: "Engineering",
+        page: 3,
+      },
+      { signal: controller.signal },
+    )
   })
 
   it("getNextPageParam mengembalikan page berikutnya jika belum mencapai totalPages", () => {

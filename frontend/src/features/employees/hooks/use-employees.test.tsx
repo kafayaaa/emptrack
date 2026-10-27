@@ -45,10 +45,11 @@ describe("useEmployees", () => {
       meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
     })
 
+    const controller = new AbortController()
     if (queryOptions.queryFn) {
-      queryOptions.queryFn()
+      queryOptions.queryFn({ signal: controller.signal })
     }
-    expect(getEmployeesSpy).toHaveBeenCalledWith(params)
+    expect(getEmployeesSpy).toHaveBeenCalledWith(params, { signal: controller.signal })
   })
 
   it("menggunakan staleTime 5 menit (PAGE_ONE_STALE_TIME) untuk page 1 atau saat params tidak didefinisikan", () => {

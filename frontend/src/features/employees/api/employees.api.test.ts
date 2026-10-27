@@ -71,6 +71,20 @@ describe("getEmployees", () => {
     expect(result).toEqual(mockEmployeeResponse)
   })
 
+  it("meneruskan AbortSignal ke apiClient saat disediakan (EMPTRACK-80)", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue(mockEmployeeResponse)
+    const controller = new AbortController()
+
+    await getEmployees({ page: 2 }, { signal: controller.signal })
+
+    expect(getSpy).toHaveBeenCalledWith(
+      "/api/employees",
+      expect.objectContaining({
+        signal: controller.signal,
+      }),
+    )
+  })
+
   it("berhasil memvalidasi response dengan employeeListResponseSchema", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify(mockEmployeeResponse), {
@@ -253,5 +267,19 @@ describe("checkEmployeeEmailUnique", () => {
 
     const result = await checkEmployeeEmailUnique("used@perusahaan.com")
     expect(result).toBe(false)
+  })
+
+  it("meneruskan AbortSignal ke apiClient untuk mencegah race condition (EMPTRACK-80)", async () => {
+    const getSpy = vi.spyOn(apiClient, "get").mockResolvedValue({ isUnique: true })
+    const controller = new AbortController()
+
+    await checkEmployeeEmailUnique("budi@perusahaan.com", undefined, { signal: controller.signal })
+
+    expect(getSpy).toHaveBeenCalledWith(
+      "/api/employees/check-email",
+      expect.objectContaining({
+        signal: controller.signal,
+      }),
+    )
   })
 })

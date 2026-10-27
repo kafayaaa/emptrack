@@ -32,11 +32,14 @@ export function useInfiniteEmployees(
 ) {
   return useInfiniteQuery({
     queryKey: employeeKeys.infiniteList(params),
-    queryFn: ({ pageParam }) =>
-      getEmployees({
-        ...params,
-        page: pageParam,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      getEmployees(
+        {
+          ...params,
+          page: pageParam,
+        },
+        { signal },
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const currentPage = lastPage.meta.page

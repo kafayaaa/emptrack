@@ -20,7 +20,7 @@ export function usePrefetchEmployee() {
 
       queryClient.prefetchQuery({
         queryKey: employeeKeys.detail(normalizedId),
-        queryFn: () => getEmployeeById(normalizedId),
+        queryFn: ({ signal }) => getEmployeeById(normalizedId, { signal }),
         staleTime: EMPLOYEE_DETAIL_CACHE_CONFIG.STALE_TIME,
       })
     },

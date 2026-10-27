@@ -59,10 +59,11 @@ describe("useEmployee", () => {
       .spyOn(apiModule, "getEmployeeById")
       .mockResolvedValue(sampleEmployee)
 
+    const controller = new AbortController()
     if (queryOptions.queryFn) {
-      queryOptions.queryFn()
+      queryOptions.queryFn({ signal: controller.signal })
     }
-    expect(getEmployeeByIdSpy).toHaveBeenCalledWith("123")
+    expect(getEmployeeByIdSpy).toHaveBeenCalledWith("123", { signal: controller.signal })
   })
 
   it("menonaktifkan query (enabled: false) jika ID kosong atau hanya whitespace", () => {

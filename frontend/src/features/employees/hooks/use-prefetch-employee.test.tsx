@@ -76,10 +76,11 @@ describe("usePrefetchEmployee", () => {
       .mockResolvedValue(sampleEmployee)
 
     expect(prefetchOptions.queryFn).toBeDefined()
+    const controller = new AbortController()
     if (prefetchOptions.queryFn) {
-      await prefetchOptions.queryFn()
+      await prefetchOptions.queryFn({ signal: controller.signal })
     }
-    expect(getEmployeeByIdSpy).toHaveBeenCalledWith("123")
+    expect(getEmployeeByIdSpy).toHaveBeenCalledWith("123", { signal: controller.signal })
   })
 
   it("melakukan normalisasi (trim) pada ID sebelum melakukan prefetch", () => {
