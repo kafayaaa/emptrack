@@ -154,101 +154,182 @@ BACKEND_URL=http://localhost:4000
 
 Environment variables are validated with Zod at startup, so a missing or malformed value fails fast with a clear error. `BACKEND_URL` lives in `env.server.ts`, which is protected by `server-only`.
 
-## 🔌 API: `GET /api/employees`
+## 🏛️ End-to-End CRUD Architecture & Patterns
 
-A Next.js Route Handler that sits between the browser and the mock backend. The browser never calls json-server directly.
+EmpTrack mengimplementasikan arsitektur CRUD skala produksi dengan pendekatan **Backend-for-Frontend (BFF)** dan **Optimistic State Management**. Pola ini dirancang untuk mempertahankan konsistensi data, pengalaman pengguna tanpa latensi (_zero-latency perceived performance_), dan skalabilitas untuk dataset besar (50.000+ records).
 
 ```
-Browser ──▶ /api/employees (validate query) ──▶ json-server ──▶ (validate response) ──▶ { data, meta }
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT BROWSER                                 │
+│                                                                             │
+│  [UI Components / Dialogs]  ───▶  [Feature Hooks (useMutation / useQuery)]   │
+│             │                                        │                      │
+│             │ (Controlled / Uncontrolled)            │                      │
+│             ▼                                        ▼                      │
+│  [useControllableState]                   [TanStack Query Cache]            │
+│                                           ├── Detail Queries                │
+│                                           ├── Paginated Queries             │
+│                                           └── Infinite Virtual Queries      │
+│                                                      │                      │
+│                                                      ▼                      │
+│                                            [Typed API Client]               │
+└──────────────────────────────────────────────────────┬──────────────────────┘
+                                                       │  HTTP (JSON + Zod)
+                                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       NEXT.JS ROUTE HANDLERS (BFF)                          │
+│                                                                             │
+│  ├── GET    /api/employees           (Validation & Server-side filtering)   │
+│  ├── POST   /api/employees           (Auto-numbering & Email uniqueness)    │
+│  ├── GET    /api/employees/[id]      (SSR Prefetching & Dynamic Metadata)   │
+│  ├── PATCH  /api/employees/[id]      (Field whitelisting & Partial update)  │
+│  ├── DELETE /api/employees/[id]      (Atomic deletion)                      │
+│  └── POST   /api/employees/check-email (Debounced async field validation)   │
+└──────────────────────────────────────────────────────┬──────────────────────┘
+                                                       │  HTTP / Upstream
+                                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      MOCK UPSTREAM BACKEND (json-server)                    │
+│                                                                             │
+│                       50,000 Seeded Employee Records                        │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Query parameters
+---
 
-| Parameter                          | Type              | Default | Description                                                                  |
-| ---------------------------------- | ----------------- | ------- | ---------------------------------------------------------------------------- |
-| `page`                             | number            | `1`     | Page number                                                                  |
-| `pageSize`                         | number            | `20`    | Items per page (max `100`)                                                   |
-| `search`                           | string            | –       | Partial match on full name                                                   |
-| `sortBy`                           | string            | –       | `employeeNumber`, `fullName`, `department`, `position`, `status`, `hireDate` |
-| `sortOrder`                        | `asc` \| `desc`   | `asc`   | Sort direction                                                               |
-| `department`, `position`, `status` | string            | –       | Exact-match filters                                                          |
-| `projectId`                        | numeric string    | –       | Filter by project                                                            |
-| `isManager`                        | `true` \| `false` | –       | Filter managers                                                              |
+### 1. The 4 CRUD Pillars in EmpTrack
 
-### Response
+#### A. Create (`POST /api/employees`)
 
-```json
-{
-  "data": [
-    {
-      "id": "1",
-      "employeeNumber": "EMP-00001",
-      "fullName": "Daruna Daruna Oktovian",
-      "email": "daruna.daruna.oktovian.1@emptrack.test",
-      "department": "Engineering",
-      "position": "Manager",
-      "status": "active",
-      "hireDate": "2017-01-18",
-      "isManager": true,
-      "managerId": null,
-      "projectId": "1281"
-    }
-  ],
-  "meta": { "page": 1, "pageSize": 20, "total": 50000, "totalPages": 2500 }
-}
+- **Form Architecture**: Menggunakan React Hook Form dengan resolver Zod (`employeeFormSchema`) untuk client-side validation.
+- **Asynchronous Validation**: Pengecekan keunikan email secara _real-time_ via endpoint `/api/employees/check-email` dengan debounce untuk mencegah _request flooding_.
+- **Auto-generated Identifiers**: Penomoran otomatis format `EMP-XXXXX` dihasilkan pada tingkat Route Handler dengan mencari nomor urut tertinggi secara aman.
+- **Cache Synchronization**: Setelah data berhasil dibuat, cache query daftar karyawan di-invalidasi sehingga tabel utama langsung merefleksikan karyawan baru pada halaman pertama.
+
+#### B. Read (`GET /api/employees` & `GET /api/employees/[id]`)
+
+- **Dual Table View Modes**:
+  - _Standard Paginated View_: Pagination, sorting, dan filtering berbasis parameter URL (`nuqs`) yang _bookmarkable_ dan _refresh-safe_.
+  - _Virtualized Infinite Scroll_: Menggunakan `@tanstack/react-virtual` dan `useInfiniteQuery` untuk merender 50.000+ data secara mulus pada 60 FPS tanpa beban memory DOM.
+- **SSR & Prefetching**: Halaman detail (`/employees/[id]`) melakukan prefetching data pada Next.js Server Component menggunakan `HydrationBoundary`, menyajikan halaman secara instan dengan dukungan SEO (OpenGraph, dynamic metadata, sitemap).
+
+#### C. Update (`PATCH /api/employees/[id]`)
+
+- **Optimistic Updates**: Saat user menekan simpan, cache detail maupun cache daftar (paginated & infinite) diperbarui seketika (0ms delay) sebelum request server selesai.
+- **Atomic Snapshotting & Rollback**:
+  - Mengambil snapshot cache sebelum mutasi melalui helper `snapshotEmployeeLists(queryClient)`.
+  - Jika request jaringan gagal atau ditolak server, perubahan otomatis di-rollback ke snapshot sebelumnya melalui `rollbackEmployeeLists(queryClient, snapshot)` disertai notifikasi pembatalan.
+- **Server Re-synchronization**: Event `onSettled` memicu `invalidateEmployeeLists(queryClient)` untuk menjamin integritas data dengan database backend.
+
+#### D. Delete & Bulk Delete (`DELETE /api/employees/[id]`)
+
+- **Single & Bulk Deletion**: Mendukung penghapusan satuan via action menu serta _batch deletion_ dengan _checkbox selection_.
+- **Optimistic Cache Eviction**: Helper `optimisticallyRemoveEmployeesFromCache(queryClient, ids)` seketika menyaring keluar item yang dihapus dari cache lokal dan mengoreksi counter meta total records.
+- **Resilient Batch Processing**: Penghapusan massal memproses request secara paralel/bertahap dengan _progress indicator_, melaporkan daftar ID yang sukses vs gagal tanpa membatalkan operasi secara keseluruhan.
+
+---
+
+### 2. Reusable Architectural Patterns
+
+#### 🧩 `useControllableState`
+
+Memungkinkan komponen UI (seperti dialog Create, Edit, Delete, dan Bulk Delete) beroperasi secara fleksibel baik sebagai **Controlled Component** (state dikendalikan dari luar via props) maupun **Uncontrolled Component** (state dikelola internal oleh dialog itu sendiri):
+
+```tsx
+const [isOpen, setIsOpen] = useControllableState({
+  value: controlledOpen,
+  defaultValue: false,
+  onChange: setControlledOpen,
+});
 ```
 
-### Status codes
+#### 📦 Centralized Cache Utilities (`employee-cache-utils.ts`)
 
-| Code        | Meaning                                                  |
-| ----------- | -------------------------------------------------------- |
-| `200`       | Success                                                  |
-| `400`       | Invalid query parameters (validated with Zod)            |
-| `404`       | Page out of range                                        |
-| `502`/`504` | Backend returned an error, was unreachable, or timed out |
+Mengeliminasi duplikasi kode pada TanStack Query mutation hooks:
 
-### Design decisions
+- `snapshotEmployeeLists`: Mengambil snapshot dari seluruh cache `lists` dan `infiniteLists`.
+- `rollbackEmployeeLists`: Mengembalikan cache ke snapshot jika mutasi error.
+- `invalidateEmployeeLists`: Memastikan sinkronisasi akhir dengan backend.
+- `optimisticallyRemoveEmployeesFromCache`: Menghapus satu atau banyak karyawan dari cache lokal seketika.
 
-- **Server-side pagination, filtering, and sorting** — the dataset has 50,000 records, so the client only ever receives one page.
-- **Bounded input** — `pageSize` is capped at 100 and sortable columns are whitelisted; unknown parameters are stripped by Zod.
-- **Untrusted upstream** — the backend response is validated again before it is forwarded.
-- **Fail fast** — upstream calls have a 5s timeout, and internal error details are never sent to the client.
-- **Browser caching** — responses carry `Cache-Control: private, max-age=30, stale-while-revalidate=60`, working together with TanStack Query's cache.
+#### 🔑 Hierarchical Query Key Factory (`employeeKeys`)
+
+```ts
+export const employeeKeys = {
+  all: ["employees"] as const,
+  lists: () => [...employeeKeys.all, "list"] as const,
+  list: (params: EmployeeListParams) =>
+    [...employeeKeys.lists(), params] as const,
+  infiniteLists: () => [...employeeKeys.all, "infinite-list"] as const,
+  infiniteList: (params: Omit<EmployeeListParams, "page">) =>
+    [...employeeKeys.infiniteLists(), params] as const,
+  details: () => [...employeeKeys.all, "detail"] as const,
+  detail: (id: string) => [...employeeKeys.details(), id] as const,
+};
+```
+
+---
+
+## 🔌 API Route Handlers Matrix
+
+| Endpoint                     | Method   | Request / Query                         | Status Codes        | Deskripsi                                                 |
+| ---------------------------- | -------- | --------------------------------------- | ------------------- | --------------------------------------------------------- |
+| `/api/employees`             | `GET`    | `page`, `pageSize`, `search`, `sortBy`… | `200`, `400`, `502` | Mengambil daftar paginated karyawan dengan filter server  |
+| `/api/employees`             | `POST`   | `EmployeeFormValues` (JSON body)        | `201`, `400`, `409` | Menambahkan karyawan baru (auto-number & check unique)    |
+| `/api/employees/[id]`        | `GET`    | `id` (path parameter)                   | `200`, `404`, `502` | Mengambil data lengkap 1 karyawan untuk detail view & SSR |
+| `/api/employees/[id]`        | `PATCH`  | Partial fields (JSON body)              | `200`, `400`, `404` | Memperbarui data karyawan                                 |
+| `/api/employees/[id]`        | `DELETE` | `id` (path parameter)                   | `200`, `404`, `502` | Menghapus data karyawan secara permanen                   |
+| `/api/employees/check-email` | `POST`   | `{ email, excludeId? }`                 | `200`, `400`        | Validasi keunikan email secara _real-time_                |
+
+---
 
 ## 📜 Available Scripts
 
 Run inside `frontend/`:
 
-| Command                | Description                  |
-| ---------------------- | ---------------------------- |
-| `npm run dev`          | Start the development server |
-| `npm run build`        | Build for production         |
-| `npm run start`        | Start the production server  |
-| `npm run lint`         | Run ESLint                   |
-| `npm run format`       | Format code                  |
-| `npm run format:check` | Format code check            |
-| `npm run prepare`      | Run husky hooks              |
-| `npm run test`         | Run vitest                   |
-| `npm run test:run`     | Run tests in watch mode      |
-| `npm run check`        | Quality gate used by CI      |
+| Command                | Description                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `npm run dev`          | Start the Next.js development server                                          |
+| `npm run build`        | Build for production (Turbopack + SSG)                                        |
+| `npm run start`        | Start the production server                                                   |
+| `npm run lint`         | Run ESLint checks                                                             |
+| `npm run format`       | Format code with Prettier                                                     |
+| `npm run format:check` | Verify formatting consistency                                                 |
+| `npm run test`         | Run Vitest in interactive watch mode                                          |
+| `npm run test:run`     | Run Vitest test suite once (65+ test suites, 325+ tests)                      |
+| `npm run check`        | Full CI Quality Gate (`typecheck` + `lint` + `format` + `test:run` + `build`) |
 
 Run inside `backend/`:
 
-| Command           | Description                    |
-| ----------------- | ------------------------------ |
-| `npm run dev:api` | Start json-server on port 4000 |
+| Command           | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| `npm run seed`    | Generate 50,000 mock employee records using Faker |
+| `npm run dev:api` | Start json-server on port 4000                    |
+
+---
 
 ## 🗺️ Progress
 
-- [x] Project setup, theming (light/dark/system), security headers, CI, branch protection
-- [x] Semantic root layout, metadata, sitemap & robots
-- [x] Dashboard shell (sidebar, dynamic breadcrumb)
-- [x] Typed API client with tests
-- [x] Seed script (50,000 employees) and mock backend
-- [x] `GET /api/employees` Route Handler
-- [ ] Employee table (virtualized, URL-synced filters, cached pagination)
-- [ ] Inventory module
-- [ ] Phase 2: approval workflow
+- [x] **Minggu 1: Setup, Theming, Layout Semantic (28 Sep - 4 Okt)**
+  - Next.js 16 App Router setup, dark/light theme, semantic HTML, security headers, GitHub Actions CI & branch protection.
+- [x] **Minggu 2: Base Table + shadcn Table + TanStack Table (5-11 Okt)**
+  - Dashboard shell, dynamic breadcrumbs, paginated table, sorting & pagination integration.
+- [x] **Minggu 3: Performa Data Besar - Virtualization (12-18 Okt)**
+  - Virtualized table dengan `@tanstack/react-virtual`, rendering 50.000 data dengan 60 FPS scrolling.
+- [x] **Minggu 4: Search, Filter, Sort, Column Visibility (19-25 Okt)**
+  - URL synchronization via `nuqs`, server-side debounced search, multiple column filters, dan dynamic column visibility.
+- [x] **Minggu 5: Detail View & SEO (26 Okt - 1 Nov)**
+  - SSR detail view (`/employees/[id]`), React Query `HydrationBoundary`, sitemap, robots, dan dynamic OpenGraph metadata.
+- [x] **Minggu 6: Form Tambah & Edit Karyawan (2-8 Nov)**
+  - Form validation dengan React Hook Form + Zod, asynchronous email verification, dan optimistic edit updates.
+- [x] **Minggu 7: Delete, Bulk Delete, & Cache Invalidation (9-15 Nov)**
+  - Single deletion & batch deletion dialogs, progress tracking, controllable state abstraction, dan centralized cache utils.
+- [ ] **Minggu 8: Modul Asset & Inventory (Reuse Pattern) (16-22 Nov)**
+  - Replikasi pattern arsitektur CRUD untuk modul Asset & Inventory.
+- [ ] **Phase 2: Multi-level Approval Workflow**
+  - Sortable approval chains (dnd-kit), request history, status transitions, dan in-app notifications.
+
+---
 
 ## 📄 License
 
