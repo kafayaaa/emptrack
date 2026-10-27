@@ -80,10 +80,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(body, {
       headers: {
-        // private: hanya cache browser, bukan CDN/proxy bersama.
-        // max-age=30: 30 detik dianggap segar tanpa request ulang.
-        // stale-while-revalidate=60: boleh pakai data lama sambil refresh di belakang.
-        "Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+        // Jangan di-cache oleh browser/proxy agar mutasi (add/delete/update) langsung tersinkronisasi seketika
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     })
   } catch (error) {

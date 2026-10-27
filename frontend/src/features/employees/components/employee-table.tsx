@@ -142,6 +142,7 @@ function BaseEmployeeTable({
         onColumnVisibilityChange={onColumnVisibilityChange}
         rowSelection={rowSelection}
         onRowSelectionChange={onRowSelectionChange}
+        getRowId={(row) => row.id}
         showColumnVisibility={showColumnVisibility}
         getColumnLabel={getEmployeeColumnLabel}
         pageSizeOptions={pageSizeOptions}

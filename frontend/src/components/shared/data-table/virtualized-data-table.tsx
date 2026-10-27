@@ -61,6 +61,8 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   enableRowSelection?: boolean | ((row: any) => boolean)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getRowId?: (originalRow: TData, index: number, parent?: any) => string
   /**
    * Whether to display the column visibility toggle dropdown button above the table.
    */
@@ -139,6 +141,7 @@ export function VirtualizedDataTable<TData extends RowData>({
   rowSelection: controlledRowSelection,
   onRowSelectionChange,
   enableRowSelection,
+  getRowId,
   showColumnVisibility = false,
   getColumnLabel,
   toolbar,
@@ -196,6 +199,7 @@ export function VirtualizedDataTable<TData extends RowData>({
       features: dataTableFeatures,
       data,
       columns: columns as never,
+      getRowId,
       pageCount,
       rowCount,
       state: {

@@ -33,6 +33,7 @@ vi.mock("sonner", () => ({
 describe("useCreateEmployee", () => {
   const mockInvalidateQueries = vi.fn().mockResolvedValue(undefined)
   const mockSetQueryData = vi.fn()
+  const mockSetQueriesData = vi.fn()
   const mockMutate = vi.fn()
   const mockMutateAsync = vi.fn()
 
@@ -56,6 +57,7 @@ describe("useCreateEmployee", () => {
     vi.mocked(useQueryClient).mockReturnValue({
       invalidateQueries: mockInvalidateQueries,
       setQueryData: mockSetQueryData,
+      setQueriesData: mockSetQueriesData,
     } as unknown as ReturnType<typeof useQueryClient>)
 
     vi.mocked(useMutation).mockReturnValue({
@@ -123,6 +125,16 @@ describe("useCreateEmployee", () => {
     expect(mockSetQueryData).toHaveBeenCalledWith(
       employeeKeys.detail(dummyCreatedEmployee.id),
       dummyCreatedEmployee,
+    )
+
+    // Instant update list queries
+    expect(mockSetQueriesData).toHaveBeenCalledWith(
+      { queryKey: employeeKeys.lists() },
+      expect.any(Function),
+    )
+    expect(mockSetQueriesData).toHaveBeenCalledWith(
+      { queryKey: employeeKeys.infiniteLists() },
+      expect.any(Function),
     )
 
     // Invalidation list queries
