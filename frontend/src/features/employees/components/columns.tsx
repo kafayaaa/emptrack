@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { createColumnHelper } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader, type dataTableFeatures } from "@/components/shared/data-table"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
@@ -8,6 +9,7 @@ import { usePrefetchEmployee } from "../hooks"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 
 export const EMPLOYEE_COLUMN_LABELS: Record<string, string> = {
+  select: "Select",
   employeeNumber: "Employee ID",
   fullName: "Full Name",
   department: "Department",
@@ -41,6 +43,33 @@ export function EmployeeNameCell({ employee }: { employee: Employee }) {
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Employee>()
 
 export const employeeColumns = columnHelper.columns([
+  columnHelper.display({
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          indeterminate={table.getIsSomePageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Pilih semua baris pada halaman ini"
+          data-testid="select-all-checkbox"
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={row.getIsSelected()}
+          disabled={!row.getCanSelect()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={`Pilih karyawan ${row.original.fullName}`}
+          data-testid={`select-row-checkbox-${row.original.id}`}
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }),
   columnHelper.accessor("employeeNumber", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Employee ID" />,
     cell: (info) => (

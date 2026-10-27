@@ -9,7 +9,7 @@ import {
   type UseDataTablePaginationOptions,
   type UseDataTableSortingOptions,
 } from "../../../hooks"
-import type { ColumnVisibilityState, OnChangeFn } from "@tanstack/react-table"
+import type { ColumnVisibilityState, OnChangeFn, RowSelectionState } from "@tanstack/react-table"
 import { EMPLOYEE_SORT_FIELDS, type EmployeeSortField } from "../schema/employee.schema"
 import { employeeColumns, getEmployeeColumnLabel } from "./columns"
 import { EmployeeMobileCard } from "./employee-mobile-card"
@@ -45,6 +45,14 @@ export interface EmployeeTableProps {
    */
   onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>
   /**
+   * Row selection state for controlled selection.
+   */
+  rowSelection?: RowSelectionState
+  /**
+   * Callback fired when row selection changes.
+   */
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>
+  /**
    * Whether to display the Column Visibility DropdownMenu above the table. Default: true.
    */
   showColumnVisibility?: boolean
@@ -62,6 +70,8 @@ function BaseEmployeeTable({
   pageSizeOptions = [10, 20, 30, 50, 100],
   columnVisibility,
   onColumnVisibilityChange,
+  rowSelection,
+  onRowSelectionChange,
   showColumnVisibility = true,
 }: EmployeeTableProps) {
   const {
@@ -130,6 +140,8 @@ function BaseEmployeeTable({
         onSortingChange={onSortingChange}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={onColumnVisibilityChange}
+        rowSelection={rowSelection}
+        onRowSelectionChange={onRowSelectionChange}
         showColumnVisibility={showColumnVisibility}
         getColumnLabel={getEmployeeColumnLabel}
         pageSizeOptions={pageSizeOptions}
@@ -137,7 +149,7 @@ function BaseEmployeeTable({
         isFetching={isFetching}
         isPlaceholderData={isPlaceholderData}
         skeletonRowCount={pagination.pageSize}
-        cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
+        cellWidths={["w-10", "w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
         isError={isError}
         errorTitle="Gagal memuat data karyawan"
         errorDescription="Terjadi kendala saat mengambil data karyawan dari server."
@@ -146,8 +158,14 @@ function BaseEmployeeTable({
         onRetry={handleRetry}
         emptyTitle="Tidak ada karyawan ditemukan"
         emptyDescription="Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih."
-        renderMobileCard={(employee: Employee) => (
-          <EmployeeMobileCard key={employee.id} employee={employee} />
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        renderMobileCard={(employee: Employee, _index: number, row?: any) => (
+          <EmployeeMobileCard
+            key={employee.id}
+            employee={employee}
+            isSelected={row?.getIsSelected?.()}
+            onSelectChange={(val) => row?.toggleSelected?.(val)}
+          />
         )}
       />
     </TableErrorBoundary>

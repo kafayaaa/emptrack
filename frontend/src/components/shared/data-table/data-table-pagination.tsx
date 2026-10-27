@@ -8,9 +8,12 @@ export interface TablePaginatable {
       pageIndex: number
       pageSize: number
     }
+    rowSelection?: Record<string, boolean>
   }
   getPageCount: () => number
   getRowCount: () => number
+  getFilteredSelectedRowModel?: () => { rows: unknown[] }
+  getSelectedRowModel?: () => { rows: unknown[] }
   setPageSize: (size: number) => void
   setPageIndex: (index: number) => void
   previousPage: () => void
@@ -72,18 +75,32 @@ function BaseDataTablePagination({
   const canLastPage =
     typeof table.getCanLastPage === "function" ? table.getCanLastPage() : table.getCanNextPage()
 
+  const selectedRowsCount =
+    typeof table.getFilteredSelectedRowModel === "function"
+      ? table.getFilteredSelectedRowModel().rows.length
+      : typeof table.getSelectedRowModel === "function"
+        ? table.getSelectedRowModel().rows.length
+        : Object.keys(table.state.rowSelection ?? {}).length
+
   return (
     <div className="flex flex-col items-center justify-between gap-4 px-2 py-3 sm:flex-row">
-      <div className="text-xs text-muted-foreground">
-        Showing{" "}
-        <span className="font-medium text-foreground">
-          {totalRows === 0 ? 0 : pageIndex * pageSize + 1}
-        </span>{" "}
-        to{" "}
-        <span className="font-medium text-foreground">
-          {Math.min((pageIndex + 1) * pageSize, totalRows)}
-        </span>{" "}
-        of <span className="font-medium text-foreground">{totalRows}</span> entries
+      <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        {selectedRowsCount > 0 && (
+          <span data-testid="data-table-selected-count" className="font-medium text-foreground">
+            {selectedRowsCount} of {totalRows} row(s) selected •
+          </span>
+        )}
+        <span>
+          Showing{" "}
+          <span className="font-medium text-foreground">
+            {totalRows === 0 ? 0 : pageIndex * pageSize + 1}
+          </span>{" "}
+          to{" "}
+          <span className="font-medium text-foreground">
+            {Math.min((pageIndex + 1) * pageSize, totalRows)}
+          </span>{" "}
+          of <span className="font-medium text-foreground">{totalRows}</span> entries
+        </span>
       </div>
 
       <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-6">

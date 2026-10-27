@@ -25,6 +25,7 @@ describe("columns.tsx (Employee Table Columns)", () => {
       const keys = employeeColumns.map((col) => ("accessorKey" in col ? col.accessorKey : col.id))
 
       expect(keys).toEqual([
+        "select",
         "employeeNumber",
         "fullName",
         "department",
@@ -34,10 +35,44 @@ describe("columns.tsx (Employee Table Columns)", () => {
       ])
     })
 
-    it("enables sorting on all columns", () => {
+    it("enables sorting on data columns and disables on select column", () => {
       employeeColumns.forEach((col) => {
-        expect(col.enableSorting).toBe(true)
+        const id = "accessorKey" in col ? col.accessorKey : col.id
+        if (id === "select") {
+          expect(col.enableSorting).toBe(false)
+          expect(col.enableHiding).toBe(false)
+        } else {
+          expect(col.enableSorting).toBe(true)
+        }
       })
+    })
+
+    it("renders select column header and cell with interactive checkboxes", () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const selectCol = employeeColumns.find((col) => col.id === "select") as any
+      expect(selectCol).toBeDefined()
+
+      const mockToggleAll = vi.fn()
+      const mockToggleRow = vi.fn()
+
+      const headerResult = selectCol.header({
+        table: {
+          getIsAllPageRowsSelected: () => false,
+          getIsSomePageRowsSelected: () => true,
+          toggleAllPageRowsSelected: mockToggleAll,
+        },
+      })
+      expect(headerResult).toBeDefined()
+
+      const cellResult = selectCol.cell({
+        row: {
+          getIsSelected: () => true,
+          getCanSelect: () => true,
+          toggleSelected: mockToggleRow,
+          original: { fullName: "Test Employee", id: "1" },
+        },
+      })
+      expect(cellResult).toBeDefined()
     })
 
     it("renders cells without throwing errors", () => {
@@ -64,6 +99,9 @@ describe("columns.tsx (Employee Table Columns)", () => {
             row: {
               original: sampleEmployee,
               getValue: (colKey: string) => sampleEmployee[colKey as keyof Employee],
+              getIsSelected: () => false,
+              getCanSelect: () => true,
+              toggleSelected: vi.fn(),
             },
           } as never)
           expect(cellResult).toBeDefined()
@@ -74,6 +112,7 @@ describe("columns.tsx (Employee Table Columns)", () => {
 
   describe("EMPLOYEE_COLUMN_LABELS and getEmployeeColumnLabel", () => {
     it("maps all columns to human readable titles", () => {
+      expect(EMPLOYEE_COLUMN_LABELS.select).toBe("Select")
       expect(EMPLOYEE_COLUMN_LABELS.employeeNumber).toBe("Employee ID")
       expect(EMPLOYEE_COLUMN_LABELS.fullName).toBe("Full Name")
       expect(EMPLOYEE_COLUMN_LABELS.department).toBe("Department")
