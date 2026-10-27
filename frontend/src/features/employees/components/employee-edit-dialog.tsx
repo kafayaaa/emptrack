@@ -13,11 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
 import { EmployeeForm } from "./employee-form"
 import { useUpdateEmployee } from "../hooks/use-update-employee"
 import type { EmployeeFormValues } from "../schema/employee-form.schema"
 import type { Employee } from "../types"
+import { useControllableState } from "@/hooks/use-controllable-state"
 
 export interface EmployeeEditDialogProps {
   /**
@@ -53,38 +53,29 @@ export function EmployeeEditDialog({
   onOpenChange: setControlledOpen,
   className,
 }: EmployeeEditDialogProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
-
-  const isControlled = controlledOpen !== undefined
-  const isOpen = isControlled ? controlledOpen : uncontrolledOpen
-
-  const handleOpenChange = React.useCallback(
-    (nextOpen: boolean) => {
-      if (!isControlled) {
-        setUncontrolledOpen(nextOpen)
-      }
-      setControlledOpen?.(nextOpen)
-    },
-    [isControlled, setControlledOpen],
-  )
+  const [isOpen, setIsOpen] = useControllableState({
+    value: controlledOpen,
+    defaultValue: false,
+    onChange: setControlledOpen,
+  })
 
   const { mutateAsync, isPending } = useUpdateEmployee(employee.id)
 
   const handleSubmit = React.useCallback(
     async (values: EmployeeFormValues) => {
       // Tutup modal seketika untuk memberikan feedback responsif instan (optimistic UI)
-      handleOpenChange(false)
+      setIsOpen(false)
       try {
         await mutateAsync(values)
       } catch {
         // Error, rollback, dan toast error ditangani oleh hook useUpdateEmployee
       }
     },
-    [mutateAsync, handleOpenChange],
+    [mutateAsync, setIsOpen],
   )
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         render={
           trigger ? (
@@ -114,7 +105,7 @@ export function EmployeeEditDialog({
             <EmployeeForm
               initialData={employee}
               onSubmit={handleSubmit}
-              onCancel={() => handleOpenChange(false)}
+              onCancel={() => setIsOpen(false)}
               isSubmitting={isPending}
             />
           </div>

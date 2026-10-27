@@ -1,21 +1,20 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import {
-  useMutation,
-  useQueryClient,
-  type InfiniteData,
-  type QueryKey,
-} from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { deleteEmployee, employeeKeys, type DeleteEmployeeResponse } from "../api/employees.api"
-import type { EmployeeListResponse } from "../schema/employee.schema"
 import type { Employee } from "../types"
+import {
+  snapshotEmployeeLists,
+  rollbackEmployeeLists,
+  invalidateEmployeeLists,
+  optimisticallyRemoveEmployeesFromCache,
+  type EmployeeListsCacheSnapshot,
+} from "./employee-cache-utils"
 
-export interface DeleteEmployeeMutationContext {
+export interface DeleteEmployeeMutationContext extends EmployeeListsCacheSnapshot {
   previousEmployee?: Employee
-  previousLists?: Array<[QueryKey, EmployeeListResponse | undefined]>
-  previousInfiniteLists?: Array<[QueryKey, InfiniteData<EmployeeListResponse> | undefined]>
 }
 
 export interface UseDeleteEmployeeOptions {
@@ -46,7 +45,7 @@ export interface UseDeleteEmployeeOptions {
 /**
  * Custom hook untuk menghapus data karyawan via HTTP DELETE ke /api/employees/[id].
  *
- * Mengimplementasikan Optimistic Deletion + Invalidation (EMPTRACK-75):
+ * Mengimplementasikan Optimistic Deletion + Invalidation (EMPTRACK-75, EMPTRACK-82):
  * 1. onMutate: Cancel queries aktif, snapshot data cache (detail, lists, infiniteLists),
  *    serta optimistically menghapus entitas dari cache secara instan (0ms delay).
  * 2. onError: Rollback ke snapshot cache sebelumnya jika request ke backend gagal/terputus,
@@ -71,65 +70,17 @@ export function useDeleteEmployee(options?: UseDeleteEmployeeOptions) {
 
       // 2. Snapshot data sebelum dihapus untuk rollback jika terjadi error
       const previousEmployee = queryClient.getQueryData<Employee>(employeeKeys.detail(id))
-      const previousLists = queryClient.getQueriesData<EmployeeListResponse>({
-        queryKey: employeeKeys.lists(),
-      })
-      const previousInfiniteLists = queryClient.getQueriesData<InfiniteData<EmployeeListResponse>>({
-        queryKey: employeeKeys.infiniteLists(),
-      })
+      const snapshots = snapshotEmployeeLists(queryClient)
 
       // 3. Optimistic removal untuk detail karyawan dari cache
       queryClient.removeQueries({ queryKey: employeeKeys.detail(id) })
 
-      // 4. Optimistic removal untuk daftar paginated
-      queryClient.setQueriesData<EmployeeListResponse>(
-        { queryKey: employeeKeys.lists() },
-        (old) => {
-          if (!old?.data) return old
-          const hasItem = old.data.some((emp) => emp.id === id)
-          if (!hasItem) return old
-          const nextData = old.data.filter((emp) => emp.id !== id)
-          const nextTotal = Math.max(0, old.meta.total - 1)
-          const nextTotalPages = Math.ceil(nextTotal / old.meta.pageSize)
-          return {
-            ...old,
-            data: nextData,
-            meta: {
-              ...old.meta,
-              total: nextTotal,
-              totalPages: nextTotalPages,
-            },
-          }
-        },
-      )
-
-      // 5. Optimistic removal untuk daftar infinite
-      queryClient.setQueriesData<InfiniteData<EmployeeListResponse>>(
-        { queryKey: employeeKeys.infiniteLists() },
-        (old) => {
-          if (!old?.pages) return old
-          const hasItem = old.pages.some((page) => page.data.some((emp) => emp.id === id))
-          if (!hasItem) return old
-          const nextTotal = Math.max(0, (old.pages[0]?.meta.total ?? 1) - 1)
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              data: page.data.filter((emp) => emp.id !== id),
-              meta: {
-                ...page.meta,
-                total: nextTotal,
-                totalPages: Math.ceil(nextTotal / page.meta.pageSize),
-              },
-            })),
-          }
-        },
-      )
+      // 4. Optimistic removal dari cache lists (paginated & infinite)
+      optimisticallyRemoveEmployeesFromCache(queryClient, id)
 
       return {
         previousEmployee,
-        previousLists,
-        previousInfiniteLists,
+        ...snapshots,
       }
     },
     onError: (error, id, context) => {
@@ -138,19 +89,8 @@ export function useDeleteEmployee(options?: UseDeleteEmployeeOptions) {
         queryClient.setQueryData(employeeKeys.detail(id), context.previousEmployee)
       }
 
-      // Rollback paginated list caches
-      if (context?.previousLists) {
-        for (const [queryKey, data] of context.previousLists) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
-
-      // Rollback infinite list caches
-      if (context?.previousInfiniteLists) {
-        for (const [queryKey, data] of context.previousInfiniteLists) {
-          queryClient.setQueryData(queryKey, data)
-        }
-      }
+      // Rollback cache lists (paginated & infinite)
+      rollbackEmployeeLists(queryClient, context)
 
       toast.error("Gagal Menghapus Karyawan", {
         description:
@@ -180,10 +120,7 @@ export function useDeleteEmployee(options?: UseDeleteEmployeeOptions) {
     },
     onSettled: async (data, error, id, context) => {
       // Invalidate seluruh query list (paginated & infinite) agar tabel tersinkronisasi
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: employeeKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: employeeKeys.infiniteLists() }),
-      ])
+      await invalidateEmployeeLists(queryClient)
 
       options?.onSettled?.(data, error, id, context)
     },

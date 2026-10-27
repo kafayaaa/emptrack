@@ -20,6 +20,7 @@ import {
 
 import { useDeleteEmployee } from "../hooks/use-delete-employee"
 import type { Employee } from "../types"
+import { useControllableState } from "@/hooks/use-controllable-state"
 
 export interface EmployeeDeleteDialogProps {
   /**
@@ -61,20 +62,11 @@ export function EmployeeDeleteDialog({
   redirectToIndex = false,
   className,
 }: EmployeeDeleteDialogProps) {
-  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
-
-  const isControlled = controlledOpen !== undefined
-  const isOpen = isControlled ? controlledOpen : uncontrolledOpen
-
-  const handleOpenChange = React.useCallback(
-    (nextOpen: boolean) => {
-      if (!isControlled) {
-        setUncontrolledOpen(nextOpen)
-      }
-      setControlledOpen?.(nextOpen)
-    },
-    [isControlled, setControlledOpen],
-  )
+  const [isOpen, setIsOpen] = useControllableState({
+    value: controlledOpen,
+    defaultValue: false,
+    onChange: setControlledOpen,
+  })
 
   const { mutateAsync, isPending } = useDeleteEmployee({
     employeeName: employee.fullName,
@@ -86,16 +78,16 @@ export function EmployeeDeleteDialog({
       e.preventDefault()
       try {
         await mutateAsync(employee.id)
-        handleOpenChange(false)
+        setIsOpen(false)
       } catch {
         // Error telah ditangani dan dinotifikasikan via toast oleh useDeleteEmployee
       }
     },
-    [employee.id, mutateAsync, handleOpenChange],
+    [employee.id, mutateAsync, setIsOpen],
   )
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger
         render={
           trigger ? (
