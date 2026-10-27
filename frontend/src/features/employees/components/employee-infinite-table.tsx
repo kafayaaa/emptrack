@@ -149,6 +149,7 @@ function BaseEmployeeInfiniteTable({
           onColumnVisibilityChange={onColumnVisibilityChange}
           rowSelection={rowSelection}
           onRowSelectionChange={onRowSelectionChange}
+          getRowId={(row) => row.id}
           showColumnVisibility={showColumnVisibility}
           getColumnLabel={getEmployeeColumnLabel}
           isLoading={isLoading}
