@@ -18,6 +18,7 @@ import {
   type OnChangeFn,
   type PaginationState,
   type RowData,
+  type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table"
 
@@ -65,6 +66,10 @@ export interface DataTableProps<TData extends RowData> {
   onSortingChange?: OnChangeFn<SortingState>
   columnVisibility?: ColumnVisibilityState
   onColumnVisibilityChange?: OnChangeFn<ColumnVisibilityState>
+  rowSelection?: RowSelectionState
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  enableRowSelection?: boolean | ((row: any) => boolean)
   /**
    * Whether to display the column visibility toggle dropdown button above the table.
    */
@@ -99,7 +104,8 @@ export interface DataTableProps<TData extends RowData> {
    * Optional custom card renderer for responsive mobile layout (< md screen).
    * If provided, cards will be rendered instead of the table on mobile viewports.
    */
-  renderMobileCard?: (item: TData, index: number) => React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderMobileCard?: (item: TData, index: number, row?: any) => React.ReactNode
 }
 
 export function DataTable<TData extends RowData>({
@@ -113,6 +119,9 @@ export function DataTable<TData extends RowData>({
   onSortingChange,
   columnVisibility: controlledColumnVisibility,
   onColumnVisibilityChange,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange,
+  enableRowSelection,
   showColumnVisibility = false,
   getColumnLabel,
   toolbar,
@@ -143,6 +152,7 @@ export function DataTable<TData extends RowData>({
   })
   const [internalColumnVisibility, setInternalColumnVisibility] =
     React.useState<ColumnVisibilityState>({})
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({})
 
   const isManualPagination = typeof pageCount !== "undefined" || typeof rowCount !== "undefined"
   const isManualSorting =
@@ -157,6 +167,9 @@ export function DataTable<TData extends RowData>({
   const columnVisibility = controlledColumnVisibility ?? internalColumnVisibility
   const setColumnVisibility = onColumnVisibilityChange ?? setInternalColumnVisibility
 
+  const rowSelection = controlledRowSelection ?? internalRowSelection
+  const setRowSelection = onRowSelectionChange ?? setInternalRowSelection
+
   const table = useTable(
     {
       features: dataTableFeatures,
@@ -168,10 +181,13 @@ export function DataTable<TData extends RowData>({
         sorting,
         pagination,
         columnVisibility,
+        rowSelection,
       },
       onSortingChange: setSorting,
       onPaginationChange: setPagination,
       onColumnVisibilityChange: setColumnVisibility,
+      onRowSelectionChange: setRowSelection,
+      enableRowSelection,
       manualPagination: isManualPagination,
       manualSorting: isManualSorting,
     },
@@ -242,7 +258,7 @@ export function DataTable<TData extends RowData>({
                 <div className="flex flex-col gap-3 p-3">
                   {table.getRowModel().rows.map((row, index) => (
                     <React.Fragment key={row.id}>
-                      {renderMobileCard(row.original, index)}
+                      {renderMobileCard(row.original, index, row)}
                     </React.Fragment>
                   ))}
                 </div>

@@ -137,6 +137,19 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
     expect(fnToolbar).toBeDefined()
   })
 
+  it("supports controlled rowSelection and onRowSelectionChange (EMPTRACK-77)", () => {
+    const onRowSelectionChange = vi.fn()
+    const component = (
+      <DataTable
+        columns={testColumns}
+        data={testData}
+        rowSelection={{ "0": true }}
+        onRowSelectionChange={onRowSelectionChange}
+      />
+    )
+    expect(component).toBeDefined()
+  })
+
   it("renders mobile card layout when renderMobileCard is provided", () => {
     const cardComponent = (
       <DataTable

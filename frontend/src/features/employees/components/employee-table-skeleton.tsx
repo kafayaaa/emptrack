@@ -43,6 +43,9 @@ function BaseEmployeeTableSkeleton({ rowCount = 10 }: EmployeeTableSkeletonProps
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Skeleton className="size-4 rounded-[4px]" />
+                </TableHead>
                 <TableHead className="w-28">Employee ID</TableHead>
                 <TableHead>Full Name</TableHead>
                 <TableHead>Department</TableHead>
@@ -53,9 +56,9 @@ function BaseEmployeeTableSkeleton({ rowCount = 10 }: EmployeeTableSkeletonProps
             </TableHeader>
             <TableBody>
               <DataTableSkeleton
-                columnCount={6}
+                columnCount={7}
                 rowCount={rowCount}
-                cellWidths={["w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
+                cellWidths={["w-10", "w-20", "w-44", "w-32", "w-36", "w-20", "w-28"]}
               />
             </TableBody>
           </Table>

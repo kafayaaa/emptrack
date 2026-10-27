@@ -1,7 +1,9 @@
 import * as React from "react"
 import Link from "next/link"
 import { Building2, Calendar, Mail, Phone, ShieldCheck, User } from "lucide-react"
+import { cn } from "cn"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
 import { usePrefetchEmployee } from "../hooks"
@@ -9,25 +11,48 @@ import { EmployeeStatusBadge } from "./employee-status-badge"
 
 export interface EmployeeMobileCardProps {
   employee: Employee
+  isSelected?: boolean
+  onSelectChange?: (selected: boolean) => void
 }
 
-function BaseEmployeeMobileCard({ employee }: EmployeeMobileCardProps) {
+function BaseEmployeeMobileCard({
+  employee,
+  isSelected = false,
+  onSelectChange,
+}: EmployeeMobileCardProps) {
   const { prefetchEmployee } = usePrefetchEmployee()
 
   return (
     <div
       data-testid={`employee-mobile-card-${employee.id}`}
-      className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-2xs transition-colors hover:border-border/80"
+      data-selected={isSelected ? "true" : undefined}
+      className={cn(
+        "flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-2xs transition-colors",
+        isSelected
+          ? "border-primary/80 bg-primary/5 ring-1 ring-primary/30"
+          : "border-border hover:border-border/80",
+      )}
     >
       {/* Top Header: Name, Employee ID, and Status Badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2.5">
-          <div
-            aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-          >
-            <User className="size-4" />
-          </div>
+          {onSelectChange ? (
+            <div className="flex shrink-0 pt-1">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={onSelectChange}
+                aria-label={`Pilih karyawan ${employee.fullName}`}
+                data-testid={`employee-mobile-checkbox-${employee.id}`}
+              />
+            </div>
+          ) : (
+            <div
+              aria-hidden="true"
+              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+            >
+              <User className="size-4" />
+            </div>
+          )}
           <div className="flex min-w-0 flex-col">
             <div className="flex flex-wrap items-center gap-1.5">
               <Link

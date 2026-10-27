@@ -84,4 +84,20 @@ describe("EmployeeMobileCard", () => {
     expect(html).toContain(`aria-label="Call Sarah Connor at ${mockEmployee.phone}"`)
     expect(html).toContain('aria-hidden="true"')
   })
+
+  it("renders selection checkbox and handles onSelectChange when provided (EMPTRACK-77)", async () => {
+    const { renderToStaticMarkup } = await import("react-dom/server")
+    const onSelectChange = vi.fn()
+    const html = renderToStaticMarkup(
+      <EmployeeMobileCard
+        employee={mockEmployee}
+        isSelected={true}
+        onSelectChange={onSelectChange}
+      />,
+    )
+
+    expect(html).toContain('data-testid="employee-mobile-checkbox-emp-1"')
+    expect(html).toContain('data-selected="true"')
+    expect(html).toContain("border-primary/80")
+  })
 })
