@@ -18,16 +18,7 @@ export const employeeListResponseSchema = z.object({
   }),
 })
 
-export const employeeKeys = {
-  all: ["employees"] as const,
-  lists: () => [...employeeKeys.all, "list"] as const,
-  list: (params?: EmployeeListInputQuery) => [...employeeKeys.lists(), params] as const,
-  infiniteLists: () => [...employeeKeys.all, "infinite-list"] as const,
-  infiniteList: (params?: Omit<EmployeeListInputQuery, "page">) =>
-    [...employeeKeys.infiniteLists(), params] as const,
-  details: () => [...employeeKeys.all, "detail"] as const,
-  detail: (id: string) => [...employeeKeys.details(), id] as const,
-}
+export { employeeKeys } from "./employee-keys"
 
 export async function getEmployees(params?: EmployeeListInputQuery): Promise<EmployeeListResponse> {
   return apiClient.get<EmployeeListResponse>("/api/employees", {
