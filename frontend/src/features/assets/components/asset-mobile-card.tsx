@@ -5,6 +5,7 @@ import { cn } from "cn"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/lib/date"
+import { usePrefetchEmployee } from "@/features/employees/hooks"
 import type { Asset, AssetCategory } from "../types"
 import { AssetStatusBadge } from "./asset-status-badge"
 
@@ -28,6 +29,8 @@ function getCategoryIcon(category: AssetCategory) {
 }
 
 function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: AssetMobileCardProps) {
+  const { prefetchEmployee } = usePrefetchEmployee()
+
   return (
     <div
       data-testid={`asset-mobile-card-${asset.id}`}
@@ -96,7 +99,19 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
           <User className="size-3.5 shrink-0 text-muted-foreground/70" />
           <span className="truncate">
             {asset.assignedTo?.fullName ? (
-              <span className="font-medium text-foreground">{asset.assignedTo.fullName}</span>
+              asset.assignedToId ? (
+                <Link
+                  href={`/employees/${asset.assignedToId}`}
+                  onMouseEnter={() => prefetchEmployee(asset.assignedToId!)}
+                  onFocus={() => prefetchEmployee(asset.assignedToId!)}
+                  className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
+                  data-testid={`asset-mobile-assigned-employee-${asset.id}`}
+                >
+                  {asset.assignedTo.fullName}
+                </Link>
+              ) : (
+                <span className="font-medium text-foreground">{asset.assignedTo.fullName}</span>
+              )
             ) : (
               <span className="text-muted-foreground/60 italic">Unassigned</span>
             )}

@@ -82,4 +82,24 @@ describe("AssetViewContainer component (EMPTRACK-89)", () => {
       status: "assigned",
     })
   })
+
+  it("menampilkan banner filter dan meneruskan assignedToId ke AssetTable (EMPTRACK-90)", () => {
+    vi.mocked(nuqsModule.useQueryState).mockImplementation((key) => {
+      if (key === "assignedToId") {
+        return ["emp-14", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      if (key === "page") {
+        return [1, vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+      }
+      return ["", vi.fn()] as unknown as ReturnType<typeof nuqsModule.useQueryState>
+    })
+
+    const html = renderToStaticMarkup(<AssetViewContainer />)
+    expect(html).toContain('data-testid="assigned-to-filter-banner"')
+    expect(html).toContain("emp-14")
+    expect(html).toContain('data-testid="clear-assigned-to-filter-button"')
+    expect(capturedTableFilters).toEqual({
+      assignedToId: "emp-14",
+    })
+  })
 })

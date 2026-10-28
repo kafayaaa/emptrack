@@ -22,6 +22,15 @@ vi.mock("../hooks/use-delete-employee", () => ({
   }),
 }))
 
+vi.mock("@/features/assets/components", () => ({
+  EmployeeAssignedAssets: ({ employeeId }: { employeeId: string; employeeName?: string }) => (
+    <div data-testid="employee-assigned-assets-mock">
+      <h2>Assigned Assets &amp; Hardware</h2>
+      <a href={`/assets?assignedToId=${employeeId}`}>Browse Inventory Catalog</a>
+    </div>
+  ),
+}))
+
 const mockEmployee: Employee = {
   id: "1",
   employeeNumber: "EMP-00001",
