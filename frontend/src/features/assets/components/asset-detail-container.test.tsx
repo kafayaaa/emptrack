@@ -10,6 +10,10 @@ vi.mock("./asset-edit-dialog", () => ({
   AssetEditDialog: () => <button>Edit Aset</button>,
 }))
 
+vi.mock("./asset-delete-dialog", () => ({
+  AssetDeleteDialog: () => <button>Hapus Aset</button>,
+}))
+
 const sampleAsset: Asset = {
   id: "ast-1",
   assetTag: "AST-00001",

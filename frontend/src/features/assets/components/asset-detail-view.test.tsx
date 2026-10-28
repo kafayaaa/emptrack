@@ -10,6 +10,12 @@ vi.mock("./asset-edit-dialog", () => ({
   ),
 }))
 
+vi.mock("./asset-delete-dialog", () => ({
+  AssetDeleteDialog: ({ trigger }: { trigger?: React.ReactNode }) => (
+    <div data-testid="asset-delete-dialog-mock">{trigger || <button>Hapus Aset</button>}</div>
+  ),
+}))
+
 describe("AssetDetailView component (EMPTRACK-92)", () => {
   const dummyAsset: Asset = {
     id: "ast-1",
@@ -59,8 +65,10 @@ describe("AssetDetailView component (EMPTRACK-92)", () => {
     expect(html).toContain('<time dateTime="2024-03-01"')
     expect(html).toContain("Laptop unit utama engineer")
 
-    // Tombol Edit
+    // Tombol Edit & Hapus
     expect(html).toContain("Edit Aset")
+    expect(html).toContain("Hapus Aset")
+    expect(html).toContain('data-testid="asset-delete-dialog-mock"')
   })
 
   it("merender kartu informasi karyawan penerima jika aset ditugaskan (assigned)", () => {

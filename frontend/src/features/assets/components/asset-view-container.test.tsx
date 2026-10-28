@@ -21,6 +21,14 @@ vi.mock("./asset-table", () => ({
   },
 }))
 
+vi.mock("./asset-bulk-delete-dialog", () => ({
+  AssetBulkDeleteDialog: ({ trigger }: { trigger?: React.ReactNode }) => (
+    <div data-testid="asset-bulk-delete-dialog-mock">
+      {trigger || <button>Hapus Terpilih</button>}
+    </div>
+  ),
+}))
+
 describe("AssetViewContainer component (EMPTRACK-89)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -101,5 +109,21 @@ describe("AssetViewContainer component (EMPTRACK-89)", () => {
     expect(capturedTableFilters).toEqual({
       assignedToId: "emp-14",
     })
+  })
+
+  it("menampilkan floating bulk actions bar saat ada aset yang dipilih (EMPTRACK-93)", () => {
+    vi.mocked(nuqsModule.useQueryState).mockReturnValue(["", vi.fn()] as unknown as ReturnType<
+      typeof nuqsModule.useQueryState
+    >)
+
+    const html = renderToStaticMarkup(
+      <AssetViewContainer initialRowSelection={{ "ast-1": true, "ast-2": true }} />,
+    )
+
+    expect(html).toContain('data-testid="asset-bulk-actions-bar"')
+    expect(html).toContain("2")
+    expect(html).toContain("aset dipilih")
+    expect(html).toContain("Batal")
+    expect(html).toContain('data-testid="asset-bulk-delete-dialog-mock"')
   })
 })
