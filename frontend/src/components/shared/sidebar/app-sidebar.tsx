@@ -35,7 +35,7 @@ const data = {
     },
     {
       title: "Assets",
-      url: "/inventory",
+      url: "/assets",
       icon: <Box />,
     },
   ],

@@ -35,7 +35,7 @@ export function AssetNameCell({ asset }: { asset: Asset }) {
   return (
     <div className="flex flex-col gap-0.5">
       <Link
-        href={`/inventory/${asset.id}`}
+        href={`/assets/${asset.id}`}
         className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
       >
         {asset.name}

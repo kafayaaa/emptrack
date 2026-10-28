@@ -4,14 +4,14 @@ import { AssetTable } from "@/features/assets"
 import { DataTableSkeleton } from "@/components/shared/data-table"
 
 export const metadata: Metadata = {
-  title: "Inventory",
+  title: "Assets",
 }
 
-export default function InventoryPage() {
+export default function AssetsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Inventory</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Assets</h1>
         <p className="text-sm text-muted-foreground">
           Track and manage company hardware, equipment, and assets.
         </p>

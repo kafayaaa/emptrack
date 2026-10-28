@@ -62,7 +62,7 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
           <div className="flex min-w-0 flex-col">
             <div className="flex flex-wrap items-center gap-1.5">
               <Link
-                href={`/inventory/${asset.id}`}
+                href={`/assets/${asset.id}`}
                 className="truncate font-semibold text-foreground transition-colors hover:text-primary hover:underline"
               >
                 {asset.name}

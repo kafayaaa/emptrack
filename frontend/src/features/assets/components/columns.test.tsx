@@ -133,7 +133,7 @@ describe("columns.tsx (Asset Table Columns - EMPTRACK-87)", () => {
 
       const html = renderToStaticMarkup(<AssetNameCell asset={mockAsset} />)
       expect(html).toContain("Dell UltraSharp 27")
-      expect(html).toContain('href="/inventory/ast-101"')
+      expect(html).toContain('href="/assets/ast-101"')
       expect(html).toContain("SN-DELL-999")
     })
   })

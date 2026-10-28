@@ -22,7 +22,7 @@ describe("asset-table.tsx (AssetTable Component - EMPTRACK-87)", () => {
     vi.mocked(nextNavigation.useRouter).mockReturnValue({
       push: mockPush,
     } as unknown as ReturnType<typeof nextNavigation.useRouter>)
-    vi.mocked(nextNavigation.usePathname).mockReturnValue("/inventory")
+    vi.mocked(nextNavigation.usePathname).mockReturnValue("/assets")
     vi.mocked(nextNavigation.useSearchParams).mockReturnValue(
       new URLSearchParams() as unknown as ReturnType<typeof nextNavigation.useSearchParams>,
     )
