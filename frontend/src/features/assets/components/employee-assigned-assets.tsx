@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAssets } from "../hooks"
+import { useAssets, usePrefetchAsset } from "../hooks"
 import type { Asset, AssetCategory } from "../types"
 import { AssetStatusBadge } from "./asset-status-badge"
 
@@ -46,6 +46,7 @@ function getCategoryIcon(category: AssetCategory) {
 }
 
 export function EmployeeAssignedAssets({ employeeId, employeeName }: EmployeeAssignedAssetsProps) {
+  const { prefetchAsset } = usePrefetchAsset()
   const { data, isLoading, isError, error, refetch, isFetching } = useAssets({
     assignedToId: employeeId,
     pageSize: 50,
@@ -146,6 +147,8 @@ export function EmployeeAssignedAssets({ employeeId, employeeName }: EmployeeAss
                   <div className="flex min-w-0 flex-col gap-0.5 text-xs">
                     <Link
                       href={`/assets/${asset.id}`}
+                      onMouseEnter={() => prefetchAsset(asset.id)}
+                      onFocus={() => prefetchAsset(asset.id)}
                       className="truncate font-medium text-foreground transition-colors hover:text-primary hover:underline"
                     >
                       {asset.name}

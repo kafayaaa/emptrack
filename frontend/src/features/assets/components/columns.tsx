@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader, type dataTableFeatures } from "@/components/shared/data-table"
 import { formatDate } from "@/lib/date"
 import { usePrefetchEmployee } from "@/features/employees/hooks"
+import { usePrefetchAsset } from "../hooks"
 import type { Asset } from "../types"
 import { AssetStatusBadge } from "./asset-status-badge"
 
@@ -34,10 +35,14 @@ export function formatCurrency(amount: number): string {
 }
 
 export function AssetNameCell({ asset }: { asset: Asset }) {
+  const { prefetchAsset } = usePrefetchAsset()
+
   return (
     <div className="flex flex-col gap-0.5">
       <Link
         href={`/assets/${asset.id}`}
+        onMouseEnter={() => prefetchAsset(asset.id)}
+        onFocus={() => prefetchAsset(asset.id)}
         className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
       >
         {asset.name}
