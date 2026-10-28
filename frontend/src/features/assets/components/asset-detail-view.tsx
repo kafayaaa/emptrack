@@ -28,6 +28,7 @@ import { formatDate } from "@/lib/date"
 import { formatCurrency } from "./columns"
 import { AssetStatusBadge } from "./asset-status-badge"
 import { AssetEditDialog } from "./asset-edit-dialog"
+import { AssetDeleteDialog } from "./asset-delete-dialog"
 import type { Asset, AssetCategory } from "../types"
 import { usePrefetchEmployee } from "@/features/employees/hooks"
 
@@ -117,6 +118,8 @@ export function AssetDetailView({ asset }: AssetDetailViewProps) {
                 </Button>
               }
             />
+            <AssetDeleteDialog asset={asset} redirectToIndex={true} />
+            <AssetDeleteDialog asset={asset} redirectToIndex={true} />
           </div>
         </div>
       </header>

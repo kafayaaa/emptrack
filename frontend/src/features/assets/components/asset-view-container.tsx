@@ -9,9 +9,14 @@ import { useDataTableVisibility } from "@/hooks"
 import { AssetTable } from "./asset-table"
 import { AssetSearchInput } from "./asset-search-input"
 import { AssetFilters, type AssetFiltersState } from "./asset-filters"
+import { AssetBulkDeleteDialog } from "./asset-bulk-delete-dialog"
 import type { AssetCategory, AssetStatus } from "../types"
 
-export function AssetViewContainer() {
+export interface AssetViewContainerProps {
+  initialRowSelection?: RowSelectionState
+}
+
+export function AssetViewContainer({ initialRowSelection = {} }: AssetViewContainerProps = {}) {
   const [page, setPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({
@@ -65,7 +70,13 @@ export function AssetViewContainer() {
     storageKey: "emptrack:assets:column-visibility",
   })
 
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(initialRowSelection)
+
+  const selectedAssetIds = React.useMemo(
+    () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
+    [rowSelection],
+  )
+  const selectedCount = selectedAssetIds.length
 
   const filterState: AssetFiltersState = React.useMemo(
     () => ({
@@ -165,6 +176,36 @@ export function AssetViewContainer() {
         rowSelection={rowSelection}
         onRowSelectionChange={setRowSelection}
       />
+
+      {/* Floating Bulk Actions Bar (EMPTRACK-93) */}
+      {selectedCount > 0 && (
+        <div
+          data-slot="bulk-actions-bar"
+          data-testid="asset-bulk-actions-bar"
+          className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 animate-in items-center gap-3 rounded-full border border-border/80 bg-background/95 px-4 py-2 shadow-2xl backdrop-blur-md transition-all duration-200 fade-in slide-in-from-bottom-4"
+        >
+          <div className="flex items-center gap-2">
+            <span className="flex size-2 animate-pulse rounded-full bg-primary" />
+            <span className="text-xs font-semibold text-foreground sm:text-sm">
+              {selectedCount} aset dipilih
+            </span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => setRowSelection({})}
+            data-testid="cancel-asset-selection-button"
+          >
+            Batal
+          </Button>
+          <AssetBulkDeleteDialog
+            assetIds={selectedAssetIds}
+            onSuccess={() => setRowSelection({})}
+          />
+        </div>
+      )}
     </div>
   )
 }
