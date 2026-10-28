@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { createColumnHelper } from "@tanstack/react-table"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader, type dataTableFeatures } from "@/components/shared/data-table"
 import { formatDate } from "@/lib/date"
+import { usePrefetchEmployee } from "@/features/employees/hooks"
 import type { Asset } from "../types"
 import { AssetStatusBadge } from "./asset-status-badge"
 
@@ -41,6 +43,60 @@ export function AssetNameCell({ asset }: { asset: Asset }) {
         {asset.name}
       </Link>
       <span className="font-mono text-xs text-muted-foreground">{asset.serialNumber}</span>
+    </div>
+  )
+}
+
+export function AssetAssignedToCell({ asset }: { asset: Asset }) {
+  const { prefetchEmployee } = usePrefetchEmployee()
+  const assigned = asset.assignedTo
+  const assignedId = asset.assignedToId
+
+  if (!assigned && !assignedId) {
+    return <span className="text-xs text-muted-foreground italic">Unassigned</span>
+  }
+
+  const initials = assigned?.fullName
+    ? assigned.fullName
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "EM"
+
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar size="sm" className="size-6 text-[10px]">
+        <AvatarFallback className="bg-primary/10 font-medium text-primary">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col gap-0.5 text-xs">
+        {assignedId ? (
+          <Link
+            href={`/employees/${assignedId}`}
+            onMouseEnter={() => prefetchEmployee(assignedId)}
+            onFocus={() => prefetchEmployee(assignedId)}
+            className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
+            data-testid={`asset-assigned-employee-${asset.id}`}
+          >
+            {assigned?.fullName ?? "View Employee"}
+          </Link>
+        ) : (
+          <span className="font-medium text-foreground">{assigned?.fullName}</span>
+        )}
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          {assigned?.employeeNumber && <span className="font-mono">{assigned.employeeNumber}</span>}
+          {assigned?.department && (
+            <>
+              <span>•</span>
+              <span>{assigned.department}</span>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -109,30 +165,7 @@ export const assetColumns = columnHelper.columns([
   columnHelper.display({
     id: "assignedTo",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Assigned To" />,
-    cell: ({ row }) => {
-      const assigned = row.original.assignedTo
-      const assignedId = row.original.assignedToId
-      if (!assigned && !assignedId) {
-        return <span className="text-xs text-muted-foreground italic">Unassigned</span>
-      }
-      return (
-        <div className="flex flex-col gap-0.5 text-xs">
-          {assignedId ? (
-            <Link
-              href={`/employees/${assignedId}`}
-              className="font-medium text-foreground hover:text-primary hover:underline"
-            >
-              {assigned?.fullName ?? "View Employee"}
-            </Link>
-          ) : (
-            <span>{assigned?.fullName}</span>
-          )}
-          {assigned?.department && (
-            <span className="text-[11px] text-muted-foreground">{assigned.department}</span>
-          )}
-        </div>
-      )
-    },
+    cell: ({ row }) => <AssetAssignedToCell asset={row.original} />,
     enableSorting: false,
   }),
   columnHelper.accessor("purchaseCost", {

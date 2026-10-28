@@ -2,7 +2,6 @@ import * as React from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
-  ArrowRight,
   Building2,
   Briefcase,
   Calendar,
@@ -18,14 +17,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
@@ -33,6 +25,7 @@ import { EmployeeInfoCard } from "./employee-info-card"
 import { EmployeeStatusBadge } from "./employee-status-badge"
 import { EmployeeEditDialog } from "./employee-edit-dialog"
 import { EmployeeDeleteDialog } from "./employee-delete-dialog"
+import { EmployeeAssignedAssets } from "@/features/assets/components"
 
 export interface EmployeeDetailViewProps {
   employee: Employee
@@ -411,63 +404,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
 
         {/* Tab 3: Assets & Inventory */}
         <TabsContent value="assets" keepMounted className="mt-0">
-          <Card className="flex flex-col gap-4 p-4 shadow-2xs sm:p-5">
-            <CardHeader className="flex flex-col gap-1.5 border-b border-border/60 p-0 pb-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <Laptop className="size-4 text-primary" aria-hidden="true" />
-                <div>
-                  <CardTitle as="h2" className="text-sm font-semibold text-foreground">
-                    Assigned Assets & Hardware
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Company equipment and resources assigned to {employee.fullName}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-                  <Laptop
-                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <div className="flex flex-col gap-0.5 text-xs">
-                    <span className="font-medium text-foreground">Standard Workstation Kit</span>
-                    <span className="text-muted-foreground">
-                      Assigned for {employee.position} role in {employee.department}
-                    </span>
-                    <span className="mt-1 font-mono text-[11px] text-muted-foreground">
-                      Device Tag: AST-{employee.id.padStart(4, "0")}-LT
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-                  <ShieldCheck
-                    className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <div className="flex flex-col gap-0.5 text-xs">
-                    <span className="font-medium text-foreground">Security Keycard & Badge</span>
-                    <span className="text-muted-foreground">
-                      Facility access linked to {employee.employeeNumber}
-                    </span>
-                    <span className="mt-1 font-mono text-[11px] text-muted-foreground">
-                      Badge ID: SEC-{employee.employeeNumber}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex items-center justify-end border-t border-border/60 p-0 pt-3">
-              <Link href="/assets" className="w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs sm:w-auto">
-                  Browse Inventory Catalog <ArrowRight className="size-3.5" aria-hidden="true" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+          <EmployeeAssignedAssets employeeId={employee.id} employeeName={employee.fullName} />
         </TabsContent>
 
         {/* Tab 4: Activity Log */}

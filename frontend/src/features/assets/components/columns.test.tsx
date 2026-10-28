@@ -7,6 +7,7 @@ import {
   getAssetColumnLabel,
   formatCurrency,
   AssetNameCell,
+  AssetAssignedToCell,
 } from "./columns"
 import type { Asset } from "../types"
 
@@ -135,6 +136,55 @@ describe("columns.tsx (Asset Table Columns - EMPTRACK-87)", () => {
       expect(html).toContain("Dell UltraSharp 27")
       expect(html).toContain('href="/assets/ast-101"')
       expect(html).toContain("SN-DELL-999")
+    })
+  })
+
+  describe("AssetAssignedToCell (EMPTRACK-90)", () => {
+    it("renders unassigned state correctly when asset has no assignee", () => {
+      const unassignedAsset: Asset = {
+        id: "ast-102",
+        assetTag: "AST-00102",
+        name: "Ergonomic Chair",
+        category: "Furniture",
+        model: "Steelcase Gesture",
+        serialNumber: "SN-ST-001",
+        status: "available",
+        purchaseDate: "2024-01-01",
+        purchaseCost: 12000000,
+        assignedToId: null,
+      }
+
+      const html = renderToStaticMarkup(<AssetAssignedToCell asset={unassignedAsset} />)
+      expect(html).toContain("Unassigned")
+    })
+
+    it("renders assigned employee details with avatar and link (EMPTRACK-90)", () => {
+      const assignedAsset: Asset = {
+        id: "ast-103",
+        assetTag: "AST-00103",
+        name: "ThinkPad X1 Carbon",
+        category: "Laptop",
+        model: "Gen 11",
+        serialNumber: "SN-TP-001",
+        status: "assigned",
+        purchaseDate: "2024-02-01",
+        purchaseCost: 28000000,
+        assignedToId: "emp-7",
+        assignedTo: {
+          id: "emp-7",
+          employeeNumber: "EMP-00007",
+          fullName: "Siti Rahmawati",
+          department: "Engineering",
+          email: "siti@emptrack.test",
+        },
+      }
+
+      const html = renderToStaticMarkup(<AssetAssignedToCell asset={assignedAsset} />)
+      expect(html).toContain("Siti Rahmawati")
+      expect(html).toContain('href="/employees/emp-7"')
+      expect(html).toContain("EMP-00007")
+      expect(html).toContain("Engineering")
+      expect(html).toContain("SR") // Avatar Initials
     })
   })
 })

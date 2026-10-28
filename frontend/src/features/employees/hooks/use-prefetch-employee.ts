@@ -11,12 +11,19 @@ import { EMPLOYEE_DETAIL_CACHE_CONFIG } from "./use-employee"
  * achieving near-instant page transitions (0ms perceived latency).
  */
 export function usePrefetchEmployee() {
-  const queryClient = useQueryClient()
+  let queryClient: ReturnType<typeof useQueryClient> | null = null
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    queryClient = useQueryClient()
+  } catch {
+    // Gracefully handle rendering outside QueryClientProvider (e.g. static tests)
+    queryClient = null
+  }
 
   const prefetchEmployee = React.useCallback(
     (id: string | undefined | null) => {
       const normalizedId = id?.trim()
-      if (!normalizedId) return
+      if (!normalizedId || !queryClient) return
 
       queryClient.prefetchQuery({
         queryKey: employeeKeys.detail(normalizedId),
