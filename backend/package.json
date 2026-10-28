@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "seed": "tsx scripts/seed.ts",
-    "seed:small": "tsx scripts/seed.ts --employees=200 --projects=40 --out=fixtures/db.small.json",
+    "seed:small": "tsx scripts/seed.ts --employees=200 --projects=40 --assets=150 --out=fixtures/db.small.json",
     "dev:api": "json-server db.json --port 4000"
   },
   "keywords": [],

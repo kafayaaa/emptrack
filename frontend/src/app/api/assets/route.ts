@@ -1,0 +1,148 @@
+import { NextResponse, type NextRequest } from "next/server"
+import { z } from "zod"
+import { serverEnv } from "@/env.server"
+import {
+  assetListQuerySchema,
+  jsonServerAssetListSchema,
+  assetSchema,
+  type AssetListResponse,
+} from "@/features/assets/schema/asset.schema"
+import { assetFormSchema } from "@/features/assets/schema/asset-form.schema"
+
+// Helper agar semua error punya bentuk yang sama konsisten dengan standar EmpTrack.
+function errorResponse(status: number, code: string, message: string, details?: unknown) {
+  return NextResponse.json({ error: { code, message, details } }, { status })
+}
+
+export async function GET(request: NextRequest) {
+  // 1. VALIDASI INPUT QUERY PARAMS
+  const parsed = assetListQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams))
+  if (!parsed.success) {
+    return errorResponse(
+      400,
+      "INVALID_QUERY",
+      "Parameter query tidak valid.",
+      z.flattenError(parsed.error).fieldErrors,
+    )
+  }
+
+  const { page, pageSize, search, sortBy, sortOrder, ...filters } = parsed.data
+
+  // 2. SUSUN URL UPSTREAM KE JSON-SERVER
+  const upstream = new URL("/assets", serverEnv.BACKEND_URL)
+  upstream.searchParams.set("_page", String(page))
+  upstream.searchParams.set("_per_page", String(pageSize))
+
+  // Sintaks sort json-server v1: "-field" berarti descending.
+  if (sortBy) {
+    upstream.searchParams.set("_sort", sortOrder === "desc" ? `-${sortBy}` : sortBy)
+  }
+
+  // Search sebagian teks pada nama aset.
+  if (search) {
+    upstream.searchParams.set("name:contains", search)
+  }
+
+  // Filter exact match (category, status, assignedToId); lewati yang tidak dikirim.
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined) {
+      upstream.searchParams.set(key, value)
+    }
+  }
+
+  // 3. PANGGIL BACKEND UPSTREAM
+  try {
+    const res = await fetch(upstream, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    })
+
+    if (!res.ok) {
+      return errorResponse(502, "UPSTREAM_ERROR", "Backend mengembalikan error.")
+    }
+
+    // 4. VALIDASI RESPONSE UPSTREAM DENGAN ZOD
+    const upstreamData = jsonServerAssetListSchema.safeParse(await res.json())
+    if (!upstreamData.success) {
+      return errorResponse(502, "UPSTREAM_INVALID", "Format data backend tidak sesuai.")
+    }
+
+    const { items, pages, data } = upstreamData.data
+
+    // Halaman di luar jangkauan (mis. page=999999).
+    if (items > 0 && page > pages) {
+      return errorResponse(404, "PAGE_OUT_OF_RANGE", "Halaman tidak ditemukan.")
+    }
+
+    // 5. PETAKAN KE KONTRAK RESPONSE
+    const body: AssetListResponse = {
+      data,
+      meta: { page, pageSize, total: items, totalPages: pages },
+    }
+
+    return NextResponse.json(body, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      return errorResponse(504, "UPSTREAM_TIMEOUT", "Backend terlalu lama merespons.")
+    }
+    return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
+  }
+}
+
+export async function POST(request: NextRequest) {
+  let bodyJson: unknown
+  try {
+    bodyJson = await request.json()
+  } catch {
+    return errorResponse(400, "INVALID_JSON", "Format body request bukan JSON yang valid.")
+  }
+
+  // 1. VALIDASI INPUT DENGAN FORM SCHEMA
+  const parsed = assetFormSchema.safeParse(bodyJson)
+  if (!parsed.success) {
+    return errorResponse(
+      400,
+      "INVALID_BODY",
+      "Data aset tidak valid.",
+      z.flattenError(parsed.error).fieldErrors,
+    )
+  }
+
+  // 2. FORWARD KE UPSTREAM BACKEND
+  const upstream = new URL("/assets", serverEnv.BACKEND_URL)
+  try {
+    const res = await fetch(upstream, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(parsed.data),
+      signal: AbortSignal.timeout(5000),
+    })
+
+    if (!res.ok) {
+      return errorResponse(502, "UPSTREAM_ERROR", "Backend mengembalikan error saat menyimpan.")
+    }
+
+    const rawData = await res.json()
+    const parsedAsset = assetSchema.safeParse(rawData)
+    if (!parsedAsset.success) {
+      return errorResponse(
+        502,
+        "UPSTREAM_INVALID",
+        "Data aset yang disimpan tidak sesuai spesifikasi schema.",
+      )
+    }
+
+    return NextResponse.json(parsedAsset.data, { status: 201 })
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      return errorResponse(504, "UPSTREAM_TIMEOUT", "Backend terlalu lama merespons.")
+    }
+    return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
+  }
+}

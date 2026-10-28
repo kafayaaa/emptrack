@@ -64,12 +64,13 @@ Options are passed as `--name=value`:
 | ------------- | --------- | --------------------------------------------------- |
 | `--employees` | `50000`   | Number of employees (minimum 8, one per department) |
 | `--projects`  | `3000`    | Number of projects (minimum 8, one per department)  |
+| `--assets`    | `10000`   | Number of assets                                    |
 | `--out`       | `db.json` | Output file path                                    |
 
 Example:
 
 ```bash
-npx tsx scripts/seed.ts --employees=10000 --projects=500 --out=db.json
+npx tsx scripts/seed.ts --employees=10000 --projects=500 --assets=2000 --out=db.json
 ```
 
 ## Seed result
@@ -114,10 +115,29 @@ Measured with the default settings (`npm run seed`):
 | `status`      | enum   | `planning`, `active`, `on_hold`, `completed`           |
 | `startDate`   | string | `YYYY-MM-DD`                                           |
 
+### Asset (`/assets`)
+
+| Field          | Type           | Notes                                                              |
+| -------------- | -------------- | ------------------------------------------------------------------ |
+| `id`           | string         | Unique                                                             |
+| `assetTag`     | string         | Unique, e.g. `AST-00042`                                           |
+| `name`         | string         | Model/item name, e.g. `MacBook Pro 14"`                            |
+| `category`     | enum           | `Laptop`, `Monitor`, `Peripheral`, `Mobile Device`, `Furniture`, `Vehicle`, `Other` |
+| `model`        | string         | Hardware/product model specification                               |
+| `serialNumber` | string         | Unique serial number, e.g. `LAP-8K29AL1X`                          |
+| `status`       | enum           | `available` (20%), `assigned` (65%), `maintenance` (10%), `retired` (5%) |
+| `purchaseDate` | string         | `YYYY-MM-DD`                                                       |
+| `purchaseCost` | number         | Non-negative integer (in IDR)                                      |
+| `assignedToId` | string \| null | `null` if unassigned, otherwise employee `id`                      |
+| `assignedAt`   | string \| null | `YYYY-MM-DD` when assigned, otherwise `null`                       |
+| `assignedTo`   | object \| null | Embedded summary of assigned employee for fast display             |
+| `notes`        | string \| null | Optional operational notes                                         |
+
 ### Relations
 
 - `employee.projectId` -> `project.id`
 - `employee.managerId` -> `employee.id` (where `isManager` is `true`)
+- `asset.assignedToId` -> `employee.id` (where `status` is `assigned`)
 - Employees, managers and projects always share a department.
 
 ## Example requests
@@ -159,4 +179,3 @@ curl "http://localhost:4000/employees?projectId=12&_page=1&_per_page=50"
   `.test` domain.
 - **One project per employee.** Simplified on purpose. A real system would
   usually model this as many-to-many.
-- **Assets are not generated yet.** Planned as a follow-up.
