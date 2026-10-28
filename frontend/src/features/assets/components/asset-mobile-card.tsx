@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { formatDate } from "@/lib/date"
 import { usePrefetchEmployee } from "@/features/employees/hooks"
+import { usePrefetchAsset } from "../hooks"
 import type { Asset, AssetCategory } from "../types"
 import { AssetStatusBadge } from "./asset-status-badge"
 
@@ -30,6 +31,7 @@ function getCategoryIcon(category: AssetCategory) {
 
 function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: AssetMobileCardProps) {
   const { prefetchEmployee } = usePrefetchEmployee()
+  const { prefetchAsset } = usePrefetchAsset()
 
   return (
     <div
@@ -66,6 +68,8 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
             <div className="flex flex-wrap items-center gap-1.5">
               <Link
                 href={`/assets/${asset.id}`}
+                onMouseEnter={() => prefetchAsset(asset.id)}
+                onFocus={() => prefetchAsset(asset.id)}
                 className="truncate font-semibold text-foreground transition-colors hover:text-primary hover:underline"
               >
                 {asset.name}

@@ -1,3 +1,5 @@
 export * from "./use-assets"
 export * from "./use-create-asset"
 export * from "./use-update-asset"
+export * from "./use-asset"
+export * from "./use-prefetch-asset"
