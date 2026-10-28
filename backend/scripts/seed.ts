@@ -41,6 +41,129 @@ const MANAGER_TITLE_WEIGHTS = [
   { weight: 5, value: 'Head of Department' },
 ];
 
+/* ========== KONSTANTA ASSET (EMPTRACK-88) ========== */
+
+const ASSET_CATEGORIES = [
+  'Laptop',
+  'Monitor',
+  'Peripheral',
+  'Mobile Device',
+  'Furniture',
+  'Vehicle',
+  'Other',
+] as const;
+type AssetCategory = (typeof ASSET_CATEGORIES)[number];
+
+const ASSET_STATUSES = ['available', 'assigned', 'maintenance', 'retired'] as const;
+type AssetStatus = (typeof ASSET_STATUSES)[number];
+
+const ASSET_STATUS_WEIGHTS: { weight: number; value: AssetStatus }[] = [
+  { weight: 65, value: 'assigned' },
+  { weight: 20, value: 'available' },
+  { weight: 10, value: 'maintenance' },
+  { weight: 5, value: 'retired' },
+];
+
+const ASSET_CATALOG: Record<
+  AssetCategory,
+  { names: string[]; models: string[]; minCost: number; maxCost: number }
+> = {
+  Laptop: {
+    names: [
+      'MacBook Pro 14"',
+      'MacBook Pro 16"',
+      'MacBook Air M2',
+      'ThinkPad X1 Carbon',
+      'Dell XPS 15',
+      'ASUS ROG Zephyrus',
+      'HP EliteBook 840',
+    ],
+    models: [
+      'Apple M3 Pro',
+      'Apple M3 Max',
+      'Apple M2 16GB',
+      'Gen 11 i7-1365U',
+      'Core i7-13700H',
+      'AMD Ryzen 9 7940HS',
+      'Intel i5-1335U',
+    ],
+    minCost: 15_000_000,
+    maxCost: 45_000_000,
+  },
+  Monitor: {
+    names: [
+      'Dell UltraSharp 27"',
+      'LG UltraFine 4K 32"',
+      'BenQ PD2705U 27"',
+      'ASUS ProArt 27"',
+      'Samsung Odyssey G7 28"',
+    ],
+    models: ['U2723QE', '32UN880-B', 'PD2705U', 'PA279CV', 'LS28BG700'],
+    minCost: 4_000_000,
+    maxCost: 14_000_000,
+  },
+  Peripheral: {
+    names: [
+      'Logitech MX Master 3S',
+      'Keychron K2 Mechanical Keyboard',
+      'Apple Magic Trackpad',
+      'Logitech StreamCam',
+      'Jabra Evolve2 65 Headset',
+    ],
+    models: ['MX-M3S', 'K2-V2-RGB', 'MK2C3ZA/A', 'C980OW', 'HSC110W'],
+    minCost: 800_000,
+    maxCost: 3_500_000,
+  },
+  'Mobile Device': {
+    names: [
+      'iPhone 15 Pro 128GB',
+      'Samsung Galaxy S24 256GB',
+      'iPad Air 11" M2',
+      'Google Pixel 8 Pro',
+      'iPad Pro 13" M4',
+    ],
+    models: ['A3101', 'SM-S921B', 'A2902', 'GC3VE', 'A2925'],
+    minCost: 10_000_000,
+    maxCost: 25_000_000,
+  },
+  Furniture: {
+    names: [
+      'Herman Miller Aeron Chair',
+      'Steelcase Gesture Chair',
+      'Standing Desk Electric 160x80',
+      'Ergonomic Mesh Chair Pexio',
+      'Office Cabinet 3-Drawer',
+    ],
+    models: ['Aeron-B-Graphite', 'Gesture-442A40', 'Dual-Motor-Pro', 'Pexio-Fabric-Grey', 'Steel-Cab-White'],
+    minCost: 2_500_000,
+    maxCost: 22_000_000,
+  },
+  Vehicle: {
+    names: [
+      'Honda Vario 160 ABS',
+      'Yamaha NMAX 155 Connected',
+      'Toyota Avanza 1.5 G',
+      'Toyota Innova Zenix 2.0 G',
+      'Wuling Air EV Long Range',
+    ],
+    models: ['K2SF-ABS', 'SG56-Connect', 'W101RE-G', 'MAGX10-Hybrid', 'E230-LR'],
+    minCost: 28_000_000,
+    maxCost: 420_000_000,
+  },
+  Other: {
+    names: [
+      'Sony WH-1000XM5 ANC',
+      'DJI Osmo Pocket 3',
+      'APC Smart-UPS 1500VA',
+      'Anker 737 PowerBank 24000mAh',
+      'Starlink Standard Kit',
+    ],
+    models: ['WH1000XM5/B', 'OP-301', 'SMT1500I', 'A1289', 'UTA-211'],
+    minCost: 1_500_000,
+    maxCost: 9_000_000,
+  },
+};
+
 // Peluang seorang employee menjadi manager: sekitar 5% (50.000 -> ±2.500 manager).
 const MANAGER_WEIGHTS = [
   { weight: 5, value: true },
@@ -97,9 +220,37 @@ const EmployeeSchema = z.object({
   projectId: z.string(),                  // relasi ke Project.id
 });
 
+const AssetSchema = z.object({
+  id: z.string(),
+  assetTag: z.string(),
+  name: z.string().min(1),
+  category: z.enum(ASSET_CATEGORIES),
+  model: z.string(),
+  serialNumber: z.string(),
+  status: z.enum(ASSET_STATUSES),
+  purchaseDate: z.string().regex(DATE_REGEX),
+  purchaseCost: z.number().nonnegative(),
+  assignedToId: z.string().nullable(),
+  assignedAt: z.string().regex(DATE_REGEX).nullable().optional(),
+  assignedTo: z
+    .object({
+      id: z.string(),
+      employeeNumber: z.string(),
+      fullName: z.string(),
+      department: z.string(),
+      email: z.string().email(),
+    })
+    .nullable()
+    .optional(),
+  notes: z.string().nullable().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
 // Tipe TypeScript diturunkan dari schema: satu sumber kebenaran.
 type Project = z.infer<typeof ProjectSchema>;
 type Employee = z.infer<typeof EmployeeSchema>;
+type Asset = z.infer<typeof AssetSchema>;
 // Employee sebelum managerId terisi (atasan baru bisa dipilih setelah semua employee ada).
 type EmployeeDraft = Omit<Employee, 'managerId'>;
 
@@ -225,6 +376,79 @@ function generateEmployees(count: number, projects: Project[]): Employee[] {
   }));
 }
 
+function generateAssets(count: number, employees: Employee[]): Asset[] {
+  const serialNumbers = new Set<string>();
+
+  return Array.from({ length: count }, (_, index) => {
+    const number = index + 1;
+    const category = ASSET_CATEGORIES[index % ASSET_CATEGORIES.length];
+    const catalog = ASSET_CATALOG[category];
+    const nameIndex = index % catalog.names.length;
+    const name = catalog.names[nameIndex];
+    const model = catalog.models[nameIndex % catalog.models.length];
+
+    let serialNumber = '';
+    do {
+      serialNumber = `${category.slice(0, 3).toUpperCase()}-${faker.string.alphanumeric(8).toUpperCase()}`;
+    } while (serialNumbers.has(serialNumber));
+    serialNumbers.add(serialNumber);
+
+    const purchaseDateObj = faker.date.between({ from: HIRE_FROM, to: HIRE_TO });
+    const purchaseDate = toDateString(purchaseDateObj);
+    const purchaseCost = faker.number.int({
+      min: catalog.minCost,
+      max: catalog.maxCost,
+      multipleOf: 50_000,
+    });
+
+    const status = faker.helpers.weightedArrayElement(ASSET_STATUS_WEIGHTS);
+    let assignedToId: string | null = null;
+    let assignedAt: string | null = null;
+    let assignedTo: Asset['assignedTo'] = null;
+
+    if (status === 'assigned' && employees.length > 0) {
+      const emp = faker.helpers.arrayElement(employees);
+      assignedToId = emp.id;
+      const assignedDateObj = faker.date.between({ from: purchaseDateObj, to: HIRE_TO });
+      assignedAt = toDateString(assignedDateObj);
+      assignedTo = {
+        id: emp.id,
+        employeeNumber: emp.employeeNumber,
+        fullName: emp.fullName,
+        department: emp.department,
+        email: emp.email,
+      };
+    }
+
+    const notesList = [
+      'Alokasi operasional reguler',
+      'Perangkat standar engineering',
+      'Pengadaan kuartal kedua',
+      'Kondisi fisik sangat baik',
+      null,
+      null,
+    ];
+
+    return {
+      id: String(number),
+      assetTag: `AST-${pad(number, 5)}`,
+      name,
+      category,
+      model,
+      serialNumber,
+      status,
+      purchaseDate,
+      purchaseCost,
+      assignedToId,
+      assignedAt,
+      assignedTo,
+      notes: faker.helpers.arrayElement(notesList),
+      createdAt: purchaseDate,
+      updatedAt: purchaseDate,
+    };
+  });
+}
+
 /* ========== 5. MAIN: generate -> validasi -> tulis file ========== */
 
 function main(): void {
@@ -232,6 +456,10 @@ function main(): void {
 
   const employeeCount = readNumberArg('employees', 50000);
   const projectCount = readNumberArg('projects', 3000);
+  const assetCount = readNumberArg(
+    'assets',
+    employeeCount > 1000 ? 10000 : Math.round(employeeCount * 0.75),
+  );
   const outPath = getArg('out') ?? 'db.json';
 
   // Syarat minimal agar setiap department punya manager dan project.
@@ -241,14 +469,16 @@ function main(): void {
 
   faker.seed(42); // seed tetap = hasil selalu sama setiap dijalankan
 
-  // Urutan penting: project dulu karena employee mereferensikannya.
+  // Urutan penting: project dulu karena employee mereferensikannya, lalu asset mereferensikan employee.
   const projects = generateProjects(projectCount);
   const employees = generateEmployees(employeeCount, projects);
+  const assets = generateAssets(assetCount, employees);
 
   // Validasi bentuk data; jika ada yang salah, script berhenti di sini.
   const db = {
     projects: z.array(ProjectSchema).parse(projects),
     employees: z.array(EmployeeSchema).parse(employees),
+    assets: z.array(AssetSchema).parse(assets),
   };
 
   // Validasi keunikan.
@@ -257,10 +487,14 @@ function main(): void {
   assertUnique('employee.id', db.employees.map((e) => e.id));
   assertUnique('employee.email', db.employees.map((e) => e.email));
   assertUnique('employee.employeeNumber', db.employees.map((e) => e.employeeNumber));
+  assertUnique('asset.id', db.assets.map((a) => a.id));
+  assertUnique('asset.assetTag', db.assets.map((a) => a.assetTag));
+  assertUnique('asset.serialNumber', db.assets.map((a) => a.serialNumber));
 
   // Validasi relasi. Set = pencarian cepat (O(1) per cek).
   const projectIds = new Set(db.projects.map((p) => p.id));
   const managerIds = new Set(db.employees.filter((e) => e.isManager).map((e) => e.id));
+  const employeeIds = new Set(db.employees.map((e) => e.id));
 
   for (const employee of db.employees) {
     if (!projectIds.has(employee.projectId)) {
@@ -275,6 +509,12 @@ function main(): void {
     }
   }
 
+  for (const asset of db.assets) {
+    if (asset.assignedToId && !employeeIds.has(asset.assignedToId)) {
+      throw new Error(`Asset ${asset.id} merujuk employeeId tidak ada: ${asset.assignedToId}`);
+    }
+  }
+
   // Buat folder tujuan jika belum ada, lalu tulis file.
   // JSON.stringify TANPA indentasi: ukuran file jauh lebih kecil untuk puluhan ribu record.
   mkdirSync(dirname(outPath), { recursive: true });
@@ -284,7 +524,7 @@ function main(): void {
   const seconds = ((performance.now() - startedAt) / 1000).toFixed(2);
   console.log(
     `✔ ${db.projects.length} projects, ${db.employees.length} employees ` +
-      `(${managerIds.size} managers) -> ${outPath} (${sizeMb} MB, ${seconds}s)`,
+      `(${managerIds.size} managers), ${db.assets.length} assets -> ${outPath} (${sizeMb} MB, ${seconds}s)`,
   );
 }
 
