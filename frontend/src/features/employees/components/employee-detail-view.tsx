@@ -461,7 +461,7 @@ export function EmployeeDetailView({ employee }: EmployeeDetailViewProps) {
               </div>
             </CardContent>
             <CardFooter className="flex items-center justify-end border-t border-border/60 p-0 pt-3">
-              <Link href="/inventory" className="w-full sm:w-auto">
+              <Link href="/assets" className="w-full sm:w-auto">
                 <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs sm:w-auto">
                   Browse Inventory Catalog <ArrowRight className="size-3.5" aria-hidden="true" />
                 </Button>
