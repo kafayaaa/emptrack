@@ -108,7 +108,7 @@ export const assetColumns = columnHelper.columns([
   }),
   columnHelper.display({
     id: "assignedTo",
-    header: "Assigned To",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Assigned To" />,
     cell: ({ row }) => {
       const assigned = row.original.assignedTo
       const assignedId = row.original.assignedToId
