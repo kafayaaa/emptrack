@@ -59,3 +59,18 @@ export const patchAssetFormSchema = baseAssetFormSchema.partial()
 
 export type AssetFormValues = z.infer<typeof assetFormSchema>
 export type AssetFormInput = z.input<typeof assetFormSchema>
+
+/**
+ * Nilai default formulir aset untuk inisialisasi awal mode Create.
+ */
+export const defaultAssetFormValues: AssetFormInput = {
+  name: "",
+  category: "Laptop",
+  model: "",
+  serialNumber: "",
+  status: "available",
+  purchaseDate: new Date().toISOString().split("T")[0],
+  purchaseCost: 0,
+  assignedToId: "",
+  notes: "",
+}
