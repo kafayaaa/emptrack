@@ -18,8 +18,8 @@ import { LucideIcon } from "lucide-react"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableSkeleton } from "./data-table-skeleton"
-import { DataTableEmptyState } from "./data-table-empty-state"
-import { DataTableErrorState } from "./data-table-error-state"
+import { DataTableEmptyContent, DataTableEmptyState } from "./data-table-empty-state"
+import { DataTableErrorContent, DataTableErrorState } from "./data-table-error-state"
 import { DataTableColumnVisibility } from "./data-table-column-visibility"
 import { dataTableFeatures } from "./data-table"
 
@@ -329,8 +329,7 @@ export function VirtualizedDataTable<TData extends RowData>({
           >
             {isError ? (
               <div className="p-2">
-                <DataTableErrorState
-                  colSpan={1}
+                <DataTableErrorContent
                   title={errorTitle}
                   description={errorDescription}
                   errorMessage={errorMessage}
@@ -356,8 +355,7 @@ export function VirtualizedDataTable<TData extends RowData>({
               </div>
             ) : rows.length === 0 ? (
               <div className="p-2">
-                <DataTableEmptyState
-                  colSpan={1}
+                <DataTableEmptyContent
                   icon={emptyIcon}
                   title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
                   description={emptyDescription}

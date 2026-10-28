@@ -34,7 +34,7 @@ const data = {
       icon: <BookUser />,
     },
     {
-      title: "Inventory",
+      title: "Assets",
       url: "/inventory",
       icon: <Box />,
     },

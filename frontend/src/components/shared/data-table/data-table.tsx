@@ -33,8 +33,8 @@ import {
 import { LucideIcon } from "lucide-react"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableSkeleton } from "./data-table-skeleton"
-import { DataTableEmptyState } from "./data-table-empty-state"
-import { DataTableErrorState } from "./data-table-error-state"
+import { DataTableEmptyState, DataTableEmptyContent } from "./data-table-empty-state"
+import { DataTableErrorState, DataTableErrorContent } from "./data-table-error-state"
 import { DataTableColumnVisibility } from "./data-table-column-visibility"
 
 // Modern, tree-shakeable features configuration for generic data table in v9
@@ -231,8 +231,7 @@ export function DataTable<TData extends RowData>({
             <div className="block md:hidden">
               {isError ? (
                 <div className="p-4">
-                  <DataTableErrorState
-                    colSpan={1}
+                  <DataTableErrorContent
                     title={errorTitle}
                     description={errorDescription}
                     errorMessage={errorMessage}
@@ -268,8 +267,7 @@ export function DataTable<TData extends RowData>({
                 </div>
               ) : (
                 <div className="p-4">
-                  <DataTableEmptyState
-                    colSpan={1}
+                  <DataTableEmptyContent
                     icon={emptyIcon}
                     title={emptyTitle ?? (emptyMessage ? emptyMessage : undefined)}
                     description={emptyDescription}
