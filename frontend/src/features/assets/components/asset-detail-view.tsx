@@ -19,6 +19,7 @@ import {
   UserCheck,
   Wrench,
 } from "lucide-react"
+import dynamic from "next/dynamic"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,10 +28,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/date"
 import { formatCurrency } from "./columns"
 import { AssetStatusBadge } from "./asset-status-badge"
-import { AssetEditDialog } from "./asset-edit-dialog"
-import { AssetDeleteDialog } from "./asset-delete-dialog"
 import type { Asset, AssetCategory } from "../types"
 import { usePrefetchEmployee } from "@/features/employees/hooks"
+
+const AssetEditDialog = dynamic(() => import("./asset-edit-dialog").then((m) => m.AssetEditDialog))
+
+const AssetDeleteDialog = dynamic(() =>
+  import("./asset-delete-dialog").then((m) => m.AssetDeleteDialog),
+)
 
 export interface AssetDetailViewProps {
   asset: Asset

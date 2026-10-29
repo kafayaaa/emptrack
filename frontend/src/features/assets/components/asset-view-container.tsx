@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { useQueryState, parseAsString, parseAsInteger } from "nuqs"
 import { User, X } from "lucide-react"
 import type { RowSelectionState } from "@tanstack/react-table"
@@ -9,8 +10,11 @@ import { useDataTableVisibility } from "@/hooks"
 import { AssetTable } from "./asset-table"
 import { AssetSearchInput } from "./asset-search-input"
 import { AssetFilters, type AssetFiltersState } from "./asset-filters"
-import { AssetBulkDeleteDialog } from "./asset-bulk-delete-dialog"
 import type { AssetCategory, AssetStatus } from "../types"
+
+const AssetBulkDeleteDialog = dynamic(() =>
+  import("./asset-bulk-delete-dialog").then((m) => m.AssetBulkDeleteDialog),
+)
 
 export interface AssetViewContainerProps {
   initialRowSelection?: RowSelectionState
