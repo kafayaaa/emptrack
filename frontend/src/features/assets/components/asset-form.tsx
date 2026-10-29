@@ -89,6 +89,7 @@ export function AssetForm({
     if (!initialData) return defaultAssetFormValues
 
     return {
+      assetTag: initialData.assetTag ?? "",
       name: initialData.name ?? "",
       category: (initialData.category as AssetCategory) ?? defaultAssetFormValues.category,
       model: initialData.model ?? "",
@@ -166,6 +167,24 @@ export function AssetForm({
                   <FormControl>
                     <Input
                       placeholder="misal: MacBook Pro 16 M3 Max"
+                      disabled={isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="assetTag"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tag Aset (Opsional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="misal: AST-00123 (otomatis jika kosong)"
                       disabled={isSubmitting}
                       {...field}
                     />

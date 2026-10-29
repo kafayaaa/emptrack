@@ -33,8 +33,21 @@ export async function GET(_request: NextRequest, segmentData: { params: Promise<
       return errorResponse(502, "UPSTREAM_ERROR", "Backend mengembalikan error.")
     }
 
-    const upstreamJson = await res.json()
-    const parsed = assetSchema.safeParse(upstreamJson)
+    const upstreamJson = (await res.json()) as Record<string, unknown>
+    const normalized = {
+      ...upstreamJson,
+      assetTag:
+        typeof upstreamJson.assetTag === "string" && upstreamJson.assetTag.trim().length > 0
+          ? upstreamJson.assetTag.trim()
+          : `AST-${String(upstreamJson.id ?? "0").padStart(5, "0")}`,
+      assignedToId:
+        upstreamJson.assignedToId === "" || upstreamJson.assignedToId === undefined
+          ? null
+          : upstreamJson.assignedToId,
+      ...(upstreamJson.notes === "" ? { notes: null } : {}),
+      ...(upstreamJson.assignedAt === "" ? { assignedAt: null } : {}),
+    }
+    const parsed = assetSchema.safeParse(normalized)
     if (!parsed.success) {
       return errorResponse(502, "UPSTREAM_INVALID", "Format data backend tidak sesuai.")
     }
@@ -82,10 +95,35 @@ export async function PATCH(
   const upstream = new URL(`/assets/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
 
   try {
+    const patchData: Record<string, unknown> = { ...parsed.data }
+    const now = new Date().toISOString().split("T")[0]
+    patchData.updatedAt = now
+
+    // Normalisasi relasi penugasan
+    if (parsed.data.status) {
+      if (parsed.data.status !== "assigned") {
+        patchData.assignedToId = null
+        patchData.assignedAt = null
+        patchData.assignedTo = null
+      } else if (parsed.data.assignedToId) {
+        patchData.assignedAt = now
+      }
+    } else if (parsed.data.assignedToId !== undefined) {
+      if (!parsed.data.assignedToId) {
+        patchData.assignedToId = null
+        patchData.assignedAt = null
+        patchData.assignedTo = null
+      }
+    }
+
+    if (parsed.data.notes !== undefined && !parsed.data.notes) {
+      patchData.notes = null
+    }
+
     const res = await fetch(upstream, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(patchData),
       signal: AbortSignal.timeout(5000),
     })
 
@@ -98,9 +136,27 @@ export async function PATCH(
     }
 
     const upstreamJson = await res.json()
+    if (upstreamJson.assignedToId === "") {
+      upstreamJson.assignedToId = null
+    }
+    if (upstreamJson.notes === "") {
+      upstreamJson.notes = null
+    }
+    if (upstreamJson.assignedAt === undefined) {
+      upstreamJson.assignedAt = null
+    }
+    if (upstreamJson.assignedTo === undefined) {
+      upstreamJson.assignedTo = null
+    }
+
     const parsedAsset = assetSchema.safeParse(upstreamJson)
     if (!parsedAsset.success) {
-      return errorResponse(502, "UPSTREAM_INVALID", "Format data backend tidak sesuai.")
+      return errorResponse(
+        502,
+        "UPSTREAM_INVALID",
+        "Format data backend tidak sesuai.",
+        z.flattenError(parsedAsset.error).fieldErrors,
+      )
     }
 
     return NextResponse.json(parsedAsset.data)
