@@ -103,7 +103,10 @@ function BaseDataTablePagination({
         </span>
       </div>
 
-      <div className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-6">
+      <nav
+        aria-label="Navigasi halaman tabel"
+        className="flex w-full flex-wrap items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-6"
+      >
         <div className="flex items-center gap-2">
           <label
             htmlFor="rows-per-page-select"
@@ -169,7 +172,7 @@ function BaseDataTablePagination({
             <ChevronsRight className="size-4" />
           </Button>
         </div>
-      </div>
+      </nav>
     </div>
   )
 }

@@ -103,6 +103,10 @@ export interface DataTableProps<TData extends RowData> {
   emptyAction?: React.ReactNode
   pageSizeOptions?: number[]
   /**
+   * Accessible table label for screen readers. Defaults to "Tabel Data".
+   */
+  ariaLabel?: string
+  /**
    * Optional custom card renderer for responsive mobile layout (< md screen).
    * If provided, cards will be rendered instead of the table on mobile viewports.
    */
@@ -145,6 +149,7 @@ export function DataTable<TData extends RowData>({
   emptyIcon,
   emptyAction,
   pageSizeOptions,
+  ariaLabel,
   renderMobileCard,
 }: DataTableProps<TData>) {
   // State lokal jika tabel beroperasi un-controlled / client-side
@@ -280,13 +285,24 @@ export function DataTable<TData extends RowData>({
 
           {/* Desktop Table View (always available on >= md, or on all viewports if renderMobileCard is omitted) */}
           <div className={renderMobileCard ? "hidden md:block" : "block"}>
-            <Table>
+            <Table aria-label={ariaLabel ?? "Tabel Data"}>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
+                      const canSort = header.column.getCanSort()
+                      const isSorted = header.column.getIsSorted()
+                      const ariaSort =
+                        isSorted === "asc"
+                          ? "ascending"
+                          : isSorted === "desc"
+                            ? "descending"
+                            : canSort
+                              ? "none"
+                              : undefined
+
                       return (
-                        <TableHead key={header.id}>
+                        <TableHead key={header.id} aria-sort={ariaSort}>
                           {header.isPlaceholder
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}

@@ -130,6 +130,7 @@ function BaseAssetTable({
       onReset={handleRetry}
     >
       <DataTable
+        ariaLabel="Tabel Data Aset Inventaris"
         columns={assetColumns}
         data={assets}
         rowCount={totalRows}

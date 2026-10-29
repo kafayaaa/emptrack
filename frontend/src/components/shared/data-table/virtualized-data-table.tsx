@@ -95,6 +95,10 @@ export interface VirtualizedDataTableProps<TData extends RowData> {
   emptyIcon?: LucideIcon
   emptyAction?: React.ReactNode
   pageSizeOptions?: number[]
+  /**
+   * Accessible table label for screen readers. Defaults to "Tabel Data".
+   */
+  ariaLabel?: string
 
   /**
    * Infinite scroll callback invoked when user scrolls near the bottom of the virtual list.
@@ -163,6 +167,7 @@ export function VirtualizedDataTable<TData extends RowData>({
   emptyIcon,
   emptyAction,
   pageSizeOptions,
+  ariaLabel,
   onScrollToBottom,
   isFetchingNextPage = false,
   scrollThreshold = 5,
@@ -400,17 +405,34 @@ export function VirtualizedDataTable<TData extends RowData>({
             isPlaceholderData ? "pointer-events-none opacity-60" : "opacity-100"
           }`}
         >
-          <table data-slot="table" className="w-full caption-bottom text-sm text-foreground">
+          <table
+            data-slot="table"
+            aria-label={ariaLabel ?? "Tabel Data"}
+            className="w-full caption-bottom text-sm text-foreground"
+          >
             <TableHeader className="sticky top-0 z-10 bg-card shadow-xs">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="bg-card">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
+                  {headerGroup.headers.map((header) => {
+                    const canSort = header.column.getCanSort()
+                    const isSorted = header.column.getIsSorted()
+                    const ariaSort =
+                      isSorted === "asc"
+                        ? "ascending"
+                        : isSorted === "desc"
+                          ? "descending"
+                          : canSort
+                            ? "none"
+                            : undefined
+
+                    return (
+                      <TableHead key={header.id} className="bg-card" aria-sort={ariaSort}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
