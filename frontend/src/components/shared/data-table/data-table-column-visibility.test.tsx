@@ -39,7 +39,7 @@ describe("DataTableColumnVisibility", () => {
     } as unknown as Table<any, any>
   }
 
-  it("renders trigger button with default label and icon", () => {
+  it("renders trigger button with default label, aria-label, aria-haspopup, and icon", () => {
     const table = createMockTable([
       { id: "col1", isVisible: true },
       { id: "col2", isVisible: true },
@@ -48,9 +48,11 @@ describe("DataTableColumnVisibility", () => {
     const html = renderToStaticMarkup(<DataTableColumnVisibility table={table} />)
     expect(html).toContain('data-testid="data-table-column-visibility-trigger"')
     expect(html).toContain("Columns")
+    expect(html).toContain('aria-label="Columns - Sesuaikan visibilitas kolom tabel"')
+    expect(html).toContain('aria-haspopup="menu"')
   })
 
-  it("renders custom trigger label and title", () => {
+  it("renders custom trigger label and title with formatted aria-label", () => {
     const table = createMockTable([{ id: "col1", isVisible: true }])
 
     const html = renderToStaticMarkup(
@@ -59,6 +61,7 @@ describe("DataTableColumnVisibility", () => {
 
     expect(html).toContain('data-testid="data-table-column-visibility-trigger"')
     expect(html).toContain("Pilih Kolom")
+    expect(html).toContain('aria-label="Pilih Kolom - Sesuaikan visibilitas kolom tabel"')
   })
 
   it("displays hidden column badge when columns are hidden", () => {

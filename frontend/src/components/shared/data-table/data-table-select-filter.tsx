@@ -70,6 +70,16 @@ export function DataTableSelectFilter({
   const selectValue = value ?? ""
   const defaultAllLabel = allLabel ?? `Semua ${title}`
 
+  const currentLabel = React.useMemo(() => {
+    if (!selectValue || selectValue === ALL_VALUE) return defaultAllLabel
+    const matched = normalizedOptions.find((o) => o.value === selectValue)
+    return matched ? matched.label : selectValue
+  }, [selectValue, defaultAllLabel, normalizedOptions])
+
+  const effectiveAriaLabel = ariaLabel
+    ? `${ariaLabel}, nilai terpilih: ${currentLabel}`
+    : `Filter berdasarkan ${title}, nilai terpilih: ${currentLabel}`
+
   const handleValueChange = React.useCallback(
     (nextVal: string | null) => {
       if (!nextVal || nextVal === ALL_VALUE) {
@@ -85,7 +95,7 @@ export function DataTableSelectFilter({
     <Select value={selectValue} onValueChange={handleValueChange}>
       <SelectTrigger
         size={size}
-        aria-label={ariaLabel ?? `Filter berdasarkan ${title}`}
+        aria-label={effectiveAriaLabel}
         className={cn(
           "h-8 rounded-md border border-input bg-background text-xs font-medium",
           className,

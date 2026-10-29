@@ -117,7 +117,8 @@ export function DataTableColumnVisibility({
             variant="outline"
             size="sm"
             className={cn("h-8 gap-1.5 text-xs font-medium", className)}
-            aria-label={triggerLabel}
+            aria-label={`${triggerLabel} - Sesuaikan visibilitas kolom tabel`}
+            aria-haspopup="menu"
             data-testid="data-table-column-visibility-trigger"
           >
             <TriggerIcon className="size-3.5 text-muted-foreground" />
