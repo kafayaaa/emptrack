@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "analyze": "cross-env ANALYZE=true next build --webpack",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
@@ -37,12 +38,14 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.4.3",
     "@tailwindcss/postcss": "^4",
     "@tanstack/eslint-plugin-query": "^5.104.0",
     "@tanstack/react-query-devtools": "^5.104.0",
     "@types/node": "^24.19.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "husky": "^9.1.7",
