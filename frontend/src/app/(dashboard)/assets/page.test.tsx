@@ -8,6 +8,10 @@ vi.mock("@/features/assets", () => ({
   AssetCreateDialog: () => <button type="button">Tambah Aset</button>,
 }))
 
+vi.mock("@/features/assets/components/asset-create-dialog", () => ({
+  AssetCreateDialog: () => <button type="button">Tambah Aset</button>,
+}))
+
 describe("AssetsPage heading structure (EMPTRACK-59)", () => {
   it("merender dokumen dengan elemen h1, deskripsi, dan tombol tambah aset", () => {
     const html = renderToStaticMarkup(<AssetsPage />)

@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "server-only": fileURLToPath(new URL("./src/test/server-only.ts", import.meta.url)),
+      "next/dynamic": fileURLToPath(new URL("./src/test/next-dynamic.tsx", import.meta.url)),
     },
   },
 })

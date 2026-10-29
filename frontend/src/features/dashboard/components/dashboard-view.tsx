@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { useDashboardSummary } from "../hooks"
 import { DashboardStatsGrid } from "./dashboard-stats-grid"
 import { AssetStatusChart } from "./asset-status-chart"
@@ -8,9 +9,17 @@ import { CategoryDistribution } from "./category-distribution"
 import { DepartmentDistribution } from "./department-distribution"
 import { RecentAssetsCard } from "./recent-assets-card"
 import { DashboardSkeleton } from "./dashboard-skeleton"
-import { EmployeeCreateDialog } from "@/features/employees"
-import { AssetCreateDialog } from "@/features/assets"
 import type { DashboardSummary } from "../types"
+
+const EmployeeCreateDialog = dynamic(() =>
+  import("@/features/employees/components/employee-create-dialog").then(
+    (m) => m.EmployeeCreateDialog,
+  ),
+)
+
+const AssetCreateDialog = dynamic(() =>
+  import("@/features/assets/components/asset-create-dialog").then((m) => m.AssetCreateDialog),
+)
 
 export interface DashboardViewProps {
   initialData?: DashboardSummary

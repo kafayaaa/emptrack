@@ -1,7 +1,12 @@
 import * as React from "react"
 import { Metadata } from "next"
-import { AssetViewContainer, AssetCreateDialog } from "@/features/assets"
+import dynamic from "next/dynamic"
+import { AssetViewContainer } from "@/features/assets"
 import { DataTableSkeleton } from "@/components/shared/data-table"
+
+const AssetCreateDialog = dynamic(() =>
+  import("@/features/assets/components/asset-create-dialog").then((m) => m.AssetCreateDialog),
+)
 
 export const metadata: Metadata = {
   title: "Assets",
