@@ -9,7 +9,15 @@ vi.mock("@/features/employees", () => ({
   EmployeeCreateDialog: () => <button>Tambah Karyawan Mock</button>,
 }))
 
+vi.mock("@/features/employees/components/employee-create-dialog", () => ({
+  EmployeeCreateDialog: () => <button>Tambah Karyawan Mock</button>,
+}))
+
 vi.mock("@/features/assets", () => ({
+  AssetCreateDialog: () => <button>Tambah Aset Mock</button>,
+}))
+
+vi.mock("@/features/assets/components/asset-create-dialog", () => ({
   AssetCreateDialog: () => <button>Tambah Aset Mock</button>,
 }))
 
