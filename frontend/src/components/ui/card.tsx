@@ -86,13 +86,7 @@ function CardContent<T extends React.ElementType = "div">({
   ...props
 }: CardContentProps<T>) {
   const Component = as || "div"
-  return (
-    <Component
-      data-slot="card-content"
-      className={cn("p-5 pt-0 sm:p-6 sm:pt-0", className)}
-      {...props}
-    />
-  )
+  return <Component data-slot="card-content" className={cn("p-5 sm:p-6", className)} {...props} />
 }
 
 type CardFooterProps<T extends React.ElementType = "div"> = {
@@ -108,7 +102,7 @@ function CardFooter<T extends React.ElementType = "div">({
   return (
     <Component
       data-slot="card-footer"
-      className={cn("flex items-center p-5 pt-0 sm:p-6 sm:pt-0", className)}
+      className={cn("flex items-center p-5 sm:p-6", className)}
       {...props}
     />
   )
