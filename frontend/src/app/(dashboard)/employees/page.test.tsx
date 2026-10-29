@@ -11,6 +11,10 @@ vi.mock("@/features/employees", () => ({
   EmployeeCreateDialog: () => <button type="button">Tambah Karyawan</button>,
 }))
 
+vi.mock("@/features/employees/components/employee-create-dialog", () => ({
+  EmployeeCreateDialog: () => <button type="button">Tambah Karyawan</button>,
+}))
+
 describe("EmployeePage", () => {
   it("has correct page title metadata", () => {
     expect(metadata.title).toBe("Employees")

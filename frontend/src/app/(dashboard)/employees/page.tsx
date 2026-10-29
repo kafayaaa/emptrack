@@ -1,13 +1,16 @@
 import * as React from "react"
 import { Metadata } from "next"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { Gauge } from "lucide-react"
-import {
-  EmployeeViewContainer,
-  EmployeeTableSkeleton,
-  EmployeeCreateDialog,
-} from "@/features/employees"
+import { EmployeeViewContainer, EmployeeTableSkeleton } from "@/features/employees"
 import { Button } from "@/components/ui/button"
+
+const EmployeeCreateDialog = dynamic(() =>
+  import("@/features/employees/components/employee-create-dialog").then(
+    (m) => m.EmployeeCreateDialog,
+  ),
+)
 
 export const metadata: Metadata = {
   title: "Employees",

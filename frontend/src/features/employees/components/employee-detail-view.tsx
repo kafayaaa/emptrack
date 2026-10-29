@@ -17,15 +17,22 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import dynamic from "next/dynamic"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/lib/date"
 import type { Employee } from "../types"
 import { EmployeeInfoCard } from "./employee-info-card"
 import { EmployeeStatusBadge } from "./employee-status-badge"
-import { EmployeeEditDialog } from "./employee-edit-dialog"
-import { EmployeeDeleteDialog } from "./employee-delete-dialog"
 import { EmployeeAssignedAssets } from "@/features/assets/components"
+
+const EmployeeEditDialog = dynamic(() =>
+  import("./employee-edit-dialog").then((m) => m.EmployeeEditDialog),
+)
+
+const EmployeeDeleteDialog = dynamic(() =>
+  import("./employee-delete-dialog").then((m) => m.EmployeeDeleteDialog),
+)
 
 export interface EmployeeDetailViewProps {
   employee: Employee

@@ -1,22 +1,27 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { useQueryState, parseAsStringLiteral, parseAsString, parseAsInteger } from "nuqs"
 import type { RowSelectionState } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import {
-  EmployeeTable,
-  EmployeeInfiniteTable,
-  EmployeeTableSkeleton,
-  EmployeeViewToggle,
-  EmployeeSearchInput,
-  EmployeeFilters,
-  EmployeeBulkDeleteDialog,
-  VIEW_MODES,
-  type ViewMode,
-  type EmployeeFiltersState,
-} from "@/features/employees"
+import { EmployeeTable } from "./employee-table"
+import { EmployeeTableSkeleton } from "./employee-table-skeleton"
+import { EmployeeViewToggle, VIEW_MODES, type ViewMode } from "./employee-view-toggle"
+import { EmployeeSearchInput } from "./employee-search-input"
+import { EmployeeFilters, type EmployeeFiltersState } from "./employee-filters"
 import { useDataTableVisibility } from "@/hooks"
+
+const EmployeeInfiniteTable = dynamic(
+  () => import("./employee-infinite-table").then((mod) => mod.EmployeeInfiniteTable),
+  {
+    loading: () => <EmployeeTableSkeleton rowCount={10} />,
+  },
+)
+
+const EmployeeBulkDeleteDialog = dynamic(() =>
+  import("./employee-bulk-delete-dialog").then((mod) => mod.EmployeeBulkDeleteDialog),
+)
 
 /**
  * Client view container for Employee List that manages switching between
