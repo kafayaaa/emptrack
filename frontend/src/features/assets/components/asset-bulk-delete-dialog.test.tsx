@@ -16,10 +16,11 @@ vi.mock("../hooks/use-bulk-delete-assets", () => ({
 describe("AssetBulkDeleteDialog component (EMPTRACK-93)", () => {
   const dummyAssetIds = ["ast-1", "ast-2", "ast-3"]
 
-  it("renders default trigger button with asset count", () => {
+  it("renders default trigger button with asset count and accessible aria-label", () => {
     const html = renderToStaticMarkup(<AssetBulkDeleteDialog assetIds={dummyAssetIds} />)
 
     expect(html).toContain("Hapus Terpilih (3)")
+    expect(html).toContain('aria-label="Hapus 3 aset terpilih"')
     expect(html).toContain('data-slot="alert-dialog-trigger"')
     expect(html).toContain('data-testid="open-bulk-delete-asset-dialog-button"')
   })

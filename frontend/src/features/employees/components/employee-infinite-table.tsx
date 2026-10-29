@@ -137,6 +137,7 @@ function BaseEmployeeInfiniteTable({
         </div>
 
         <VirtualizedDataTable
+          ariaLabel="Tabel Data Karyawan (Scroll Tak Hingga)"
           columns={employeeColumns}
           data={employees}
           height={height}

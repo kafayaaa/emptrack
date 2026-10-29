@@ -1,4 +1,5 @@
 import React from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import { createColumnHelper } from "@tanstack/react-table"
 import { Users } from "lucide-react"
@@ -160,5 +161,20 @@ describe("virtualized-data-table.tsx (VirtualizedDataTable Component)", () => {
       />
     )
     expect(element).toBeDefined()
+  })
+
+  it("renders accessible table aria-label and TableHead aria-sort", () => {
+    const data = generateUsers(5)
+    const html = renderToStaticMarkup(
+      <VirtualizedDataTable
+        ariaLabel="Tabel Data Karyawan (Scroll Tak Hingga)"
+        columns={testColumns}
+        data={data}
+        sorting={[{ id: "name", desc: false }]}
+      />,
+    )
+    expect(html).toContain('aria-label="Tabel Data Karyawan (Scroll Tak Hingga)"')
+    expect(html).toContain('aria-sort="ascending"')
+    expect(html).toContain('aria-sort="none"')
   })
 })

@@ -112,7 +112,13 @@ export function EmployeeBulkDeleteDialog({
             trigger ? (
               (trigger as React.ReactElement)
             ) : (
-              <Button variant="destructive" size="sm" className="gap-1.5" disabled={count === 0}>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1.5"
+                disabled={count === 0}
+                aria-label={`Hapus ${count} karyawan terpilih`}
+              >
                 <Trash2 className="size-4" aria-hidden="true" />
                 <span>Hapus Terpilih ({count})</span>
               </Button>

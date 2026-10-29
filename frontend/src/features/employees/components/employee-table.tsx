@@ -130,6 +130,7 @@ function BaseEmployeeTable({
       onReset={handleRetry}
     >
       <DataTable
+        ariaLabel="Tabel Data Karyawan"
         columns={employeeColumns}
         data={employees}
         rowCount={totalRows}

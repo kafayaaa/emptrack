@@ -22,6 +22,12 @@ function BaseDataTableColumnHeader({ column, title, className }: DataTableColumn
   }
 
   const isSorted = column.getIsSorted()
+  const sortActionLabel =
+    isSorted === "asc"
+      ? `Urutkan berdasarkan ${title} (sedang urutan naik, klik untuk mengurutkan turun)`
+      : isSorted === "desc"
+        ? `Urutkan berdasarkan ${title} (sedang urutan turun, klik untuk membatalkan urutan)`
+        : `Urutkan berdasarkan ${title} (klik untuk mengurutkan naik)`
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
@@ -30,7 +36,7 @@ function BaseDataTableColumnHeader({ column, title, className }: DataTableColumn
         size="xs"
         className="-ml-2 h-7 px-2 font-semibold text-muted-foreground hover:text-foreground data-[state=open]:bg-accent"
         onClick={() => column.toggleSorting()}
-        aria-label={`Sort by ${title}`}
+        aria-label={sortActionLabel}
       >
         <span>{title}</span>
         {isSorted === "desc" ? (

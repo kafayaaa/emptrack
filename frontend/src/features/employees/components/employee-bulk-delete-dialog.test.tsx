@@ -16,10 +16,11 @@ vi.mock("../hooks/use-bulk-delete-employees", () => ({
 describe("EmployeeBulkDeleteDialog component (EMPTRACK-78)", () => {
   const dummyEmployeeIds = ["emp-1", "emp-2", "emp-3"]
 
-  it("renders default trigger button with item count", () => {
+  it("renders default trigger button with item count and accessible aria-label", () => {
     const html = renderToStaticMarkup(<EmployeeBulkDeleteDialog employeeIds={dummyEmployeeIds} />)
 
     expect(html).toContain("Hapus Terpilih (3)")
+    expect(html).toContain('aria-label="Hapus 3 karyawan terpilih"')
     expect(html).toContain('data-slot="alert-dialog-trigger"')
   })
 

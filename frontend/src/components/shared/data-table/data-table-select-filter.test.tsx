@@ -46,4 +46,43 @@ describe("DataTableSelectFilter component", () => {
     )
     expect(html).toContain("Role:")
   })
+
+  it("includes selected value context in aria-label for accessibility", () => {
+    const defaultHtml = renderToStaticMarkup(
+      <DataTableSelectFilter
+        title="Department"
+        options={dummyOptions}
+        value=""
+        onValueChange={vi.fn()}
+      />,
+    )
+    expect(defaultHtml).toContain(
+      'aria-label="Filter berdasarkan Department, nilai terpilih: Semua Department"',
+    )
+
+    const selectedHtml = renderToStaticMarkup(
+      <DataTableSelectFilter
+        title="Department"
+        options={dummyOptions}
+        value="opt2"
+        onValueChange={vi.fn()}
+      />,
+    )
+    expect(selectedHtml).toContain(
+      'aria-label="Filter berdasarkan Department, nilai terpilih: Option 2"',
+    )
+
+    const customAriaHtml = renderToStaticMarkup(
+      <DataTableSelectFilter
+        title="Department"
+        options={dummyOptions}
+        value="opt1"
+        ariaLabel="Pilih Departemen Karyawan"
+        onValueChange={vi.fn()}
+      />,
+    )
+    expect(customAriaHtml).toContain(
+      'aria-label="Pilih Departemen Karyawan, nilai terpilih: Option 1"',
+    )
+  })
 })

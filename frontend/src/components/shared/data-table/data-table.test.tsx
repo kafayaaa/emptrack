@@ -1,4 +1,5 @@
 import React from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
 import { createColumnHelper } from "@tanstack/react-table"
 import { Users } from "lucide-react"
@@ -43,6 +44,28 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
   it("renders DataTable component with data rows successfully", () => {
     const component = <DataTable columns={testColumns} data={testData} pageSizeOptions={[10, 20]} />
     expect(component).toBeDefined()
+  })
+
+  it("renders table with accessible aria-label and TableHead with aria-sort", () => {
+    const html = renderToStaticMarkup(
+      <DataTable
+        ariaLabel="Tabel Data Karyawan"
+        columns={testColumns}
+        data={testData}
+        sorting={[{ id: "name", desc: false }]}
+      />,
+    )
+    expect(html).toContain('aria-label="Tabel Data Karyawan"')
+    expect(html).toContain('aria-sort="ascending"')
+    expect(html).toContain('aria-sort="none"')
+  })
+
+  it("renders descending aria-sort when column sorted descending", () => {
+    const html = renderToStaticMarkup(
+      <DataTable columns={testColumns} data={testData} sorting={[{ id: "name", desc: true }]} />,
+    )
+    expect(html).toContain('aria-label="Tabel Data"')
+    expect(html).toContain('aria-sort="descending"')
   })
 
   it("handles empty state and loading state gracefully", () => {
@@ -263,12 +286,67 @@ describe("data-table.tsx (DataTable Generic Component)", () => {
       expect(toggleSortingMock).toHaveBeenCalledTimes(1)
       expect(toggleSortingMock).toHaveBeenCalledWith()
     })
+
+    it("renders descriptive dynamic aria-labels according to sorting state", () => {
+      const mockColumnUnsorted = {
+        getCanSort: () => true,
+        getIsSorted: () => false as const,
+        toggleSorting: vi.fn(),
+      }
+      const unsortedHtml = renderToStaticMarkup(
+        <DataTableColumnHeader column={mockColumnUnsorted} title="Nama" />,
+      )
+      expect(unsortedHtml).toContain(
+        'aria-label="Urutkan berdasarkan Nama (klik untuk mengurutkan naik)"',
+      )
+
+      const mockColumnAsc = {
+        getCanSort: () => true,
+        getIsSorted: () => "asc" as const,
+        toggleSorting: vi.fn(),
+      }
+      const ascHtml = renderToStaticMarkup(
+        <DataTableColumnHeader column={mockColumnAsc} title="Nama" />,
+      )
+      expect(ascHtml).toContain(
+        'aria-label="Urutkan berdasarkan Nama (sedang urutan naik, klik untuk mengurutkan turun)"',
+      )
+
+      const mockColumnDesc = {
+        getCanSort: () => true,
+        getIsSorted: () => "desc" as const,
+        toggleSorting: vi.fn(),
+      }
+      const descHtml = renderToStaticMarkup(
+        <DataTableColumnHeader column={mockColumnDesc} title="Nama" />,
+      )
+      expect(descHtml).toContain(
+        'aria-label="Urutkan berdasarkan Nama (sedang urutan turun, klik untuk membatalkan urutan)"',
+      )
+    })
   })
 
   describe("DataTablePagination component", () => {
     it("is memoized with React.memo", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((DataTablePagination as any).$$typeof?.toString()).toContain("react.memo")
+    })
+
+    it("renders accessible navigation wrapper with aria-label", () => {
+      const mockTable = {
+        state: { pagination: { pageIndex: 0, pageSize: 10 } },
+        getPageCount: () => 5,
+        getRowCount: () => 50,
+        setPageSize: vi.fn(),
+        setPageIndex: vi.fn(),
+        previousPage: vi.fn(),
+        nextPage: vi.fn(),
+        getCanPreviousPage: () => false,
+        getCanNextPage: () => true,
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const html = renderToStaticMarkup(<DataTablePagination table={mockTable as any} />)
+      expect(html).toContain('<nav aria-label="Navigasi halaman tabel"')
     })
   })
 
