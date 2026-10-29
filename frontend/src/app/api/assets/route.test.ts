@@ -65,6 +65,42 @@ describe("GET /api/assets", () => {
     })
   })
 
+  it("berhasil menormalisasi item upstream yang tidak memiliki assetTag atau berisi string kosong pada assignedToId", async () => {
+    const rawAssetMissingTag = {
+      id: "99",
+      name: "Legacy Asset",
+      category: "Laptop",
+      model: "ThinkPad X1",
+      serialNumber: "SN-99999",
+      status: "available",
+      purchaseDate: "2024-01-01",
+      purchaseCost: 15000000,
+      assignedToId: "",
+      notes: "",
+    }
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        items: 1,
+        pages: 1,
+        data: [rawAssetMissingTag],
+      }),
+    })
+
+    const request = new NextRequest(
+      "http://localhost:3000/api/assets?sortBy=assetTag&sortOrder=desc",
+    )
+    const response = await GET(request)
+
+    expect(response.status).toBe(200)
+    const json = await response.json()
+    expect(json.data[0].assetTag).toBe("AST-00099")
+    expect(json.data[0].assignedToId).toBeNull()
+    expect(json.data[0].notes).toBeNull()
+  })
+
   it("meneruskan query search, sort, dan filter ke URL upstream dengan benar", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -274,7 +310,7 @@ describe("POST /api/assets", () => {
 
     const fetchMock = vi.fn().mockImplementation(async (url: URL | string) => {
       const urlStr = url.toString()
-      if (urlStr.includes("_sort=-id")) {
+      if (urlStr.includes("_sort=-assetTag") || urlStr.includes("_sort=-id")) {
         return {
           ok: true,
           json: async () => ({

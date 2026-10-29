@@ -62,7 +62,29 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. VALIDASI RESPONSE UPSTREAM DENGAN ZOD
-    const upstreamData = jsonServerAssetListSchema.safeParse(await res.json())
+    // Normalisasi defensif setiap item agar toleran terhadap data legacy/tidak lengkap dari database backend
+    const rawJson = (await res.json()) as Record<string, unknown>
+    if (rawJson && Array.isArray(rawJson.data)) {
+      rawJson.data = rawJson.data.map((rawItem: unknown) => {
+        if (!rawItem || typeof rawItem !== "object") return rawItem
+        const item = rawItem as Record<string, unknown>
+        const fallbackTag =
+          typeof item.assetTag === "string" && item.assetTag.trim().length > 0
+            ? item.assetTag.trim()
+            : `AST-${String(item.id ?? "0").padStart(5, "0")}`
+
+        return {
+          ...item,
+          assetTag: fallbackTag,
+          assignedToId:
+            item.assignedToId === "" || item.assignedToId === undefined ? null : item.assignedToId,
+          ...(item.notes === "" ? { notes: null } : {}),
+          ...(item.assignedAt === "" ? { assignedAt: null } : {}),
+        }
+      })
+    }
+
+    const upstreamData = jsonServerAssetListSchema.safeParse(rawJson)
     if (!upstreamData.success) {
       return errorResponse(502, "UPSTREAM_INVALID", "Format data backend tidak sesuai.")
     }
@@ -119,12 +141,17 @@ export async function POST(request: NextRequest) {
     let finalAssetTag = parsed.data.assetTag?.trim()
     if (!finalAssetTag) {
       try {
-        const lastAssetUrl = new URL("/assets?_sort=-id&_per_page=1", serverEnv.BACKEND_URL)
+        const lastAssetUrl = new URL(
+          "/assets?_sort=-assetTag&_page=1&_per_page=1",
+          serverEnv.BACKEND_URL,
+        )
         const lastRes = await fetch(lastAssetUrl, { signal: AbortSignal.timeout(3000) })
         if (lastRes.ok) {
           const lastJson = await lastRes.json()
           const lastItem = Array.isArray(lastJson.data) ? lastJson.data[0] : null
-          const lastNum = lastItem?.id ? parseInt(String(lastItem.id), 10) : 0
+          const rawTag = lastItem?.assetTag ? String(lastItem.assetTag) : ""
+          const matchNum = rawTag.match(/\d+/)
+          const lastNum = matchNum ? parseInt(matchNum[0], 10) : 0
           const nextNum = !isNaN(lastNum) && lastNum > 0 ? lastNum + 1 : 1
           finalAssetTag = `AST-${String(nextNum).padStart(5, "0")}`
         }

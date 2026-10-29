@@ -33,8 +33,21 @@ export async function GET(_request: NextRequest, segmentData: { params: Promise<
       return errorResponse(502, "UPSTREAM_ERROR", "Backend mengembalikan error.")
     }
 
-    const upstreamJson = await res.json()
-    const parsed = assetSchema.safeParse(upstreamJson)
+    const upstreamJson = (await res.json()) as Record<string, unknown>
+    const normalized = {
+      ...upstreamJson,
+      assetTag:
+        typeof upstreamJson.assetTag === "string" && upstreamJson.assetTag.trim().length > 0
+          ? upstreamJson.assetTag.trim()
+          : `AST-${String(upstreamJson.id ?? "0").padStart(5, "0")}`,
+      assignedToId:
+        upstreamJson.assignedToId === "" || upstreamJson.assignedToId === undefined
+          ? null
+          : upstreamJson.assignedToId,
+      ...(upstreamJson.notes === "" ? { notes: null } : {}),
+      ...(upstreamJson.assignedAt === "" ? { assignedAt: null } : {}),
+    }
+    const parsed = assetSchema.safeParse(normalized)
     if (!parsed.success) {
       return errorResponse(502, "UPSTREAM_INVALID", "Format data backend tidak sesuai.")
     }
