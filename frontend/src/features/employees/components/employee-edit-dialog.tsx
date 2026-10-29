@@ -81,7 +81,12 @@ export function EmployeeEditDialog({
           trigger ? (
             (trigger as React.ReactElement)
           ) : (
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs"
+              aria-label={`Edit data karyawan ${employee.fullName}`}
+            >
               <Pencil className="size-3.5" aria-hidden="true" />
               <span>Edit Data</span>
             </Button>

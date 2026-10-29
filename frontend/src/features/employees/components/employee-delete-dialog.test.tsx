@@ -27,10 +27,11 @@ describe("EmployeeDeleteDialog component", () => {
     fullName: "Rendra Kusuma",
   }
 
-  it("renders default trigger button with Hapus Data label", () => {
+  it("renders default trigger button with Hapus Data label and accessible aria-label", () => {
     const html = renderToStaticMarkup(<EmployeeDeleteDialog employee={dummyEmployee} />)
 
     expect(html).toContain("Hapus Data")
+    expect(html).toContain('aria-label="Hapus data karyawan Rendra Kusuma"')
     expect(html).toContain('data-slot="alert-dialog-trigger"')
   })
 

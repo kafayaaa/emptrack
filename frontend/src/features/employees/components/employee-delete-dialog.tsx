@@ -97,6 +97,7 @@ export function EmployeeDeleteDialog({
               variant="outline"
               size="sm"
               className="gap-1.5 text-xs text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20"
+              aria-label={`Hapus data karyawan ${employee.fullName}`}
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
               <span>Hapus Data</span>

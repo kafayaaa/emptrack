@@ -113,6 +113,7 @@ export function AssetBulkDeleteDialog({
               size="sm"
               disabled={count === 0}
               className="gap-2 text-xs"
+              aria-label={`Hapus ${count} aset terpilih`}
               data-testid="open-bulk-delete-asset-dialog-button"
             >
               <Trash2 className="size-3.5" aria-hidden="true" />

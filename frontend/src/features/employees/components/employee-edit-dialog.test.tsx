@@ -29,10 +29,11 @@ describe("EmployeeEditDialog component", () => {
     projectId: "12",
   }
 
-  it("renders default trigger button with Edit Data label", () => {
+  it("renders default trigger button with Edit Data label and accessible aria-label", () => {
     const html = renderToStaticMarkup(<EmployeeEditDialog employee={dummyEmployee} />)
 
     expect(html).toContain("Edit Data")
+    expect(html).toContain('aria-label="Edit data karyawan Rendra Kusuma"')
     expect(html).toContain('data-slot="dialog-trigger"')
   })
 
