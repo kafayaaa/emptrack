@@ -115,12 +115,50 @@ export async function POST(request: NextRequest) {
   // 2. FORWARD KE UPSTREAM BACKEND
   const upstream = new URL("/assets", serverEnv.BACKEND_URL)
   try {
+    // Generate atau gunakan assetTag yang disediakan
+    let finalAssetTag = parsed.data.assetTag?.trim()
+    if (!finalAssetTag) {
+      try {
+        const lastAssetUrl = new URL("/assets?_sort=-id&_per_page=1", serverEnv.BACKEND_URL)
+        const lastRes = await fetch(lastAssetUrl, { signal: AbortSignal.timeout(3000) })
+        if (lastRes.ok) {
+          const lastJson = await lastRes.json()
+          const lastItem = Array.isArray(lastJson.data) ? lastJson.data[0] : null
+          const lastNum = lastItem?.id ? parseInt(String(lastItem.id), 10) : 0
+          const nextNum = !isNaN(lastNum) && lastNum > 0 ? lastNum + 1 : 1
+          finalAssetTag = `AST-${String(nextNum).padStart(5, "0")}`
+        }
+      } catch {
+        // Fallback jika query sort gagal
+      }
+    }
+
+    if (!finalAssetTag) {
+      const timestampSuffix = Date.now().toString().slice(-6)
+      finalAssetTag = `AST-${timestampSuffix}`
+    }
+
+    const now = new Date().toISOString().split("T")[0]
+    const isAssigned = parsed.data.status === "assigned" && Boolean(parsed.data.assignedToId)
+    const normalizedAssignedToId = isAssigned ? parsed.data.assignedToId : null
+
+    const payload = {
+      ...parsed.data,
+      assetTag: finalAssetTag,
+      assignedToId: normalizedAssignedToId,
+      assignedAt: isAssigned ? now : null,
+      assignedTo: null,
+      notes: parsed.data.notes?.trim() || null,
+      createdAt: now,
+      updatedAt: now,
+    }
+
     const res = await fetch(upstream, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000),
     })
 
@@ -129,12 +167,29 @@ export async function POST(request: NextRequest) {
     }
 
     const rawData = await res.json()
+    if (!rawData.assetTag) {
+      rawData.assetTag = finalAssetTag
+    }
+    if (rawData.assignedToId === undefined || rawData.assignedToId === "") {
+      rawData.assignedToId = null
+    }
+    if (rawData.notes === undefined || rawData.notes === "") {
+      rawData.notes = null
+    }
+    if (rawData.assignedAt === undefined) {
+      rawData.assignedAt = null
+    }
+    if (rawData.assignedTo === undefined) {
+      rawData.assignedTo = null
+    }
+
     const parsedAsset = assetSchema.safeParse(rawData)
     if (!parsedAsset.success) {
       return errorResponse(
         502,
         "UPSTREAM_INVALID",
         "Data aset yang disimpan tidak sesuai spesifikasi schema.",
+        z.flattenError(parsedAsset.error).fieldErrors,
       )
     }
 

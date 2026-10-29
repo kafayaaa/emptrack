@@ -5,6 +5,13 @@ import { ASSET_CATEGORIES, ASSET_STATUSES } from "./asset.schema"
  * Schema dasar tanpa refinement silang agar bisa diturunkan (mis. .partial() untuk PATCH).
  */
 export const baseAssetFormSchema = z.object({
+  assetTag: z
+    .string()
+    .trim()
+    .max(30, "Tag aset maksimal 30 karakter")
+    .regex(/^[A-Za-z0-9-]*$/, "Format tag aset hanya boleh berisi huruf, angka, dan tanda hubung")
+    .optional()
+    .or(z.literal("")),
   name: z
     .string()
     .trim()
@@ -64,6 +71,7 @@ export type AssetFormInput = z.input<typeof assetFormSchema>
  * Nilai default formulir aset untuk inisialisasi awal mode Create.
  */
 export const defaultAssetFormValues: AssetFormInput = {
+  assetTag: "",
   name: "",
   category: "Laptop",
   model: "",

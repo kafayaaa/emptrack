@@ -259,6 +259,63 @@ describe("POST /api/assets", () => {
     )
   })
 
+  it("berhasil membuat assetTag otomatis saat client tidak mengirimkan assetTag", async () => {
+    const payloadWithoutTag = {
+      name: "Dell UltraSharp 27",
+      category: "Monitor",
+      model: "U2723QE",
+      serialNumber: "MON-ABC12345",
+      status: "available",
+      purchaseDate: "2024-02-10",
+      purchaseCost: 8500000,
+      assignedToId: "",
+      notes: "",
+    }
+
+    const fetchMock = vi.fn().mockImplementation(async (url: URL | string) => {
+      const urlStr = url.toString()
+      if (urlStr.includes("_sort=-id")) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: 1,
+            data: [{ id: "100", assetTag: "AST-00100" }],
+          }),
+        }
+      }
+      return {
+        ok: true,
+        status: 201,
+        json: async () => ({
+          id: "101",
+          name: "Dell UltraSharp 27",
+          category: "Monitor",
+          model: "U2723QE",
+          serialNumber: "MON-ABC12345",
+          status: "available",
+          purchaseDate: "2024-02-10",
+          purchaseCost: 8500000,
+          // Upstream without assetTag
+        }),
+      }
+    })
+    globalThis.fetch = fetchMock
+
+    const request = new NextRequest("http://localhost:3000/api/assets", {
+      method: "POST",
+      body: JSON.stringify(payloadWithoutTag),
+      headers: { "Content-Type": "application/json" },
+    })
+
+    const response = await POST(request)
+    expect(response.status).toBe(201)
+    const json = await response.json()
+    expect(json.id).toBe("101")
+    expect(json.assetTag).toBe("AST-00101")
+    expect(json.assignedToId).toBeNull()
+    expect(json.notes).toBeNull()
+  })
+
   it("mengembalikan 502 UPSTREAM_ERROR jika backend upstream gagal", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
