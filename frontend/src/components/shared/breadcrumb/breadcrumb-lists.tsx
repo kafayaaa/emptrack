@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import {
   BreadcrumbItem,
   BreadcrumbLink,
@@ -35,7 +36,7 @@ export default function BreadcrumbLists() {
         }
 
         return (
-          <div key={href} className="inline-flex items-center gap-1.5 sm:gap-2.5">
+          <React.Fragment key={href}>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
               {isLast ? (
@@ -44,7 +45,7 @@ export default function BreadcrumbLists() {
                 <BreadcrumbLink render={<Link href={href} />}>{label}</BreadcrumbLink>
               )}
             </BreadcrumbItem>
-          </div>
+          </React.Fragment>
         )
       })}
     </>
