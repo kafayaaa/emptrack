@@ -15,9 +15,9 @@ describe("robots.txt metadata route", () => {
     const mainRule = rules[0]
     expect(mainRule.userAgent).toBe("*")
     expect(mainRule.allow).toBe("/")
-    expect(mainRule.disallow).toContain("/dashboard")
     expect(mainRule.disallow).toContain("/api")
     expect(mainRule.disallow).toContain("/employees/benchmark")
+    expect(mainRule.disallow).not.toContain("/dashboard")
   })
 
   it("menghasilkan URL sitemap yang valid berdasarkan NEXT_PUBLIC_APP_URL tanpa trailing slash ganda", () => {

@@ -1,13 +1,8 @@
-import type { Metadata } from "next"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { cookies } from "next/headers"
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import BreadcrumbNav from "@/components/shared/breadcrumb/breadcrumb-nav"
-
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-}
 
 export default async function DashboardLayout({
   children,

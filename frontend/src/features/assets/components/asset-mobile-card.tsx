@@ -117,14 +117,14 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
                 <span className="font-medium text-foreground">{asset.assignedTo.fullName}</span>
               )
             ) : (
-              <span className="text-muted-foreground/60 italic">Unassigned</span>
+              <span className="text-muted-foreground italic">Unassigned</span>
             )}
           </span>
         </div>
 
         {asset.purchaseDate && (
           <div className="flex items-center gap-1">
-            <Calendar className="size-3 shrink-0 text-muted-foreground/70" />
+            <Calendar className="size-3 shrink-0 text-muted-foreground" />
             <time dateTime={asset.purchaseDate}>{formatDate(asset.purchaseDate)}</time>
           </div>
         )}

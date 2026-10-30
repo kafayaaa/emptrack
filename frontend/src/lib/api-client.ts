@@ -22,7 +22,8 @@ interface RequestOptions<T> extends Omit<RequestInit, "body"> {
 }
 
 function buildUrl(path: string, params?: Record<string, Primitive>) {
-  const url = new URL(path, env.NEXT_PUBLIC_API_URL)
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : env.NEXT_PUBLIC_API_URL
+  const url = new URL(path, baseUrl)
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== "") {

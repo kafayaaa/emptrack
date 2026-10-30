@@ -83,7 +83,7 @@ export class TableErrorBoundary extends React.Component<
             <h2 className="text-sm font-semibold text-foreground">{title}</h2>
             <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
             {error.message ? (
-              <p className="mt-1 font-mono text-[11px] break-all text-destructive/80">
+              <p className="mt-1 font-mono text-[11px] font-medium break-all text-destructive">
                 {error.message}
               </p>
             ) : null}

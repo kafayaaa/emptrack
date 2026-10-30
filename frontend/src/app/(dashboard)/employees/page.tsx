@@ -14,6 +14,11 @@ const EmployeeCreateDialog = dynamic(() =>
 
 export const metadata: Metadata = {
   title: "Employees",
+  description:
+    "Daftar dan kelola data seluruh karyawan, divisi, dan hierarki organisasi di EmpTrack.",
+  alternates: {
+    canonical: "/employees",
+  },
 }
 
 export default function EmployeePage() {
