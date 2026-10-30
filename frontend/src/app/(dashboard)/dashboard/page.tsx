@@ -7,6 +7,9 @@ import { getDashboardSummaryServer } from "@/features/dashboard/api/dashboard.se
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Overview of key organization metrics and operations.",
+  alternates: {
+    canonical: "/dashboard",
+  },
 }
 
 export default async function DashboardPage() {

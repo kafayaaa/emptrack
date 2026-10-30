@@ -23,6 +23,13 @@ describe("sitemap.xml metadata route", () => {
     expect(employeesEntry?.priority).toBe(0.8)
     expect(employeesEntry?.changeFrequency).toBe("daily")
     expect(employeesEntry?.lastModified).toBeInstanceOf(Date)
+
+    // Entri assets index
+    const assetsEntry = result.find((entry) => entry.url === `${expectedBase}/assets`)
+    expect(assetsEntry).toBeDefined()
+    expect(assetsEntry?.priority).toBe(0.8)
+    expect(assetsEntry?.changeFrequency).toBe("daily")
+    expect(assetsEntry?.lastModified).toBeInstanceOf(Date)
   })
 
   it("memastikan URL di sitemap tidak memiliki double-slash", () => {

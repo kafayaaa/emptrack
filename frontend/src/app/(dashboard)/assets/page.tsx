@@ -10,6 +10,11 @@ const AssetCreateDialog = dynamic(() =>
 
 export const metadata: Metadata = {
   title: "Assets",
+  description:
+    "Daftar dan monitoring aset inventaris perusahaan, spesifikasi, dan status pemakaian di EmpTrack.",
+  alternates: {
+    canonical: "/assets",
+  },
 }
 
 export default function AssetsPage() {
