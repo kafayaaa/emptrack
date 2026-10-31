@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      // XSS Protection security rules
+      "react/no-danger": "error",
+      "react/jsx-no-script-url": "error",
+      "react/jsx-no-target-blank": "error",
     },
   },
   // Override default ignores of eslint-config-next.
