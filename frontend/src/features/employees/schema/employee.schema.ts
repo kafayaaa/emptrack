@@ -42,7 +42,12 @@ export const employeeListQuerySchema = z.object({
   department: z.string().trim().min(1).max(50).optional(),
   position: z.string().trim().min(1).max(50).optional(),
   status: z.string().trim().min(1).max(50).optional(),
-  projectId: z.string().regex(/^\d+$/).optional(), // hanya angka
+  projectId: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "projectId hanya boleh berisi angka")
+    .max(20, "projectId maksimal 20 digit")
+    .optional(),
   isManager: z.enum(["true", "false"]).optional(),
 })
 

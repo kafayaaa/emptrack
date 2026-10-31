@@ -164,6 +164,31 @@ describe("employeeFormSchema validation & error messages", () => {
     }
   })
 
+  it("fails validation when managerId contains null bytes or exceeds 50 chars (EMPTRACK-110)", () => {
+    expect(
+      employeeFormSchema.safeParse({
+        ...validData,
+        managerId: "EMP\x00-001",
+      }).success,
+    ).toBe(false)
+
+    expect(
+      employeeFormSchema.safeParse({
+        ...validData,
+        managerId: "M".repeat(51),
+      }).success,
+    ).toBe(false)
+  })
+
+  it("fails validation when projectId exceeds 20 digits (EMPTRACK-110)", () => {
+    expect(
+      employeeFormSchema.safeParse({
+        ...validData,
+        projectId: "1".repeat(21),
+      }).success,
+    ).toBe(false)
+  })
+
   it("has valid default structure in defaultEmployeeFormValues", () => {
     expect(defaultEmployeeFormValues.status).toBe("active")
     expect(defaultEmployeeFormValues.isManager).toBe(false)

@@ -70,6 +70,11 @@ export const employeeFormSchema = z
     managerId: z
       .string()
       .trim()
+      .max(50, "ID Manajer maksimal 50 karakter")
+      .refine(
+        (val) => !val || !val.includes("\0"),
+        "ID Manajer tidak boleh mengandung karakter null",
+      )
       .nullable()
       .optional()
       .transform((val) => (val === "" || !val ? null : val)),
@@ -77,6 +82,7 @@ export const employeeFormSchema = z
       .string()
       .trim()
       .min(1, "Project ID wajib diisi")
+      .max(20, "Project ID maksimal 20 digit")
       .regex(/^[1-9]\d*$/, "Project ID harus berupa angka positif (contoh: 1)"),
   })
   .superRefine((data, ctx) => {

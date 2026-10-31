@@ -86,7 +86,12 @@ export const assetListQuerySchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   category: z.enum(ASSET_CATEGORIES).optional(),
   status: z.enum(ASSET_STATUSES).optional(),
-  assignedToId: z.string().optional(),
+  assignedToId: z
+    .string()
+    .trim()
+    .max(50, "assignedToId maksimal 50 karakter")
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
 })
 
 export type AssetListQuery = z.infer<typeof assetListQuerySchema>

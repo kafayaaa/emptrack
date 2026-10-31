@@ -75,4 +75,29 @@ describe("assetFormSchema (EMPTRACK-86 / EMPTRACK-91)", () => {
       expect(result.data.serialNumber).toBe("SN123456")
     }
   })
+
+  it("gagal validasi jika terdapat karakter null byte pada name, model, atau notes (EMPTRACK-110)", () => {
+    expect(assetFormSchema.safeParse({ ...validFormData, name: "ThinkPad\0T14" }).success).toBe(
+      false,
+    )
+    expect(assetFormSchema.safeParse({ ...validFormData, model: "M3\0Pro" }).success).toBe(false)
+    expect(assetFormSchema.safeParse({ ...validFormData, notes: "Unit\0Cadangan" }).success).toBe(
+      false,
+    )
+  })
+
+  it("gagal validasi jika purchaseCost melebihi Rp 1 triliun (EMPTRACK-110)", () => {
+    expect(
+      assetFormSchema.safeParse({ ...validFormData, purchaseCost: 1_000_000_000_001 }).success,
+    ).toBe(false)
+  })
+
+  it("gagal validasi jika serialNumber mengandung karakter berbahaya/tidak diizinkan (EMPTRACK-110)", () => {
+    expect(
+      assetFormSchema.safeParse({ ...validFormData, serialNumber: "SN<script>" }).success,
+    ).toBe(false)
+    expect(
+      assetFormSchema.safeParse({ ...validFormData, serialNumber: "SN' OR 1=1" }).success,
+    ).toBe(false)
+  })
 })
