@@ -31,6 +31,18 @@ vi.mock("@/features/assets/components", () => ({
   ),
 }))
 
+vi.mock("./employee-edit-dialog", () => ({
+  EmployeeEditDialog: ({ trigger }: { trigger?: React.ReactNode }) => (
+    <div data-testid="employee-edit-dialog-mock">{trigger || <button>Edit Data</button>}</div>
+  ),
+}))
+
+vi.mock("./employee-delete-dialog", () => ({
+  EmployeeDeleteDialog: ({ trigger }: { trigger?: React.ReactNode }) => (
+    <div data-testid="employee-delete-dialog-mock">{trigger || <button>Hapus Data</button>}</div>
+  ),
+}))
+
 const mockEmployee: Employee = {
   id: "1",
   employeeNumber: "EMP-00001",

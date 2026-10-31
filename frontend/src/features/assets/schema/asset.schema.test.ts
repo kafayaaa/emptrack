@@ -159,6 +159,23 @@ describe("assetListQuerySchema", () => {
     const result = assetListQuerySchema.safeParse({ sortBy: "unknownField" })
     expect(result.success).toBe(false)
   })
+
+  it("memvalidasi dan mensanitasi parameter assignedToId (EMPTRACK-110)", () => {
+    const valid = assetListQuerySchema.safeParse({ assignedToId: "  EMP-101  " })
+    expect(valid.success).toBe(true)
+    if (valid.success) {
+      expect(valid.data.assignedToId).toBe("EMP-101")
+    }
+
+    const empty = assetListQuerySchema.safeParse({ assignedToId: "" })
+    expect(empty.success).toBe(true)
+    if (empty.success) {
+      expect(empty.data.assignedToId).toBeUndefined()
+    }
+
+    const tooLong = assetListQuerySchema.safeParse({ assignedToId: "a".repeat(51) })
+    expect(tooLong.success).toBe(false)
+  })
 })
 
 describe("jsonServerAssetListSchema", () => {

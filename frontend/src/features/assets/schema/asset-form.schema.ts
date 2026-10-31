@@ -16,7 +16,8 @@ export const baseAssetFormSchema = z.object({
     .string()
     .trim()
     .min(3, "Nama aset minimal 3 karakter")
-    .max(100, "Nama aset maksimal 100 karakter"),
+    .max(100, "Nama aset maksimal 100 karakter")
+    .refine((val) => !val.includes("\0"), "Nama aset tidak boleh mengandung karakter null"),
   category: z.enum(ASSET_CATEGORIES, {
     error: "Pilih kategori aset yang valid",
   }),
@@ -24,12 +25,17 @@ export const baseAssetFormSchema = z.object({
     .string()
     .trim()
     .min(2, "Model/spesifikasi minimal 2 karakter")
-    .max(100, "Model/spesifikasi maksimal 100 karakter"),
+    .max(100, "Model/spesifikasi maksimal 100 karakter")
+    .refine((val) => !val.includes("\0"), "Model/spesifikasi tidak boleh mengandung karakter null"),
   serialNumber: z
     .string()
     .trim()
     .min(3, "Serial number minimal 3 karakter")
-    .max(50, "Serial number maksimal 50 karakter"),
+    .max(50, "Serial number maksimal 50 karakter")
+    .regex(
+      /^[A-Za-z0-9/_-]+$/,
+      "Format serial number hanya boleh berisi huruf, angka, slash, underscore, dan tanda hubung",
+    ),
   status: z.enum(ASSET_STATUSES, {
     error: "Pilih status aset yang valid",
   }),
@@ -39,9 +45,21 @@ export const baseAssetFormSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), "Tanggal pembelian tidak valid"),
   purchaseCost: z.coerce
     .number({ error: "Biaya pembelian harus berupa angka" })
-    .min(0, "Biaya pembelian tidak boleh negatif"),
-  assignedToId: z.string().trim().nullable().optional(),
-  notes: z.string().trim().max(500, "Catatan maksimal 500 karakter").nullable().optional(),
+    .min(0, "Biaya pembelian tidak boleh negatif")
+    .max(1_000_000_000_000, "Biaya pembelian maksimal Rp 1 triliun"),
+  assignedToId: z
+    .string()
+    .trim()
+    .max(50, "ID Karyawan penerima maksimal 50 karakter")
+    .nullable()
+    .optional(),
+  notes: z
+    .string()
+    .trim()
+    .max(500, "Catatan maksimal 500 karakter")
+    .refine((val) => !val || !val.includes("\0"), "Catatan tidak boleh mengandung karakter null")
+    .nullable()
+    .optional(),
 })
 
 /**

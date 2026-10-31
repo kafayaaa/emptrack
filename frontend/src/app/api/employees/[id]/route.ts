@@ -4,6 +4,7 @@ import { serverEnv } from "@/env.server"
 import { employeeSchema } from "@/features/employees/schema/employee.schema"
 import { employeeFormSchema } from "@/features/employees/schema/employee-form.schema"
 import { isEmployeeEmailUniqueServer } from "@/features/employees/api/employees.server"
+import { routeIdParamsSchema } from "@/lib/validation"
 
 // Helper agar semua error punya bentuk yang sama konsisten dengan /api/employees
 function errorResponse(status: number, code: string, message: string, details?: unknown) {
@@ -11,14 +12,18 @@ function errorResponse(status: number, code: string, message: string, details?: 
 }
 
 export async function GET(_request: NextRequest, segmentData: { params: Promise<{ id: string }> }) {
-  const { id } = await segmentData.params
-
-  // Validasi ID sederhana (non-empty string)
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID karyawan tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID karyawan tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
-  const upstream = new URL(`/employees/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/employees/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const res = await fetch(upstream, {
@@ -57,11 +62,16 @@ export async function PATCH(
   request: NextRequest,
   segmentData: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await segmentData.params
-
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID karyawan tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID karyawan tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
   let bodyJson: unknown
   try {
@@ -98,7 +108,7 @@ export async function PATCH(
     return errorResponse(502, "UPSTREAM_UNREACHABLE", "Backend tidak dapat dihubungi.")
   }
 
-  const upstream = new URL(`/employees/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/employees/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const res = await fetch(upstream, {
@@ -143,13 +153,18 @@ export async function DELETE(
   _request: NextRequest,
   segmentData: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await segmentData.params
-
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID karyawan tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID karyawan tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
-  const upstream = new URL(`/employees/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/employees/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const res = await fetch(upstream, {

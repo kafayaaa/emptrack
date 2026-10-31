@@ -4,7 +4,12 @@ import { isEmployeeEmailUniqueServer } from "@/features/employees/api/employees.
 
 const checkEmailQuerySchema = z.object({
   email: z.string().trim().email("Format email tidak valid."),
-  excludeId: z.string().trim().optional(),
+  excludeId: z
+    .string()
+    .trim()
+    .max(50, "excludeId maksimal 50 karakter")
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
 })
 
 function errorResponse(status: number, code: string, message: string, details?: unknown) {

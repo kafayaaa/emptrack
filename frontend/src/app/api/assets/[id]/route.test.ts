@@ -44,6 +44,24 @@ describe("GET /api/assets/[id]", () => {
     expect(json.error.code).toBe("INVALID_ID")
   })
 
+  it("mengembalikan 400 INVALID_ID jika ID melebihi 50 karakter atau tidak valid (EMPTRACK-110)", async () => {
+    const requestLong = new NextRequest("http://localhost:3000/api/assets/toolong")
+    const responseLong = await GET(requestLong, {
+      params: Promise.resolve({ id: "a".repeat(51) }),
+    })
+    expect(responseLong.status).toBe(400)
+    const jsonLong = await responseLong.json()
+    expect(jsonLong.error.code).toBe("INVALID_ID")
+
+    const requestTraversal = new NextRequest("http://localhost:3000/api/assets/path")
+    const responseTraversal = await GET(requestTraversal, {
+      params: Promise.resolve({ id: "../traversal" }),
+    })
+    expect(responseTraversal.status).toBe(400)
+    const jsonTraversal = await responseTraversal.json()
+    expect(jsonTraversal.error.code).toBe("INVALID_ID")
+  })
+
   it("mengembalikan 404 NOT_FOUND jika aset tidak ditemukan", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,

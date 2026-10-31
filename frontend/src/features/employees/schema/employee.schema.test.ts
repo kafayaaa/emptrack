@@ -119,6 +119,9 @@ describe("employeeListQuerySchema", () => {
 
     const invalidResult = employeeListQuerySchema.safeParse({ projectId: "abc-123" })
     expect(invalidResult.success).toBe(false)
+
+    const tooLongResult = employeeListQuerySchema.safeParse({ projectId: "1".repeat(21) })
+    expect(tooLongResult.success).toBe(false)
   })
 })
 
