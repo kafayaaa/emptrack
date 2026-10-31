@@ -155,12 +155,21 @@ export default function BenchmarkPage() {
       baseDurationTextRef.current.textContent = `${record.baseDuration} ms`
     }
     if (historyContainerRef.current) {
-      historyContainerRef.current.innerHTML = historyListRef.current
-        .map(
-          (item) =>
-            `<span class="rounded-md border border-border bg-background px-2 py-1 font-mono text-muted-foreground">[${item.timestamp}] ${item.phase}: <strong class="text-foreground">${item.actualDuration}ms</strong></span>`,
-        )
-        .join("")
+      const fragment = document.createDocumentFragment()
+      for (const item of historyListRef.current) {
+        const span = document.createElement("span")
+        span.className =
+          "rounded-md border border-border bg-background px-2 py-1 font-mono text-muted-foreground"
+        span.append(`[${item.timestamp}] ${item.phase}: `)
+
+        const strong = document.createElement("strong")
+        strong.className = "text-foreground"
+        strong.textContent = `${item.actualDuration}ms`
+
+        span.appendChild(strong)
+        fragment.appendChild(span)
+      }
+      historyContainerRef.current.replaceChildren(fragment)
     }
   }
 
