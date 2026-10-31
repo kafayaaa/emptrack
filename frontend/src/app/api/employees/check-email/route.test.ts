@@ -30,6 +30,18 @@ describe("GET /api/employees/check-email", () => {
     expect(json.error.code).toBe("INVALID_QUERY")
   })
 
+  it("mengembalikan status 400 jika excludeId melebihi 50 karakter (EMPTRACK-110)", async () => {
+    const longId = "e".repeat(51)
+    const req = new NextRequest(
+      `http://localhost:3000/api/employees/check-email?email=test@perusahaan.com&excludeId=${longId}`,
+    )
+    const res = await GET(req)
+    const json = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(json.error.code).toBe("INVALID_QUERY")
+  })
+
   it("mengembalikan { isUnique: true } saat email belum digunakan", async () => {
     vi.mocked(serverApi.isEmployeeEmailUniqueServer).mockResolvedValue(true)
 

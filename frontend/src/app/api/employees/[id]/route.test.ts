@@ -45,6 +45,24 @@ describe("GET /api/employees/[id]", () => {
     expect(json.error.code).toBe("INVALID_ID")
   })
 
+  it("mengembalikan 400 jika ID melebihi 50 karakter atau mengandung format tidak valid (EMPTRACK-110)", async () => {
+    const requestLong = new NextRequest("http://localhost:3000/api/employees/toolong")
+    const responseLong = await GET(requestLong, {
+      params: Promise.resolve({ id: "a".repeat(51) }),
+    })
+    expect(responseLong.status).toBe(400)
+    const jsonLong = await responseLong.json()
+    expect(jsonLong.error.code).toBe("INVALID_ID")
+
+    const requestTraversal = new NextRequest("http://localhost:3000/api/employees/path")
+    const responseTraversal = await GET(requestTraversal, {
+      params: Promise.resolve({ id: "../traversal" }),
+    })
+    expect(responseTraversal.status).toBe(400)
+    const jsonTraversal = await responseTraversal.json()
+    expect(jsonTraversal.error.code).toBe("INVALID_ID")
+  })
+
   it("mengembalikan 200 dengan data employee dan Cache-Control yang sesuai saat upstream sukses", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify(validEmployee), {

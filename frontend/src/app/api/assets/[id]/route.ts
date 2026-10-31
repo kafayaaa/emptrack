@@ -3,6 +3,7 @@ import { z } from "zod"
 import { serverEnv } from "@/env.server"
 import { assetSchema } from "@/features/assets/schema/asset.schema"
 import { patchAssetFormSchema } from "@/features/assets/schema/asset-form.schema"
+import { routeIdParamsSchema } from "@/lib/validation"
 
 // Helper agar semua error punya bentuk yang sama konsisten dengan /api/assets
 function errorResponse(status: number, code: string, message: string, details?: unknown) {
@@ -10,14 +11,18 @@ function errorResponse(status: number, code: string, message: string, details?: 
 }
 
 export async function GET(_request: NextRequest, segmentData: { params: Promise<{ id: string }> }) {
-  const { id } = await segmentData.params
-
-  // Validasi ID sederhana (non-empty string)
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID aset tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID aset tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
-  const upstream = new URL(`/assets/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/assets/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const res = await fetch(upstream, {
@@ -69,11 +74,16 @@ export async function PATCH(
   request: NextRequest,
   segmentData: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await segmentData.params
-
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID aset tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID aset tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
   let bodyJson: unknown
   try {
@@ -92,7 +102,7 @@ export async function PATCH(
     )
   }
 
-  const upstream = new URL(`/assets/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/assets/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const patchData: Record<string, unknown> = { ...parsed.data }
@@ -172,13 +182,18 @@ export async function DELETE(
   _request: NextRequest,
   segmentData: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await segmentData.params
-
-  if (!id || typeof id !== "string" || !id.trim()) {
-    return errorResponse(400, "INVALID_ID", "ID aset tidak valid.")
+  const parsedParams = routeIdParamsSchema.safeParse(await segmentData.params)
+  if (!parsedParams.success) {
+    return errorResponse(
+      400,
+      "INVALID_ID",
+      "ID aset tidak valid.",
+      z.flattenError(parsedParams.error).fieldErrors,
+    )
   }
+  const { id } = parsedParams.data
 
-  const upstream = new URL(`/assets/${encodeURIComponent(id.trim())}`, serverEnv.BACKEND_URL)
+  const upstream = new URL(`/assets/${encodeURIComponent(id)}`, serverEnv.BACKEND_URL)
 
   try {
     const res = await fetch(upstream, {
