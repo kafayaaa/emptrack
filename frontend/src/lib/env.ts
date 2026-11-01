@@ -1,10 +1,12 @@
 import { z } from "zod"
 
-const envSchema = z.object({
+export const envSchema = z.object({
   // z.url() memastikan nilainya URL valid; default dipakai kalau env tidak diisi.
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   NEXT_PUBLIC_API_URL: z.url(),
 })
+
+export type Env = z.infer<typeof envSchema>
 
 // Setiap variabel HARUS ditulis eksplisit (bukan process.env langsung di-spread).
 // Next.js hanya mengganti `process.env.NEXT_PUBLIC_X` yang tertulis literal saat build,

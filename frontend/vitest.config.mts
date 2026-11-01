@@ -7,6 +7,7 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     env: {
       NEXT_PUBLIC_API_URL: "http://localhost:4000",
+      BACKEND_URL: "http://localhost:4000",
     },
   },
   resolve: {
