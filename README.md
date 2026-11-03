@@ -39,11 +39,12 @@ The project is split into two phases:
 - 📊 **Data-dense tables** for tens of thousands of records, virtualized for smooth scrolling performance
 - 🔍 Server-driven filtering, search, sorting, and pagination — synced to the URL (shareable, bookmarkable, refresh-safe)
 - ⚡ Smart client-side caching — navigating back to a previously visited page doesn't refetch unnecessarily
-- 🧩 **Backend-for-frontend** Route Handler (`/api/employees`) that validates every request and response with Zod, so the browser never talks to the data source directly
+- 🧩 **Backend-for-frontend** Route Handlers (`/api/employees`, `/api/assets`, `/api/dashboard`) that validate every request and response with Zod, so the browser never talks to the data source directly
+- 📈 **Analytics Dashboard** with summary KPI metric cards, status charts, and distribution analytics
 - ♿ Accessible, semantic HTML for better screen-reader support and SEO
 - 🎨 Consistent design system powered by shadcn/ui (Base UI) with light/dark/system theme
 - ✅ End-to-end type safety with TypeScript + Zod schema validation
-- 🔒 Security-minded by default: security headers, server-only environment variables, input whitelisting, route protection via `proxy.ts`
+- 🔒 Security-minded by default: strict security headers (CSP, HSTS), server-only environment variables, input whitelisting, global error boundaries, route protection via `proxy.ts`
 - 🤖 CI on every pull request (GitHub Actions) with branch protection on `main`
 
 ## 🛠️ Tech Stack
@@ -272,14 +273,38 @@ export const employeeKeys = {
 
 ## 🔌 API Route Handlers Matrix
 
-| Endpoint                     | Method   | Request / Query                         | Status Codes        | Deskripsi                                                 |
-| ---------------------------- | -------- | --------------------------------------- | ------------------- | --------------------------------------------------------- |
-| `/api/employees`             | `GET`    | `page`, `pageSize`, `search`, `sortBy`… | `200`, `400`, `502` | Mengambil daftar paginated karyawan dengan filter server  |
-| `/api/employees`             | `POST`   | `EmployeeFormValues` (JSON body)        | `201`, `400`, `409` | Menambahkan karyawan baru (auto-number & check unique)    |
-| `/api/employees/[id]`        | `GET`    | `id` (path parameter)                   | `200`, `404`, `502` | Mengambil data lengkap 1 karyawan untuk detail view & SSR |
-| `/api/employees/[id]`        | `PATCH`  | Partial fields (JSON body)              | `200`, `400`, `404` | Memperbarui data karyawan                                 |
-| `/api/employees/[id]`        | `DELETE` | `id` (path parameter)                   | `200`, `404`, `502` | Menghapus data karyawan secara permanen                   |
-| `/api/employees/check-email` | `POST`   | `{ email, excludeId? }`                 | `200`, `400`        | Validasi keunikan email secara _real-time_                |
+| Endpoint                     | Method   | Request / Query                         | Status Codes        | Deskripsi                                                   |
+| ---------------------------- | -------- | --------------------------------------- | ------------------- | ----------------------------------------------------------- |
+| `/api/employees`             | `GET`    | `page`, `pageSize`, `search`, `sortBy`… | `200`, `400`, `502` | Mengambil daftar paginated karyawan dengan filter server    |
+| `/api/employees`             | `POST`   | `EmployeeFormValues` (JSON body)        | `201`, `400`, `409` | Menambahkan karyawan baru (auto-number & check unique)      |
+| `/api/employees/[id]`        | `GET`    | `id` (path parameter)                   | `200`, `404`, `502` | Mengambil data lengkap 1 karyawan untuk detail view & SSR   |
+| `/api/employees/[id]`        | `PATCH`  | Partial fields (JSON body)              | `200`, `400`, `404` | Memperbarui data karyawan                                   |
+| `/api/employees/[id]`        | `DELETE` | `id` (path parameter)                   | `200`, `404`, `502` | Menghapus data karyawan secara permanen                     |
+| `/api/employees/check-email` | `POST`   | `{ email, excludeId? }`                 | `200`, `400`        | Validasi keunikan email secara _real-time_                  |
+| `/api/assets`                | `GET`    | `page`, `pageSize`, `search`, `status`… | `200`, `400`, `502` | Mengambil daftar paginated aset perusahaan                  |
+| `/api/assets`                | `POST`   | `AssetFormValues` (JSON body)           | `201`, `400`, `409` | Menambahkan aset baru (auto-tag `AST-XXXXX` & check serial) |
+| `/api/assets/[id]`           | `GET`    | `id` (path parameter)                   | `200`, `404`, `502` | Mengambil detail aset beserta riwayat assign karyawan       |
+| `/api/assets/[id]`           | `PATCH`  | Partial fields (JSON body)              | `200`, `400`, `404` | Memperbarui informasi atau status penugasan aset            |
+| `/api/assets/[id]`           | `DELETE` | `id` (path parameter)                   | `200`, `404`, `502` | Menghapus aset dari inventaris secara permanen              |
+| `/api/dashboard/summary`     | `GET`    | -                                       | `200`, `500`        | Metrik agregasi KPI dashboard & distribusi aset/divisi      |
+
+---
+
+## 🛡️ Security Architecture & Checklist
+
+EmpTrack dibangun dengan filosofi **Defense-in-Depth** untuk memastikan perlindungan menyeluruh dari level client, network, server BFF, hingga ke dependensi eksternal. Berikut adalah checklist postur keamanan produksi yang diterapkan:
+
+| Domain Keamanan              | Mekanisme & Implementasi di EmpTrack                                                                                                                                                                                                                                                                                                                                                                                                                                              |      Status       |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------: |
+| **Input Validation**         | **Zero-Trust Validation via Zod**: Semua request payload (client-side form & server-side Route Handlers) divalidasi ketat menggunakan schema Zod. Payload liar yang tidak terdaftar otomatis di-`strip` untuk mencegah _mass assignment_ dan _parameter tampering_.                                                                                                                                                                                                               | ✅ Terverifikasi  |
+| **Data Sanitization**        | **Normalization & Whitelisting**: String input dipangkas otomatis (`trim()`), email dikonversi ke lowercase (`toLowerCase()`), dan nilai numeric/enum diverifikasi sesuai batas aman sebelum diteruskan ke database upstream.                                                                                                                                                                                                                                                     | ✅ Terverifikasi  |
+| **XSS Mitigation**           | **Contextual Escaping**: 0 penggunaan `dangerouslySetInnerHTML` pada konten pengguna. Seluruh visualisasi teks memanfaatkan JSX contextual encoding bawaan React. SVG icon bersumber dari Lucide React yang aman secara statis.                                                                                                                                                                                                                                                   | ✅ Terverifikasi  |
+| **HTTP Security Headers**    | **Hardened OWASP Headers (`next.config.ts`)**:<br>• `Content-Security-Policy (CSP)` (pembatasan ketat script, styles, frames, and objects)<br>• `Strict-Transport-Security (HSTS)` (`max-age=63072000; includeSubDomains; preload`)<br>• `X-Frame-Options: DENY` (anti-clickjacking)<br>• `X-Content-Type-Options: nosniff` (anti-MIME type sniffing)<br>• `Referrer-Policy: strict-origin-when-cross-origin`<br>• `Permissions-Policy: camera=(), microphone=(), geolocation=()` | ✅ Terverifikasi  |
+| **Environment Protection**   | **Server-Client Boundary**: Variabel rahasia seperti `BACKEND_URL` diisolasi di `env.server.ts` dengan proteksi package `server-only`. Kebocoran variabel server ke client JavaScript bundle otomatis digagalkan saat compile time. Validasi runtime dilakukan saat startup via Zod.                                                                                                                                                                                              | ✅ Terverifikasi  |
+| **Error Handling & Leakage** | **Centralized Error Boundaries**: Implementasi `error.tsx`, `global-error.tsx`, dan `not-found.tsx` menjamin crash runtime ditangani dengan UI elegan tanpa membocorkan backend stack trace, connection string, atau struktur internal server ke pengguna akhir.                                                                                                                                                                                                                  | ✅ Terverifikasi  |
+| **Rate Limiting Strategy**   | **Multi-tier Abuse Prevention**: Dokumentasi strategi mitigasi DDoS/abuse komprehensif (Reverse Proxy / Cloudflare edge filtering serta Upstash Redis sliding window algorithm pada endpoint mutasi & verifikasi async).                                                                                                                                                                                                                                                          | ✅ Terdokumentasi |
+| **BFF Data Isolation**       | **Trusted Gateway**: Browser pengguna tidak pernah melakukan direct connect ke database upstream. Semua request disaring dan disanitasi oleh Route Handlers Next.js yang bertindak sebagai backend-for-frontend.                                                                                                                                                                                                                                                                  | ✅ Terverifikasi  |
+| **Dependency Hygiene**       | **Automated Vulnerability Scanning**: Pemindaian berkala dengan `npm audit` di frontend dan backend. Zero high/critical vulnerabilities pada backend, pembaruan patch keamanan proaktif tanpa breaking change.                                                                                                                                                                                                                                                                    | ✅ Terverifikasi  |
 
 ---
 
@@ -296,7 +321,7 @@ Run inside `frontend/`:
 | `npm run format`       | Format code with Prettier                                                     |
 | `npm run format:check` | Verify formatting consistency                                                 |
 | `npm run test`         | Run Vitest in interactive watch mode                                          |
-| `npm run test:run`     | Run Vitest test suite once (65+ test suites, 325+ tests)                      |
+| `npm run test:run`     | Run Vitest test suite once (120+ test suites, 570+ tests)                     |
 | `npm run check`        | Full CI Quality Gate (`typecheck` + `lint` + `format` + `test:run` + `build`) |
 
 Run inside `backend/`:
@@ -324,8 +349,12 @@ Run inside `backend/`:
   - Form validation dengan React Hook Form + Zod, asynchronous email verification, dan optimistic edit updates.
 - [x] **Minggu 7: Delete, Bulk Delete, & Cache Invalidation (9-15 Nov)**
   - Single deletion & batch deletion dialogs, progress tracking, controllable state abstraction, dan centralized cache utils.
-- [ ] **Minggu 8: Modul Asset & Inventory (Reuse Pattern) (16-22 Nov)**
-  - Replikasi pattern arsitektur CRUD untuk modul Asset & Inventory.
+- [x] **Minggu 8: Modul Asset & Inventory (Reuse Pattern) (16-22 Nov)**
+  - Replikasi pattern arsitektur CRUD untuk modul Asset & Inventory (schema, dialogs, dynamic status, filter, bulk operations).
+- [x] **Minggu 9: Dashboard Analytics, Summary KPIs, & Charts (23-29 Nov)**
+  - Agregasi data real-time, 4 KPI cards dengan trends, chart distribusi aset & departemen (Recharts), dan tabel aktivitas terbaru.
+- [x] **Minggu 10: Keamanan & Security Hardening (30 Nov - 6 Des)**
+  - Audit sanitasi input Zod, proteksi XSS, HTTP security headers (CSP & HSTS), audit environment variables & `server-only`, dokumentasi rate limiting, global error boundaries (`error.tsx`/`global-error.tsx`), `npm audit` dependency updates, dan checklist security di README.
 - [ ] **Phase 2: Multi-level Approval Workflow**
   - Sortable approval chains (dnd-kit), request history, status transitions, dan in-app notifications.
 
