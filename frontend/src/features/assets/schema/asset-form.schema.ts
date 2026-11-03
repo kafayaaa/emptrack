@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { isValidCalendarDate } from "@/lib/date"
 import { ASSET_CATEGORIES, ASSET_STATUSES } from "./asset.schema"
 
 /**
@@ -17,7 +18,10 @@ export const baseAssetFormSchema = z.object({
     .trim()
     .min(3, "Nama aset minimal 3 karakter")
     .max(100, "Nama aset maksimal 100 karakter")
-    .refine((val) => !val.includes("\0"), "Nama aset tidak boleh mengandung karakter null"),
+    .refine(
+      (val) => !val.includes("\0") && !/[<>]/.test(val) && !/[\u200B-\u200D\uFEFF]/.test(val),
+      "Nama aset tidak boleh mengandung tag HTML (< atau >) atau karakter tersembunyi",
+    ),
   category: z.enum(ASSET_CATEGORIES, {
     error: "Pilih kategori aset yang valid",
   }),
@@ -26,7 +30,10 @@ export const baseAssetFormSchema = z.object({
     .trim()
     .min(2, "Model/spesifikasi minimal 2 karakter")
     .max(100, "Model/spesifikasi maksimal 100 karakter")
-    .refine((val) => !val.includes("\0"), "Model/spesifikasi tidak boleh mengandung karakter null"),
+    .refine(
+      (val) => !val.includes("\0") && !/[<>]/.test(val) && !/[\u200B-\u200D\uFEFF]/.test(val),
+      "Model/spesifikasi tidak boleh mengandung tag HTML (< atau >) atau karakter tersembunyi",
+    ),
   serialNumber: z
     .string()
     .trim()
@@ -42,7 +49,10 @@ export const baseAssetFormSchema = z.object({
   purchaseDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal harus YYYY-MM-DD")
-    .refine((val) => !isNaN(Date.parse(val)), "Tanggal pembelian tidak valid"),
+    .refine(
+      (val) => isValidCalendarDate(val),
+      "Tanggal pembelian tidak valid atau bukan tanggal kalender yang sah",
+    ),
   purchaseCost: z.coerce
     .number({ error: "Biaya pembelian harus berupa angka" })
     .min(0, "Biaya pembelian tidak boleh negatif")
@@ -57,7 +67,10 @@ export const baseAssetFormSchema = z.object({
     .string()
     .trim()
     .max(500, "Catatan maksimal 500 karakter")
-    .refine((val) => !val || !val.includes("\0"), "Catatan tidak boleh mengandung karakter null")
+    .refine(
+      (val) => !val || (!val.includes("\0") && !/[\u200B-\u200D\uFEFF]/.test(val)),
+      "Catatan tidak boleh mengandung karakter null atau tersembunyi",
+    )
     .nullable()
     .optional(),
 })

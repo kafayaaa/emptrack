@@ -63,19 +63,24 @@ Pengujian dirancang merujuk pada standar industri:
 
 ---
 
-## 4. Temuan Analisis & Rekomendasi Perbaikan (Untuk EMPTRACK-119)
+## 4. Temuan Analisis & Resolusi Perbaikan (EMPTRACK-119)
 
-Meskipun seluruh 23 uji penetrasi berhasil ditangani dan sistem terbukti aman dari kerentanan kritis, pengujian manual mendeteksi 2 observasi penyempurnaan kecil yang dapat ditangani pada issue **EMPTRACK-119 (Fix temuan security)**:
+Pengujian manual pada EMPTRACK-118 mengidentifikasi 3 observasi penyempurnaan, yang telah diimplementasikan dan diverifikasi secara tuntas pada **EMPTRACK-119**:
 
 1. **JavaScript Date Rollover Edge-case**:
-   - _Observasi_: Input tanggal seperti `"2024-02-31"` (tanggal 31 di bulan Februari) secara sintaksis lolos regex `YYYY-MM-DD`. Mesin runtime JavaScript V8 secara otomatis melakukan _date rollover_ menjadi `"2024-03-02"` sehingga `new Date("2024-02-31")` tidak menghasilkan `NaN`.
-   - _Rekomendasi (EMPTRACK-119)_: Menambahkan validasi kalender ketat dengan memverifikasi bahwa tanggal hasil parsing ISO string persis sama dengan string input aslinya (`date.toISOString().slice(0, 10) === dateStr`).
+   - _Masalah_: Input tanggal seperti `"2024-02-31"` (tanggal 31 di bulan Februari) atau `"2024-04-31"` secara sintaksis lolos regex `YYYY-MM-DD`. Mesin runtime JavaScript V8 secara otomatis melakukan _date rollover_ menjadi bulan berikutnya sehingga `new Date("2024-02-31")` tidak menghasilkan `NaN`.
+   - _Resolusi (EMPTRACK-119)_: Menambahkan fungsi helper `isValidCalendarDate(dateString: string)` di `src/lib/date.ts` yang memvalidasi integritas kalender riil via UTC parsing (memverifikasi bahwa `getUTCFullYear()`, `getUTCMonth()`, dan `getUTCDate()` persis identik dengan input awal). Diintegrasikan ke `hireDate` (`employeeFormSchema`) dan `purchaseDate` (`assetFormSchema`).
 
-2. **Sanitasi Karakter Bebas pada Field Model & Name Aset**:
-   - _Observasi_: Field `name` dan `model` pada aset saat ini hanya membatasi panjang (`min 3`, `max 100`) dan null byte. Walaupun output telah terlindungi oleh mekanisme kontekstual JSX escaping bawaan React, penambahan sanitasi preventif di tingkat skema Zod (misalnya melarang karakter kurung sudut `<` dan `>`) akan memberikan perlindungan berlapis (_Defense-in-Depth_).
+2. **Sanitasi Kurung Sudut pada Field Aset**:
+   - _Masalah_: Field `name` dan `model` pada formulir aset sebelumnya memperbolehkan kurung sudut `<` dan `>`.
+   - _Resolusi (EMPTRACK-119)_: Menambahkan validasi preventif tingkat Zod `.refine(!/[<>]/.test(val))` untuk menolak tag HTML apapun di hulu (Defense-in-Depth).
+
+3. **Eliminasi Karakter Tersembunyi (Zero-Width Characters)**:
+   - _Masalah_: Karakter zero-width (`\u200B`, `\u200C`, `\uFEFF`) dapat diselipkan untuk mengelabui filter teks atau pencarian.
+   - _Resolusi (EMPTRACK-119)_: Menambahkan validasi Zod `.refine(!/[\u200B-\u200D\uFEFF]/.test(val))` pada field `managerId`, `name`, `model`, dan `notes`.
 
 ---
 
 ## 5. Kesimpulan
 
-Implementasi keamanan EmpTrack pada lapisan validasi formulir dan BFF Route Handlers terbukti tangguh terhadap serangan injeksi, parameter tampering, mass assignment, dan serangan DoS berbasis ukuran payload. Seluruh skenario telah dikodifikasi ke dalam suite uji otomatis `src/test/security-penetration.test.ts` (23 test cases) yang berjalan pada pipeline CI secara permanen.
+Implementasi keamanan EmpTrack pada lapisan validasi formulir dan BFF Route Handlers terbukti tangguh terhadap serangan injeksi, parameter tampering, mass assignment, manipulasi kalender/temporal, dan serangan DoS berbasis ukuran payload. Seluruh skenario telah dikodifikasi ke dalam suite uji otomatis `src/test/security-penetration.test.ts` (26 test cases) dan `src/lib/date.test.ts` (6 test cases) yang berjalan pada pipeline CI secara permanen.

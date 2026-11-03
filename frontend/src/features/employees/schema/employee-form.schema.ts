@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { isValidCalendarDate } from "@/lib/date"
 import { EMPLOYEE_DEPARTMENTS, EMPLOYEE_POSITIONS, type EmployeeDepartment } from "../constants"
 
 export const employeeFormSchema = z
@@ -53,8 +54,8 @@ export const employeeFormSchema = z
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal harus YYYY-MM-DD")
       .refine(
         (dateStr) => {
+          if (!isValidCalendarDate(dateStr)) return false
           const date = new Date(dateStr)
-          if (isNaN(date.getTime())) return false
           const year = date.getFullYear()
           if (year < 1970) return false
           // Batas maksimal: tidak lebih dari 1 tahun ke depan
@@ -72,8 +73,8 @@ export const employeeFormSchema = z
       .trim()
       .max(50, "ID Manajer maksimal 50 karakter")
       .refine(
-        (val) => !val || !val.includes("\0"),
-        "ID Manajer tidak boleh mengandung karakter null",
+        (val) => !val || (!val.includes("\0") && !/[\u200B-\u200D\uFEFF]/.test(val)),
+        "ID Manajer tidak boleh mengandung karakter null atau tersembunyi",
       )
       .nullable()
       .optional()
