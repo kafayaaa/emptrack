@@ -144,6 +144,40 @@ describe("Manual Security Penetration & Adversarial Input Testing (EMPTRACK-118)
         expect(fieldErrors.status).toBeDefined()
       }
     })
+
+    it("menolak tag HTML (< dan >) pada name dan model aset (EMPTRACK-119)", () => {
+      const maliciousNameResult = assetFormSchema.safeParse({
+        name: "<script>alert('xss')</script>",
+        category: "Laptop",
+        model: "Apple MacBook Pro 16",
+        serialNumber: "SN-MBP16-001",
+        status: "available",
+        purchaseDate: "2024-01-01",
+        purchaseCost: 35000000,
+      })
+
+      expect(maliciousNameResult.success).toBe(false)
+      if (!maliciousNameResult.success) {
+        const fieldErrors = z.flattenError(maliciousNameResult.error).fieldErrors
+        expect(fieldErrors.name).toBeDefined()
+      }
+
+      const maliciousModelResult = assetFormSchema.safeParse({
+        name: "MacBook Pro M3",
+        category: "Laptop",
+        model: "MacBook <iframe src=x>",
+        serialNumber: "SN-MBP16-001",
+        status: "available",
+        purchaseDate: "2024-01-01",
+        purchaseCost: 35000000,
+      })
+
+      expect(maliciousModelResult.success).toBe(false)
+      if (!maliciousModelResult.success) {
+        const fieldErrors = z.flattenError(maliciousModelResult.error).fieldErrors
+        expect(fieldErrors.model).toBeDefined()
+      }
+    })
   })
 
   // ---------------------------------------------------------------------------
@@ -304,6 +338,47 @@ describe("Manual Security Penetration & Adversarial Input Testing (EMPTRACK-118)
       if (!maliciousAsset.success) {
         const fieldErrors = z.flattenError(maliciousAsset.error).fieldErrors
         expect(fieldErrors.name).toBeDefined()
+      }
+    })
+
+    it("menolak zero-width characters (\\u200B) pada managerId, name, model, dan notes (EMPTRACK-119)", () => {
+      const zeroWidthEmployee = employeeFormSchema.safeParse({
+        employeeNumber: "EMP-00123",
+        fullName: "John Doe",
+        email: "john@emptrack.internal",
+        phone: "081234567890",
+        department: "Engineering",
+        position: "Frontend Developer",
+        status: "active",
+        hireDate: "2024-01-01",
+        isManager: false,
+        managerId: "EMP-00001\u200Bhidden",
+        projectId: "1",
+      })
+
+      expect(zeroWidthEmployee.success).toBe(false)
+      if (!zeroWidthEmployee.success) {
+        const fieldErrors = z.flattenError(zeroWidthEmployee.error).fieldErrors
+        expect(fieldErrors.managerId).toBeDefined()
+      }
+
+      const zeroWidthAsset = assetFormSchema.safeParse({
+        name: "Dell XPS\u200B15",
+        category: "Laptop",
+        model: "Core\u200Bi7",
+        serialNumber: "SN-DELL-001",
+        status: "available",
+        purchaseDate: "2024-01-01",
+        purchaseCost: 20000000,
+        notes: "Catatan\u200Ctersembunyi",
+      })
+
+      expect(zeroWidthAsset.success).toBe(false)
+      if (!zeroWidthAsset.success) {
+        const fieldErrors = z.flattenError(zeroWidthAsset.error).fieldErrors
+        expect(fieldErrors.name).toBeDefined()
+        expect(fieldErrors.model).toBeDefined()
+        expect(fieldErrors.notes).toBeDefined()
       }
     })
   })
@@ -477,13 +552,16 @@ describe("Manual Security Penetration & Adversarial Input Testing (EMPTRACK-118)
   // 7. TEMPORAL & DATE MANIPULATION
   // ---------------------------------------------------------------------------
   describe("7. Temporal & Date Manipulation", () => {
-    it("menolak tanggal palsu atau format invalid (bukan format YYYY-MM-DD, <1970, atau >1 tahun ke depan)", () => {
+    it("menolak tanggal palsu, format invalid, dan date rollover (EMPTRACK-119)", () => {
       const invalidDateEmployees = [
         "31-12-2024",
         "2024/01/01",
         "invalid-date",
         "1960-01-01", // Tahun di bawah batas minimal (1970)
         "2099-01-01", // Terlalu jauh di masa depan (> 1 tahun)
+        "2024-02-31", // Date rollover: 31 Februari tidak ada
+        "2023-02-29", // Date rollover: 2023 bukan kabisat
+        "2024-04-31", // Date rollover: April hanya 30 hari
       ]
 
       for (const dateStr of invalidDateEmployees) {
@@ -505,6 +583,24 @@ describe("Manual Security Penetration & Adversarial Input Testing (EMPTRACK-118)
           const fieldErrors = z.flattenError(result.error).fieldErrors
           expect(fieldErrors.hireDate).toBeDefined()
         }
+      }
+    })
+
+    it("menolak tanggal pembelian aset yang mengalami rollover (EMPTRACK-119)", () => {
+      const result = assetFormSchema.safeParse({
+        name: "MacBook Pro",
+        category: "Laptop",
+        model: "Apple M3",
+        serialNumber: "SN-MBP16-001",
+        status: "available",
+        purchaseDate: "2024-02-31", // Tanggal tidak sah di kalender
+        purchaseCost: 35000000,
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        const fieldErrors = z.flattenError(result.error).fieldErrors
+        expect(fieldErrors.purchaseDate).toBeDefined()
       }
     })
   })
