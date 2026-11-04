@@ -84,7 +84,7 @@ export function AssetCreateDialog({
         className={cn("max-h-[90vh] overflow-y-auto sm:max-w-2xl", className)}
       >
         <DialogHeader>
-          <DialogTitle>Tambah Aset Baru</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Tambah Aset Baru</DialogTitle>
           <DialogDescription>
             Masukkan spesifikasi lengkap, nomor seri, status operasional, dan nilai perolehan aset.
           </DialogDescription>

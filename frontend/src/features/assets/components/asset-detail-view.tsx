@@ -76,7 +76,11 @@ export function AssetDetailView({ asset }: AssetDetailViewProps) {
       {/* 1. Navigasi Kembali */}
       <nav aria-label="Back navigation">
         <Link href="/assets">
-          <Button variant="ghost" size="sm" className="gap-2 text-xs">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
             <ArrowLeft className="size-4" aria-hidden="true" />
             <span>Kembali ke Daftar Aset</span>
           </Button>

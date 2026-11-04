@@ -99,7 +99,7 @@ export function EmployeeEditDialog({
       >
         <div className="flex max-h-[90vh] flex-col">
           <DialogHeader className="border-b px-6 py-4">
-            <DialogTitle className="text-lg font-bold">Edit Data Karyawan</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Edit Data Karyawan</DialogTitle>
             <DialogDescription>
               Perbarui rincian informasi data diri, jabatan, atau hierarki untuk {employee.fullName}
               .
