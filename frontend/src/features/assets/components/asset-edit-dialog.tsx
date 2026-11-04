@@ -98,7 +98,7 @@ export function AssetEditDialog({
         className={cn("max-h-[90vh] overflow-y-auto sm:max-w-2xl", className)}
       >
         <DialogHeader>
-          <DialogTitle>Edit Data Aset</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Edit Data Aset</DialogTitle>
           <DialogDescription>
             Perbarui informasi spesifikasi, status penugasan, atau catatan untuk{" "}
             <span className="font-medium text-foreground">{asset.name}</span> (

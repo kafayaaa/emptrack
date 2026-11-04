@@ -84,7 +84,7 @@ export function EmployeeCreateDialog({
       >
         <div className="flex max-h-[90vh] flex-col">
           <DialogHeader className="border-b px-6 py-4">
-            <DialogTitle className="text-lg font-bold">Tambah Karyawan Baru</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Tambah Karyawan Baru</DialogTitle>
             <DialogDescription>
               Isi data lengkap di bawah ini untuk mendaftarkan karyawan baru ke dalam sistem
               EmpTrack.
