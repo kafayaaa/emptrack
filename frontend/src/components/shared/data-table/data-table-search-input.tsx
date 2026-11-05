@@ -114,11 +114,11 @@ export function DataTableSearchInput({
   return (
     <div
       role="search"
-      className={cn("relative flex w-full max-w-sm items-center", containerClassName)}
+      className={cn("group relative flex w-full max-w-sm items-center", containerClassName)}
     >
       <Search
         aria-hidden="true"
-        className="pointer-events-none absolute left-3 size-4 text-muted-foreground select-none"
+        className="pointer-events-none absolute left-3 size-4 text-muted-foreground transition-colors duration-150 select-none group-focus-within:text-foreground"
       />
       <Input
         ref={inputRef}
@@ -129,7 +129,7 @@ export function DataTableSearchInput({
         placeholder={placeholder}
         aria-label={ariaLabel}
         className={cn(
-          "h-9 pr-9 pl-9 text-sm transition-all placeholder:text-muted-foreground/70",
+          "h-9 pr-9 pl-9 text-sm transition-all duration-150 placeholder:text-muted-foreground/70",
           className,
         )}
         {...inputProps}
@@ -142,7 +142,7 @@ export function DataTableSearchInput({
           onClick={handleClear}
           aria-label="Hapus kata kunci pencarian"
           title="Hapus pencarian (Esc)"
-          className="absolute right-2 text-muted-foreground transition-opacity hover:text-foreground"
+          className="absolute right-2 animate-in text-muted-foreground transition-all duration-150 fade-in-0 zoom-in-75 hover:text-foreground motion-reduce:animate-none"
         >
           <X className="size-3.5" />
         </Button>

@@ -46,7 +46,7 @@ export function RecentAssetsCard({ assets }: RecentAssetsCardProps) {
               <div
                 key={asset.id}
                 data-testid={`recent-asset-item-${asset.id}`}
-                className="group flex items-center justify-between py-3 transition-colors hover:bg-muted/30"
+                className="group flex items-center justify-between py-3 transition-colors duration-150 hover:bg-muted/30 motion-reduce:transition-none"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -55,7 +55,7 @@ export function RecentAssetsCard({ assets }: RecentAssetsCardProps) {
                   <div className="min-w-0">
                     <Link
                       href={`/assets/${asset.id}`}
-                      className="truncate text-xs font-semibold text-foreground group-hover:text-primary hover:underline"
+                      className="truncate text-xs font-semibold text-foreground transition-colors duration-150 group-hover:text-primary hover:underline"
                     >
                       {asset.name}
                     </Link>

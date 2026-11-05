@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useQueryState, parseAsStringLiteral } from "nuqs"
 import { ListFilter, Rows3 } from "lucide-react"
+import { cn } from "cn"
 import { Button } from "@/components/ui/button"
 
 export const VIEW_MODES = ["paginated", "infinite"] as const
@@ -54,9 +55,10 @@ export function EmployeeViewToggle({
         size="xs"
         variant={mode === "paginated" ? "default" : "ghost"}
         onClick={() => handleSelect("paginated")}
-        className={`gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-          mode === "paginated" ? "shadow-xs" : "text-muted-foreground hover:text-foreground"
-        }`}
+        className={cn(
+          "gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-150 motion-reduce:transition-none",
+          mode === "paginated" ? "shadow-xs" : "text-muted-foreground hover:text-foreground",
+        )}
       >
         <ListFilter className="size-3.5" />
         <span>Pagination</span>
@@ -67,9 +69,10 @@ export function EmployeeViewToggle({
         size="xs"
         variant={mode === "infinite" ? "default" : "ghost"}
         onClick={() => handleSelect("infinite")}
-        className={`gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-          mode === "infinite" ? "shadow-xs" : "text-muted-foreground hover:text-foreground"
-        }`}
+        className={cn(
+          "gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-150 motion-reduce:transition-none",
+          mode === "infinite" ? "shadow-xs" : "text-muted-foreground hover:text-foreground",
+        )}
       >
         <Rows3 className="size-3.5" />
         <span>Infinite Scroll</span>

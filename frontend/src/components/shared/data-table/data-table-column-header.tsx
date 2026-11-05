@@ -34,17 +34,20 @@ function BaseDataTableColumnHeader({ column, title, className }: DataTableColumn
       <Button
         variant="ghost"
         size="xs"
-        className="-ml-2 h-7 px-2 font-semibold text-muted-foreground hover:text-foreground data-[state=open]:bg-accent"
+        className={cn(
+          "group -ml-2 h-7 px-2 font-semibold transition-colors duration-150 data-[state=open]:bg-accent motion-reduce:transition-none",
+          isSorted ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
         onClick={() => column.toggleSorting()}
         aria-label={sortActionLabel}
       >
         <span>{title}</span>
         {isSorted === "desc" ? (
-          <ArrowDown className="ml-1 size-3.5 text-foreground" />
+          <ArrowDown className="ml-1 size-3.5 text-foreground transition-transform duration-200 group-hover:translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
         ) : isSorted === "asc" ? (
-          <ArrowUp className="ml-1 size-3.5 text-foreground" />
+          <ArrowUp className="ml-1 size-3.5 text-foreground transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none" />
         ) : (
-          <ArrowUpDown className="ml-1 size-3.5 opacity-60" />
+          <ArrowUpDown className="ml-1 size-3.5 opacity-50 transition-opacity duration-150 group-hover:opacity-100 motion-reduce:transition-none" />
         )}
       </Button>
     </div>
