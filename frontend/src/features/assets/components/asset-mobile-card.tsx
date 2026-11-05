@@ -38,10 +38,10 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
       data-testid={`asset-mobile-card-${asset.id}`}
       data-selected={isSelected ? "true" : undefined}
       className={cn(
-        "flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-2xs transition-colors",
+        "flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-2xs transition-all duration-200 motion-reduce:transition-none",
         isSelected
-          ? "border-primary/80 bg-primary/5 ring-1 ring-primary/30"
-          : "border-border hover:border-border/80",
+          ? "border-primary/80 bg-primary/5 shadow-xs ring-1 ring-primary/30"
+          : "border-border hover:border-border/80 hover:shadow-xs",
       )}
     >
       {/* Top Header: Name, Asset Tag, and Status Badge */}

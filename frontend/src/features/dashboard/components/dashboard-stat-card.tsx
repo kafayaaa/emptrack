@@ -33,7 +33,7 @@ export function DashboardStatCard({
     <Card
       data-testid={testId}
       className={cn(
-        "group relative overflow-hidden transition-all duration-200 hover:shadow-md",
+        "group relative overflow-hidden transition-all duration-200 hover:shadow-md motion-reduce:transition-none",
         href && "cursor-pointer hover:border-primary/50",
         className,
       )}
@@ -54,7 +54,7 @@ export function DashboardStatCard({
           </div>
           <div
             className={cn(
-              "flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105",
+              "flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none",
               iconBgClass,
               iconColorClass,
             )}

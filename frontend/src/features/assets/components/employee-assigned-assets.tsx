@@ -138,7 +138,7 @@ export function EmployeeAssignedAssets({ employeeId, employeeName }: EmployeeAss
               <div
                 key={asset.id}
                 data-testid={`assigned-asset-item-${asset.id}`}
-                className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
+                className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 p-3 transition-all duration-150 hover:border-primary/40 hover:bg-muted/40 hover:shadow-xs motion-reduce:transition-none"
               >
                 <div className="flex min-w-0 items-start gap-3">
                   <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
