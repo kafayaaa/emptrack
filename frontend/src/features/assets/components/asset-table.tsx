@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Box, SearchX } from "lucide-react"
 import { DataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useAssets, type UseAssetsOptions } from "../hooks"
 import {
@@ -123,6 +124,10 @@ function BaseAssetTable({
     void refetch()
   }, [refetch])
 
+  const hasActiveFilters = Boolean(
+    filters && Object.values(filters).some((v) => Boolean(v && String(v).trim() !== "")),
+  )
+
   return (
     <TableErrorBoundary
       title="Gagal memuat data aset"
@@ -158,8 +163,13 @@ function BaseAssetTable({
         errorMessage={error?.message}
         retryLabel="Coba Lagi"
         onRetry={handleRetry}
-        emptyTitle="Tidak ada aset ditemukan"
-        emptyDescription="Belum ada data aset inventaris yang cocok dengan kriteria pencarian atau filter yang dipilih."
+        emptyIcon={hasActiveFilters ? SearchX : Box}
+        emptyTitle={hasActiveFilters ? "Tidak ada aset yang cocok" : "Belum ada data aset"}
+        emptyDescription={
+          hasActiveFilters
+            ? "Belum ada data aset inventaris yang cocok dengan kriteria pencarian atau filter yang dipilih. Silakan sesuaikan kata kunci atau atur ulang filter Anda."
+            : "Sistem belum memiliki catatan aset inventaris. Silakan daftarkan aset pertama untuk memulai pelacakan perangkat keras."
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         renderMobileCard={(asset: Asset, _index: number, row?: any) => (
           <AssetMobileCard

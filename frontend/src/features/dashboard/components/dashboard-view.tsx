@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import dynamic from "next/dynamic"
+import { AlertCircle, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { useDashboardSummary } from "../hooks"
 import { DashboardStatsGrid } from "./dashboard-stats-grid"
 import { AssetStatusChart } from "./asset-status-chart"
@@ -30,6 +32,7 @@ export function DashboardView({ initialData }: DashboardViewProps) {
     data: summary,
     isLoading,
     isError,
+    refetch,
   } = useDashboardSummary({
     initialData,
   })
@@ -50,9 +53,31 @@ export function DashboardView({ initialData }: DashboardViewProps) {
         </div>
         <div
           data-testid="dashboard-error-state"
-          className="rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center text-sm text-destructive"
+          role="alert"
+          aria-live="assertive"
+          className="flex flex-col items-center justify-center gap-3.5 rounded-xl border border-destructive/20 bg-card p-8 text-center shadow-2xs"
         >
-          Terjadi kesalahan saat memuat data ringkasan dashboard. Silakan muat ulang halaman.
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive ring-1 ring-destructive/20">
+            <AlertCircle className="size-7 stroke-[1.75]" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
+              Gagal Memuat Ringkasan Dashboard
+            </h2>
+            <p className="max-w-md text-xs text-muted-foreground">
+              Terjadi kesalahan saat memuat data ringkasan dashboard. Silakan muat ulang halaman.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+            className="mt-2 gap-2"
+          >
+            <RefreshCw className="size-3.5" />
+            <span>Coba Lagi</span>
+          </Button>
         </div>
       </div>
     )
