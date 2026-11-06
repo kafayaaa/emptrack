@@ -8,6 +8,7 @@ import type { RowSelectionState } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { useDataTableVisibility } from "@/hooks"
 import { AssetTable } from "./asset-table"
+import { AssetTableSkeleton } from "./asset-table-skeleton"
 import { AssetSearchInput } from "./asset-search-input"
 import { AssetFilters, type AssetFiltersState } from "./asset-filters"
 import type { AssetCategory, AssetStatus } from "../types"
@@ -173,13 +174,15 @@ export function AssetViewContainer({ initialRowSelection = {} }: AssetViewContai
         onResetFilters={handleResetFilters}
       />
 
-      <AssetTable
-        filters={tableFilters}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={onColumnVisibilityChange}
-        rowSelection={rowSelection}
-        onRowSelectionChange={setRowSelection}
-      />
+      <React.Suspense fallback={<AssetTableSkeleton rowCount={10} />}>
+        <AssetTable
+          filters={tableFilters}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={onColumnVisibilityChange}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+        />
+      </React.Suspense>
 
       {/* Floating Bulk Actions Bar (EMPTRACK-93) */}
       {selectedCount > 0 && (
