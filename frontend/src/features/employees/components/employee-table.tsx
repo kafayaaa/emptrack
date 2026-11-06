@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { SearchX, Users } from "lucide-react"
 import { DataTable, TableErrorBoundary } from "@/components/shared/data-table"
 import { useEmployees, type UseEmployeesOptions } from "../hooks"
 import {
@@ -123,10 +124,14 @@ function BaseEmployeeTable({
     void refetch()
   }, [refetch])
 
+  const hasActiveFilters = Boolean(
+    filters && Object.values(filters).some((v) => Boolean(v && String(v).trim() !== "")),
+  )
+
   return (
     <TableErrorBoundary
-      title="Failed to load employees"
-      description="An unexpected error occurred while rendering the employees table."
+      title="Gagal memuat data karyawan"
+      description="Terjadi kendala saat merender tabel data karyawan."
       onReset={handleRetry}
     >
       <DataTable
@@ -158,8 +163,13 @@ function BaseEmployeeTable({
         errorMessage={error?.message}
         retryLabel="Coba Lagi"
         onRetry={handleRetry}
-        emptyTitle="Tidak ada karyawan ditemukan"
-        emptyDescription="Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih."
+        emptyIcon={hasActiveFilters ? SearchX : Users}
+        emptyTitle={hasActiveFilters ? "Tidak ada karyawan yang cocok" : "Belum ada data karyawan"}
+        emptyDescription={
+          hasActiveFilters
+            ? "Belum ada data karyawan yang cocok dengan kriteria pencarian atau filter yang dipilih. Silakan sesuaikan kata kunci atau atur ulang filter pencarian Anda."
+            : "Sistem belum memiliki catatan data karyawan. Silakan tambahkan karyawan pertama untuk memulai pengelolaan organisasi."
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         renderMobileCard={(employee: Employee, _index: number, row?: any) => (
           <EmployeeMobileCard

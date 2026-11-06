@@ -20,17 +20,21 @@ export function DataTableEmptyContent({
   const Heading = headingLevel
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
-      <div className="rounded-full bg-muted/60 p-3 text-muted-foreground">
-        <Icon className="h-6 w-6 stroke-[1.75]" />
+    <div className="flex flex-col items-center justify-center gap-3.5 p-8 text-center">
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/80 text-muted-foreground ring-1 ring-border/50">
+        <Icon className="size-7 stroke-[1.75]" />
       </div>
       <div className="max-w-sm space-y-1">
-        <Heading className="text-sm font-semibold text-foreground">{title}</Heading>
+        <Heading className="text-base font-semibold tracking-tight text-foreground">
+          {title}
+        </Heading>
         {description ? (
           <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {action ? <div className="mt-2 flex items-center gap-2">{action}</div> : null}
+      {action ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">{action}</div>
+      ) : null}
     </div>
   )
 }

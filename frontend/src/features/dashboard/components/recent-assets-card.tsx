@@ -36,9 +36,16 @@ export function RecentAssetsCard({ assets }: RecentAssetsCardProps) {
 
       <CardContent>
         {assets.length === 0 ? (
-          <div className="flex h-36 flex-col items-center justify-center text-center text-xs text-muted-foreground">
-            <Laptop className="mb-2 size-8 stroke-1 text-muted-foreground/50" aria-hidden="true" />
-            <p>Belum ada data aset tercatat.</p>
+          <div className="flex flex-col items-center justify-center gap-2.5 rounded-lg border border-dashed border-border/70 p-6 text-center">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-muted/80 text-muted-foreground ring-1 ring-border/50">
+              <Laptop className="size-5.5 stroke-[1.75]" aria-hidden="true" />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-xs font-semibold text-foreground">Belum ada data aset tercatat.</p>
+              <p className="text-[11px] text-muted-foreground">
+                Aset atau perangkat baru yang ditambahkan ke sistem akan tampil di sini.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="divide-y divide-border/60">

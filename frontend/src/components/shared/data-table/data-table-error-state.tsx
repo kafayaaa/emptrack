@@ -26,26 +26,28 @@ export function DataTableErrorContent({
     <div
       role="alert"
       aria-live="assertive"
-      className="flex flex-col items-center justify-center gap-3 p-6 text-center"
+      className="flex flex-col items-center justify-center gap-3.5 p-8 text-center"
     >
-      <div className="rounded-full bg-destructive/10 p-3 text-destructive">
-        <AlertCircle className="h-6 w-6 stroke-[1.75]" />
+      <div className="flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive ring-1 ring-destructive/20">
+        <AlertCircle className="size-7 stroke-[1.75]" />
       </div>
       <div className="max-w-md space-y-1">
-        <Heading className="text-sm font-semibold text-foreground">{title}</Heading>
+        <Heading className="text-base font-semibold tracking-tight text-foreground">
+          {title}
+        </Heading>
         {description ? (
           <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
         {errorMessage ? (
-          <p className="mt-1 font-mono text-[11px] font-medium break-all text-destructive">
+          <p className="mt-1.5 rounded-md border border-destructive/20 bg-destructive/5 px-3 py-1 font-mono text-[11px] font-medium break-all text-destructive">
             {errorMessage}
           </p>
         ) : null}
       </div>
       {onRetry ? (
         <div className="mt-2 flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onRetry}>
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+          <Button type="button" variant="outline" size="sm" onClick={onRetry} className="gap-2">
+            <RefreshCw className="size-3.5" />
             {retryLabel}
           </Button>
         </div>
