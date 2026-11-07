@@ -189,7 +189,7 @@ export function AssetViewContainer({ initialRowSelection = {} }: AssetViewContai
         <div
           data-slot="bulk-actions-bar"
           data-testid="asset-bulk-actions-bar"
-          className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 animate-in items-center gap-3 rounded-full border border-border/80 bg-background/95 px-4 py-2 shadow-2xl backdrop-blur-md transition-all duration-200 fade-in slide-in-from-bottom-4"
+          className="fixed bottom-6 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-in items-center gap-3 rounded-full border border-border/80 bg-background/95 px-4 py-2 shadow-2xl backdrop-blur-md transition-all duration-200 fade-in slide-in-from-bottom-4"
         >
           <div className="flex items-center gap-2">
             <span className="flex size-2 animate-pulse rounded-full bg-primary" />
