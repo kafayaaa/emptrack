@@ -48,7 +48,7 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2.5">
           {onSelectChange ? (
-            <div className="flex shrink-0 pt-1">
+            <div className="-m-1.5 flex shrink-0 p-1.5 pt-2">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={onSelectChange}
@@ -70,7 +70,7 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
                 href={`/assets/${asset.id}`}
                 onMouseEnter={() => prefetchAsset(asset.id)}
                 onFocus={() => prefetchAsset(asset.id)}
-                className="truncate font-semibold text-foreground transition-colors hover:text-primary hover:underline"
+                className="touch-manipulation truncate py-0.5 font-semibold text-foreground transition-colors hover:text-primary hover:underline"
               >
                 {asset.name}
               </Link>
@@ -108,7 +108,7 @@ function BaseAssetMobileCard({ asset, isSelected = false, onSelectChange }: Asse
                   href={`/employees/${asset.assignedToId}`}
                   onMouseEnter={() => prefetchEmployee(asset.assignedToId!)}
                   onFocus={() => prefetchEmployee(asset.assignedToId!)}
-                  className="font-medium text-foreground transition-colors hover:text-primary hover:underline"
+                  className="touch-manipulation py-0.5 font-medium text-foreground transition-colors hover:text-primary hover:underline"
                   data-testid={`asset-mobile-assigned-employee-${asset.id}`}
                 >
                   {asset.assignedTo.fullName}

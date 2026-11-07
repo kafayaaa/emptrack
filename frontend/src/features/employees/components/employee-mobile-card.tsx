@@ -37,7 +37,7 @@ function BaseEmployeeMobileCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-2.5">
           {onSelectChange ? (
-            <div className="flex shrink-0 pt-1">
+            <div className="-m-1.5 flex shrink-0 p-1.5 pt-2">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={onSelectChange}
@@ -60,7 +60,7 @@ function BaseEmployeeMobileCard({
                 onMouseEnter={() => prefetchEmployee(employee.id)}
                 onFocus={() => prefetchEmployee(employee.id)}
                 onTouchStart={() => prefetchEmployee(employee.id)}
-                className="truncate text-sm font-semibold text-foreground transition-colors hover:text-primary hover:underline"
+                className="touch-manipulation truncate py-0.5 text-sm font-semibold text-foreground transition-colors hover:text-primary hover:underline"
               >
                 {employee.fullName}
               </Link>
@@ -102,7 +102,7 @@ function BaseEmployeeMobileCard({
           <a
             href={`mailto:${employee.email}`}
             aria-label={`Send email to ${employee.fullName} (${employee.email})`}
-            className="truncate transition-colors hover:text-foreground hover:underline"
+            className="touch-manipulation truncate py-0.5 transition-colors hover:text-foreground hover:underline"
           >
             {employee.email}
           </a>
@@ -114,7 +114,7 @@ function BaseEmployeeMobileCard({
             <a
               href={`tel:${employee.phone}`}
               aria-label={`Call ${employee.fullName} at ${employee.phone}`}
-              className="truncate transition-colors hover:text-foreground hover:underline"
+              className="touch-manipulation truncate py-0.5 font-mono transition-colors hover:text-foreground hover:underline"
             >
               {employee.phone}
             </a>

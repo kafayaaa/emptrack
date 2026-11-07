@@ -128,7 +128,6 @@ export function AssetDetailView({ asset }: AssetDetailViewProps) {
               }
             />
             <AssetDeleteDialog asset={asset} redirectToIndex={true} />
-            <AssetDeleteDialog asset={asset} redirectToIndex={true} />
           </div>
         </div>
       </header>
