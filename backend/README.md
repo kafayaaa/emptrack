@@ -1,181 +1,58 @@
-# EmpTrack Backend (Mock API)
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-Mock backend for **EmpTrack**, an employee and asset management dashboard.
-It generates a large, realistic, reproducible dataset with
-[`@faker-js/faker`](https://fakerjs.dev) and serves it as a REST API with
-[`json-server`](https://github.com/typicode/json-server).
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-The goal is to test the frontend against **tens of thousands of records**
-(server-side pagination, caching, infinite-scroll filters) before a real
-backend exists.
+## About Laravel
 
-## Tech stack
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-| Tool                               | Purpose                                                    |
-| ---------------------------------- | ---------------------------------------------------------- |
-| `@faker-js/faker` (locale `id_ID`) | Generate Indonesian-style names and phone numbers          |
-| `zod`                              | Validate the generated data (shape, uniqueness, relations) |
-| `tsx`                              | Run the TypeScript seed script directly                    |
-| `json-server`                      | Serve `db.json` as a REST API                              |
-| `typescript`                       | Type checking (`npm run typecheck`)                        |
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-## Project structure
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-```
-backend/
-├── scripts/
-│   └── seed.ts            # Data generator (generate -> validate -> write file)
-├── fixtures/
-│   └── db.small.json      # Small dataset, committed (for tests and CI)
-├── db.json                # Full dataset, generated locally (git-ignored)
-├── tsconfig.json
-└── package.json
-```
+## Learning Laravel
 
-## Getting started
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-**Requirements:** Node.js 20 or newer (LTS).
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+
+## Agentic Development
+
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
 ```bash
-cd backend
-npm install
+composer require laravel/boost --dev
 
-# 1. Generate the full dataset (-> db.json)
-npm run seed
-
-# 2. Start the mock API on http://localhost:4000
-npm run dev:api
+php artisan boost:install
 ```
 
-## Scripts
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-| Command              | Description                                            |
-| -------------------- | ------------------------------------------------------ |
-| `npm run seed`       | Generate the full dataset into `db.json`               |
-| `npm run seed:small` | Generate a small dataset into `fixtures/db.small.json` |
-| `npm run dev:api`    | Serve `db.json` with json-server on port 4000          |
-| `npm run typecheck`  | Run the TypeScript compiler without emitting files     |
+## Contributing
 
-### Seed options
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-Options are passed as `--name=value`:
+## Code of Conduct
 
-| Option        | Default   | Description                                         |
-| ------------- | --------- | --------------------------------------------------- |
-| `--employees` | `50000`   | Number of employees (minimum 8, one per department) |
-| `--projects`  | `3000`    | Number of projects (minimum 8, one per department)  |
-| `--assets`    | `10000`   | Number of assets                                    |
-| `--out`       | `db.json` | Output file path                                    |
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-Example:
+## Security Vulnerabilities
 
-```bash
-npx tsx scripts/seed.ts --employees=10000 --projects=500 --assets=2000 --out=db.json
-```
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## Seed result
+## License
 
-Measured with the default settings (`npm run seed`):
-
-| Metric                                      | Value      |
-| ------------------------------------------- | ---------- |
-| Projects                                    | 3,000      |
-| Employees                                   | 50,000     |
-| Managers (employees with `isManager: true`) | ~2,500     |
-| File size                                   | `14.75 MB` |
-| Duration                                    | `0.73 s`   |
-
-## Data model
-
-### Employee (`/employees`)
-
-| Field            | Type           | Notes                                                           |
-| ---------------- | -------------- | --------------------------------------------------------------- |
-| `id`             | string         | Unique                                                          |
-| `employeeNumber` | string         | Unique, e.g. `EMP-00042`                                        |
-| `fullName`       | string         |                                                                 |
-| `email`          | string         | Unique, uses the reserved `@emptrack.test` domain               |
-| `phone`          | string         |                                                                 |
-| `department`     | enum           | 8 fixed departments                                             |
-| `position`       | string         | Matches the department; managers get a managerial title         |
-| `status`         | enum           | `active` (85%), `on_leave` (10%), `inactive` (5%)               |
-| `hireDate`       | string         | `YYYY-MM-DD`, never in the future                               |
-| `isManager`      | boolean        | About 5% of employees                                           |
-| `managerId`      | string \| null | `null` for managers, otherwise a manager in the same department |
-| `projectId`      | string         | Project of the same department                                  |
-
-### Project (`/projects`)
-
-| Field         | Type   | Notes                                                  |
-| ------------- | ------ | ------------------------------------------------------ |
-| `id`          | string | Unique                                                 |
-| `projectCode` | string | Unique, e.g. `PRJ-0042`                                |
-| `name`        | string | Type + city + year, e.g. `Migrasi Cloud Surabaya 2023` |
-| `department`  | enum   | Owning department                                      |
-| `status`      | enum   | `planning`, `active`, `on_hold`, `completed`           |
-| `startDate`   | string | `YYYY-MM-DD`                                           |
-
-### Asset (`/assets`)
-
-| Field          | Type           | Notes                                                              |
-| -------------- | -------------- | ------------------------------------------------------------------ |
-| `id`           | string         | Unique                                                             |
-| `assetTag`     | string         | Unique, e.g. `AST-00042`                                           |
-| `name`         | string         | Model/item name, e.g. `MacBook Pro 14"`                            |
-| `category`     | enum           | `Laptop`, `Monitor`, `Peripheral`, `Mobile Device`, `Furniture`, `Vehicle`, `Other` |
-| `model`        | string         | Hardware/product model specification                               |
-| `serialNumber` | string         | Unique serial number, e.g. `LAP-8K29AL1X`                          |
-| `status`       | enum           | `available` (20%), `assigned` (65%), `maintenance` (10%), `retired` (5%) |
-| `purchaseDate` | string         | `YYYY-MM-DD`                                                       |
-| `purchaseCost` | number         | Non-negative integer (in IDR)                                      |
-| `assignedToId` | string \| null | `null` if unassigned, otherwise employee `id`                      |
-| `assignedAt`   | string \| null | `YYYY-MM-DD` when assigned, otherwise `null`                       |
-| `assignedTo`   | object \| null | Embedded summary of assigned employee for fast display             |
-| `notes`        | string \| null | Optional operational notes                                         |
-
-### Relations
-
-- `employee.projectId` -> `project.id`
-- `employee.managerId` -> `employee.id` (where `isManager` is `true`)
-- `asset.assignedToId` -> `employee.id` (where `status` is `assigned`)
-- Employees, managers and projects always share a department.
-
-## Example requests
-
-Pagination and filter parameters depend on the pinned json-server version.
-Check its documentation if a query behaves differently.
-
-```bash
-# First 200 projects (e.g. options for an async filter)
-curl "http://localhost:4000/projects?_page=1&_per_page=200"
-
-# First 200 managers
-curl "http://localhost:4000/employees?isManager=true&_page=1&_per_page=200"
-
-# Employees of one project
-curl "http://localhost:4000/employees?projectId=12&_page=1&_per_page=50"
-```
-
-## Design decisions
-
-- **Reproducible data.** `faker.seed(42)` and fixed date ranges mean every run
-  produces the same dataset, so bugs are easy to reproduce.
-- **Validated output.** The script validates the whole dataset with `zod` and
-  checks uniqueness and relations. It fails fast with a clear message.
-- **Managers are employees.** A single source of truth. Manager filter options
-  come from `/employees?isManager=true`.
-- **Realistic relations.** Positions, managers and projects follow the
-  employee's department, so combined filters return meaningful results.
-- **Compact output.** `db.json` is written without indentation, which keeps the
-  file much smaller for tens of thousands of records.
-- **Fixture for CI.** A small committed dataset keeps tests fast, while the
-  large `db.json` stays out of Git.
-
-## Limitations and security notes
-
-- **Development only.** json-server has no authentication or authorization.
-  Do not expose it publicly as a production backend.
-- **No real data.** All names are random and every email uses the reserved
-  `.test` domain.
-- **One project per employee.** Simplified on purpose. A real system would
-  usually model this as many-to-many.
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
